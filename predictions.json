@@ -1,0 +1,15 @@
+[
+  {
+    "match_id": "BRA_SRB_grupos_r1",
+    "home_team": "Brasil",
+    "away_team": "Sérvia",
+    "predicted_home_goals": 2,
+    "predicted_away_goals": 0,
+    "home_win_prob": 0.68,
+    "draw_prob": 0.18,
+    "away_win_prob": 0.14,
+    "round": "Fase de Grupos - Rodada 1",
+    "match_date": "2026-06-15T16:00:00-03:00"
+  }
+]
+

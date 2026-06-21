@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Acompanhe publicamente o desempenho das previsões do modelo para a Copa do Mundo.">
+  <title>Radar da Copa — Previsões do modelo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;0,900;1,800;1,900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="page-shell">
+    <header class="hero">
+      <div class="brand-lockup">
+        <div class="prediction-orb" aria-hidden="true">
+          <span class="orb-ring"></span>
+          <span class="orb-shine"></span>
+          <span class="orb-star star-one">✦</span>
+          <span class="orb-star star-two">✦</span>
+        </div>
+        <div class="brand-copy">
+          <p class="eyebrow">INTELIGÊNCIA DE JOGO · COPA 2026</p>
+          <h1><span>Previsões</span><small>da</small> <strong>Copa</strong></h1>
+        </div>
+        <p class="hero-copy">
+          Dados, probabilidades e machine learning em campo. Acompanhe cada palpite
+          antes da bola rolar — e volte depois para conferir quem acertou.
+        </p>
+      </div>
+      <div class="update-box">
+        <span class="live-dot" aria-hidden="true"></span>
+        <div>
+          <span class="update-label">Última atualização</span>
+          <strong id="last-update">Carregando…</strong>
+        </div>
+      </div>
+    </header>
+
+    <section id="upcoming-section" class="upcoming-section" hidden>
+      <div class="section-heading upcoming-heading">
+        <div>
+          <p class="eyebrow light">AGENDA AO VIVO</p>
+          <h2>Próximos jogos</h2>
+        </div>
+        <p>Horários de Brasília e o palpite registrado antes de a bola rolar.</p>
+      </div>
+      <div id="upcoming-games" class="upcoming-grid"></div>
+    </section>
+
+    <section id="loading" class="state-panel" aria-live="polite">
+      <span class="spinner" aria-hidden="true"></span>
+      Buscando os dados mais recentes…
+    </section>
+
+    <section id="error-state" class="state-panel state-error" hidden>
+      <strong>Não foi possível carregar o dashboard.</strong>
+      <span id="error-message"></span>
+      <button id="retry-button" type="button">Tentar novamente</button>
+    </section>
+
+    <section id="empty-state" class="state-panel" hidden>
+      <strong>A bola ainda não rolou por aqui.</strong>
+      <span>Assim que previsões e resultados forem registrados, eles aparecerão neste painel.</span>
+    </section>
+
+    <div id="dashboard" hidden>
+      <section class="summary-grid" aria-label="Resumo geral">
+        <article class="metric-card metric-primary">
+          <span class="metric-kicker">Acerto de resultado</span>
+          <strong id="result-accuracy" class="metric-value">—</strong>
+          <span id="result-count" class="metric-detail">—</span>
+        </article>
+        <article class="metric-card metric-green">
+          <span class="metric-kicker">Placar exato</span>
+          <strong id="exact-accuracy" class="metric-value">—</strong>
+          <span id="exact-count" class="metric-detail">—</span>
+        </article>
+        <article class="metric-card">
+          <span class="metric-kicker">Jogos analisados</span>
+          <strong id="total-matches" class="metric-value">—</strong>
+          <span class="metric-detail">com resultado disponível</span>
+        </article>
+        <article class="metric-card">
+          <span class="metric-kicker">Melhor rodada</span>
+          <strong id="best-round-value" class="metric-value metric-value-small">—</strong>
+          <span id="best-round-detail" class="metric-detail">—</span>
+        </article>
+      </section>
+
+      <section class="section-block">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow dark">DESEMPENHO</p>
+            <h2>Ranking por rodada</h2>
+          </div>
+          <p>Da rodada mais recente para a mais antiga.</p>
+        </div>
+        <div id="round-ranking" class="round-grid"></div>
+      </section>
+
+      <section class="section-block">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow dark">ARQUIVO DE JOGOS</p>
+            <h2>Histórico partida a partida</h2>
+          </div>
+          <p>Probabilidades e acertos lado a lado, sem esconder os erros.</p>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Jogo</th>
+                <th>Previsão</th>
+                <th>Probabilidades</th>
+                <th>Real</th>
+                <th>Resultado</th>
+                <th>Exato</th>
+                <th>Rodada</th>
+              </tr>
+            </thead>
+            <tbody id="matches-body"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

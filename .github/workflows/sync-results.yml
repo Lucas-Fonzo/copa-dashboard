@@ -1,0 +1,41 @@
+name: Sincronizar resultados automaticamente
+
+on:
+  schedule:
+    # 13h–23h UTC corresponde a 10h–20h no horário de Brasília.
+    - cron: '0 13-23 * * *'
+    # 0h–5h UTC corresponde a 21h–2h no horário de Brasília.
+    - cron: '0 0-5 * * *'
+  # Mantém disponível o disparo manual pelo painel do GitHub.
+  workflow_dispatch:
+
+concurrency:
+  group: sync-results
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Baixar o repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Instalar dependências
+        run: pip install supabase python-dotenv requests
+
+      - name: Rodar sync de resultados
+        # Erros temporários ficam registrados no log, mas não geram alerta de workflow falho.
+        continue-on-error: true
+        run: python sync_results.py
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+
