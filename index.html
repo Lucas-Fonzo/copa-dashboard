@@ -49,6 +49,56 @@
       <div id="upcoming-games" class="upcoming-grid"></div>
     </section>
 
+    <section id="brazil-section" class="section-block championship-section" hidden>
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow dark">CAMINHO DO HEXA</p>
+          <h2>E o Brasil? 🇧🇷</h2>
+        </div>
+        <p>Probabilidade recalculada pelas simulações Monte Carlo.</p>
+      </div>
+      <div class="brazil-grid">
+        <article class="brazil-odds-card">
+          <span class="prediction-label">Chance de título</span>
+          <strong id="brazil-champion-prob" class="brazil-probability">—</strong>
+          <span id="brazil-champion-caption" class="metric-detail">de chance de ser campeão</span>
+        </article>
+        <article id="brazil-next-game" class="brazil-game-card"></article>
+      </div>
+    </section>
+
+    <section id="favorites-section" class="section-block championship-section" hidden>
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow dark">MONTE CARLO</p>
+          <h2>Favoritos ao título</h2>
+        </div>
+        <p id="simulations-detail">Probabilidades estimadas pelo modelo.</p>
+      </div>
+      <div id="favorites-grid" class="favorites-grid"></div>
+    </section>
+
+    <section id="probability-map-section" class="section-block map-section" hidden>
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow dark">VISÃO GLOBAL</p>
+          <h2>Mapa de probabilidades — Copa 2026</h2>
+        </div>
+        <p>Passe o cursor sobre um país participante para ver sua chance.</p>
+      </div>
+      <div class="map-frame">
+        <svg id="probability-map" role="img" aria-label="Mapa mundial das probabilidades de título"></svg>
+        <div id="map-tooltip" class="map-tooltip" hidden></div>
+      </div>
+      <div class="map-legend" aria-label="Legenda do mapa">
+        <span><i class="legend-high"></i>&gt; 15%</span>
+        <span><i class="legend-medium"></i>5–15%</span>
+        <span><i class="legend-low"></i>1–5%</span>
+        <span><i class="legend-minimal"></i>&lt; 1%</span>
+        <span><i class="legend-eliminated"></i>Eliminado</span>
+      </div>
+    </section>
+
     <section id="loading" class="state-panel" aria-live="polite">
       <span class="spinner" aria-hidden="true"></span>
       Buscando os dados mais recentes…
@@ -128,6 +178,16 @@
     </div>
   </main>
 
-  <script type="module" src="app.js?v=20260622-3"></script>
+  <div id="live-update-indicator" class="live-update-indicator" hidden aria-live="polite">
+    <span aria-hidden="true"></span>
+    Atualizando ao vivo
+  </div>
+
+  <script
+    src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"
+    integrity="sha384-su5kReKyYlIFrI62mbQRKXHzFobMa7BHp1cK6julLPbnYcCW9NIZKJiTODjLPeDh"
+    crossorigin="anonymous"
+  ></script>
+  <script type="module" src="app.js?v=20260622-4"></script>
 </body>
 </html>

@@ -140,3 +140,35 @@ grant select on public.predictions, public.results to anon;
 grant select on public.match_summary, public.accuracy_summary to anon;
 grant all on public.predictions, public.results to service_role;
 
+-- Probabilidades de título calculadas pelo simulador Monte Carlo independente.
+create table if not exists public.championship_odds (
+    id uuid primary key default gen_random_uuid(),
+    team text not null unique,
+    champion_prob numeric not null check (champion_prob between 0 and 1),
+    eliminated boolean not null default false,
+    simulations_run integer not null check (simulations_run > 0),
+    updated_at timestamptz not null default now()
+);
+
+create index if not exists championship_odds_probability_idx
+    on public.championship_odds (champion_prob desc);
+
+alter table public.championship_odds enable row level security;
+
+drop policy if exists "Leitura pública das probabilidades de título"
+    on public.championship_odds;
+create policy "Leitura pública das probabilidades de título"
+on public.championship_odds for select
+to anon
+using (true);
+
+drop policy if exists "Service role gerencia probabilidades de título"
+    on public.championship_odds;
+create policy "Service role gerencia probabilidades de título"
+on public.championship_odds for all
+to service_role
+using (true)
+with check (true);
+
+grant select on public.championship_odds to anon;
+grant all on public.championship_odds to service_role;

@@ -18,6 +18,8 @@ copa-dashboard/
 ├── upload_predictions.py
 ├── upload_results.py
 ├── sync_results.py
+├── simulate_champion.py
+├── mark_eliminated.py
 ├── predictions.json
 ├── results.json
 ├── requirements.txt
@@ -226,3 +228,50 @@ e confirme a branch. Os mesmos secrets são usados automaticamente.
 - O navegador recebe somente a anon key.
 - A service key fica nos scripts locais e não deve ser compartilhada.
 - O RLS permite leitura pública e reserva as alterações para a `service_role`.
+
+## Probabilidades de campeão
+
+Depois de aplicar novamente `supabase_schema.sql` no SQL Editor, execute:
+
+```powershell
+python simulate_champion.py
+```
+
+O comando lê as previsões do Supabase, infere os grupos pelos confrontos disponíveis,
+executa 10.000 simulações Monte Carlo e atualiza `championship_odds`. Ele funciona com
+previsões parciais: partidas ausentes não entram na tabela simulada. Como a tabela
+`predictions` não contém o chaveamento oficial do mata-mata, a primeira rodada eliminatória
+é aproximada evitando, quando possível, reencontros do mesmo grupo.
+
+Para uma execução menor de diagnóstico ou uma simulação reproduzível:
+
+```powershell
+python simulate_champion.py --simulations 1000 --seed 42
+```
+
+Após uma eliminação confirmada, marque uma ou mais seleções usando o nome exibido no dashboard:
+
+```powershell
+python mark_eliminated.py "Brasil" "Argentina"
+```
+
+Uma nova execução do simulador preserva as marcações de eliminação existentes e mantém a
+probabilidade dessas seleções em zero.
+
+## Seções de probabilidades no dashboard
+
+Quando `championship_odds` possuir dados, o frontend mostra automaticamente:
+
+- a chance de título e o próximo jogo do Brasil;
+- os cinco favoritos ao título;
+- o mapa mundial de probabilidades carregado com D3.js.
+
+Se a tabela ainda estiver vazia, ou se D3/GeoJSON estiverem indisponíveis, as respectivas
+seções são ocultadas sem interromper o restante do dashboard.
+
+## Atualização ao vivo
+
+Partidas entre o horário previsto e 105 minutos depois recebem a tag **AGORA**, com link para
+a CazéTV. O navegador verifica o estado a cada 30 segundos. Durante essa janela, histórico e
+métricas são consultados novamente no Supabase a cada dois minutos; fora dela, os próximos
+jogos e as probabilidades são atualizados a cada cinco minutos.
