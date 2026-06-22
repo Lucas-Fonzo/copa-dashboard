@@ -4,9 +4,6 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const SUPABASE_URL = "https://tmkzvfxpdyoetdfrysfn.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_j_qmH14lt88_rdosFL8A_w_PnSOzeVU";
 
-const PRIMARY_GAMES_API = "https://worldcup26.ir/get/games";
-const FALLBACK_GAMES_API = "https://raw.githubusercontent.com/openfootball/worldcup.json/master/2026/worldcup.json";
-
 const TEAM_NAME_MAP = {
   Brazil: "Brasil", Germany: "Alemanha", France: "França", England: "Inglaterra",
   Spain: "Espanha", Netherlands: "Holanda", Croatia: "Croácia", Morocco: "Marrocos",
@@ -81,13 +78,6 @@ function formatDate(value, includeTime = false) {
   return new Intl.DateTimeFormat("pt-BR", options).format(new Date(value));
 }
 
-function canonicalTeam(name) {
-  const compact = String(name ?? "").trim().replace(/\s+/g, " ");
-  const translated = TEAM_NAME_MAP[compact] ?? compact;
-  return translated.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase().replace(/[^a-z0-9]/g, "");
-}
-
 function displayTeam(name) {
   return TEAM_NAME_MAP[String(name ?? "").trim()] ?? String(name ?? "");
 }
@@ -121,79 +111,6 @@ function countdownLabel(value) {
   return `Em ${days} dias`;
 }
 
-function parseFallbackDate(match) {
-  const time = String(match.time ?? "");
-  const parsed = time.match(/(\d{1,2}):(\d{2})\s*UTC([+-]\d{1,2})/i);
-  if (!match.date || !parsed) return null;
-  const offset = Number(parsed[3]);
-  const sign = offset >= 0 ? "+" : "-";
-  const offsetHours = String(Math.abs(offset)).padStart(2, "0");
-  return new Date(`${match.date}T${parsed[1].padStart(2, "0")}:${parsed[2]}:00${sign}${offsetHours}:00`);
-}
-
-function parsePrimaryDate(localDate) {
-  const parsed = String(localDate ?? "").match(/(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2})/);
-  if (!parsed) return null;
-  // A API não informa o fuso do estádio. UTC-6 é usado apenas se não houver
-  // previsão no Supabase nem horário enriquecido pelo fallback.
-  return new Date(`${parsed[3]}-${parsed[1]}-${parsed[2]}T${parsed[4]}:${parsed[5]}:00-06:00`);
-}
-
-async function fetchJson(url) {
-  const response = await fetch(url, { headers: { Accept: "application/json" } });
-  if (!response.ok) throw new Error(`${url} respondeu ${response.status}`);
-  return response.json();
-}
-
-function normalizeFallbackGames(payload) {
-  return (payload?.matches ?? []).map((match, index) => ({
-    id: String(index + 1),
-    homeTeam: match.team1,
-    awayTeam: match.team2,
-    date: parseFallbackDate(match),
-    finished: Array.isArray(match.score?.ft)
-      && match.score.ft.length === 2
-      && match.score.ft.every((value) => value !== null),
-  })).filter((game) => game.homeTeam && game.awayTeam);
-}
-
-function normalizePrimaryGames(payload, fallbackPayload) {
-  const fallbackById = new Map(
-    normalizeFallbackGames(fallbackPayload).map((game) => [game.id, game]),
-  );
-  return (payload?.games ?? []).map((game) => {
-    const fallback = fallbackById.get(String(game.id));
-    return {
-      id: String(game.id),
-      // O fallback segue a mesma numeração oficial usada nas previsões.
-      // Quando disponível, ele também corrige participantes divergentes da API principal.
-      homeTeam: fallback?.homeTeam ?? game.home_team_name_en ?? game.home_team_label,
-      awayTeam: fallback?.awayTeam ?? game.away_team_name_en ?? game.away_team_label,
-      date: fallback?.date ?? parsePrimaryDate(game.local_date),
-      finished: String(game.finished).toUpperCase() === "TRUE",
-    };
-  }).filter((game) => game.homeTeam && game.awayTeam);
-}
-
-async function fetchSchedule() {
-  // A agenda OpenFootball segue a numeração, os confrontos e os horários usados
-  // no predictions.json. A API principal fica como contingência, pois seus IDs
-  // e participantes podem divergir durante atualizações em tempo real.
-  const fallback = await fetchJson(FALLBACK_GAMES_API).catch(() => null);
-  const officialGames = normalizeFallbackGames(fallback);
-  if (officialGames.length) return officialGames;
-
-  try {
-    const primary = await fetchJson(PRIMARY_GAMES_API);
-    const games = normalizePrimaryGames(primary, null);
-    if (!games.length) throw new Error("Agenda principal vazia");
-    return games;
-  } catch (primaryError) {
-    console.warn("As fontes de agenda estão indisponíveis.", primaryError);
-    throw new Error("Agenda indisponível");
-  }
-}
-
 async function fetchPredictionsForUpcoming() {
   if (!isConfigured()) return [];
   try {
@@ -206,23 +123,6 @@ async function fetchPredictionsForUpcoming() {
     console.warn("Previsões indisponíveis para os próximos jogos.", error);
     return [];
   }
-}
-
-function matchPrediction(game, predictions) {
-  // Os dois participantes são a confirmação mais segura do confronto.
-  const pair = `${canonicalTeam(game.homeTeam)}:${canonicalTeam(game.awayTeam)}`;
-  const candidates = predictions.filter((prediction) => (
-    `${canonicalTeam(prediction.home_team)}:${canonicalTeam(prediction.away_team)}` === pair
-  ));
-  if (candidates.length) {
-    return candidates.sort((a, b) => (
-      Math.abs(new Date(a.match_date) - game.date) - Math.abs(new Date(b.match_date) - game.date)
-    ))[0];
-  }
-
-  // O ID oficial cobre apenas pequenas diferenças de grafia não mapeadas.
-  const officialMatchId = `WC2026_${String(game.id).padStart(3, "0")}`;
-  return predictions.find((prediction) => prediction.match_id === officialMatchId) ?? null;
 }
 
 function renderUpcomingGames(games) {
@@ -252,21 +152,28 @@ function renderUpcomingGames(games) {
 async function loadUpcomingGames() {
   elements.upcomingSection.hidden = true;
   try {
-    const [schedule, predictions] = await Promise.all([
-      fetchSchedule(),
-      fetchPredictionsForUpcoming(),
-    ]);
+    const predictions = await fetchPredictionsForUpcoming();
     const now = new Date();
-    const upcoming = schedule.map((game) => {
-      const prediction = matchPrediction(game, predictions);
-      const date = prediction?.match_date ? new Date(prediction.match_date) : game.date;
+
+    // Países, horário, placar e probabilidades vêm do mesmo registro. Isso evita
+    // que IDs inconsistentes de APIs externas misturem partidas diferentes.
+    const upcoming = predictions.map((prediction) => {
+      const date = new Date(prediction.match_date);
+      const game = {
+        id: prediction.match_id,
+        homeTeam: prediction.home_team,
+        awayTeam: prediction.away_team,
+        date,
+        finished: false,
+      };
       return { game, prediction, date };
-    }).filter(({ game, date }) => !game.finished && date instanceof Date && !Number.isNaN(date) && date > now)
+    }).filter(({ date }) => date instanceof Date && !Number.isNaN(date) && date > now)
       .sort((a, b) => a.date - b.date)
       .slice(0, 3);
+
     if (upcoming.length) renderUpcomingGames(upcoming);
   } catch (error) {
-    // A agenda é complementar; falhas das duas APIs não interrompem o dashboard.
+    // A agenda é complementar e não interrompe as demais métricas do dashboard.
     console.warn("Próximos jogos indisponíveis.", error);
     elements.upcomingSection.hidden = true;
   }
