@@ -176,21 +176,21 @@ function normalizePrimaryGames(payload, fallbackPayload) {
 }
 
 async function fetchSchedule() {
-  const fallbackPromise = fetchJson(FALLBACK_GAMES_API).catch(() => null);
+  // A agenda OpenFootball segue a numeração, os confrontos e os horários usados
+  // no predictions.json. A API principal fica como contingência, pois seus IDs
+  // e participantes podem divergir durante atualizações em tempo real.
+  const fallback = await fetchJson(FALLBACK_GAMES_API).catch(() => null);
+  const officialGames = normalizeFallbackGames(fallback);
+  if (officialGames.length) return officialGames;
+
   try {
-    const [primary, fallback] = await Promise.all([
-      fetchJson(PRIMARY_GAMES_API),
-      fallbackPromise,
-    ]);
-    const games = normalizePrimaryGames(primary, fallback);
+    const primary = await fetchJson(PRIMARY_GAMES_API);
+    const games = normalizePrimaryGames(primary, null);
     if (!games.length) throw new Error("Agenda principal vazia");
     return games;
   } catch (primaryError) {
-    console.warn("Agenda principal indisponível; usando fallback.", primaryError);
-    const fallback = await fallbackPromise;
-    const games = normalizeFallbackGames(fallback);
-    if (!games.length) throw new Error("Fallback de agenda indisponível");
-    return games;
+    console.warn("As fontes de agenda estão indisponíveis.", primaryError);
+    throw new Error("Agenda indisponível");
   }
 }
 
@@ -209,19 +209,20 @@ async function fetchPredictionsForUpcoming() {
 }
 
 function matchPrediction(game, predictions) {
-  const officialMatchId = `WC2026_${String(game.id).padStart(3, "0")}`;
-  const predictionById = predictions.find((prediction) => prediction.match_id === officialMatchId);
-  if (predictionById) return predictionById;
-
-  // Mantém o pareamento por nomes como fallback para fontes sem ID oficial.
+  // Os dois participantes são a confirmação mais segura do confronto.
   const pair = `${canonicalTeam(game.homeTeam)}:${canonicalTeam(game.awayTeam)}`;
   const candidates = predictions.filter((prediction) => (
     `${canonicalTeam(prediction.home_team)}:${canonicalTeam(prediction.away_team)}` === pair
   ));
-  if (!candidates.length) return null;
-  return candidates.sort((a, b) => (
-    Math.abs(new Date(a.match_date) - game.date) - Math.abs(new Date(b.match_date) - game.date)
-  ))[0];
+  if (candidates.length) {
+    return candidates.sort((a, b) => (
+      Math.abs(new Date(a.match_date) - game.date) - Math.abs(new Date(b.match_date) - game.date)
+    ))[0];
+  }
+
+  // O ID oficial cobre apenas pequenas diferenças de grafia não mapeadas.
+  const officialMatchId = `WC2026_${String(game.id).padStart(3, "0")}`;
+  return predictions.find((prediction) => prediction.match_id === officialMatchId) ?? null;
 }
 
 function renderUpcomingGames(games) {

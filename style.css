@@ -156,7 +156,7 @@ h1 strong { color: transparent; font: inherit; background: linear-gradient(115de
 .countdown-badge { padding: 5px 9px; color: #07110b; border: 1px solid var(--lime); border-radius: 2px; background: var(--lime); font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; }
 .upcoming-time { color: var(--muted); font-size: 11px; }
 .upcoming-teams { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 14px; min-height: 78px; margin: 22px 0 10px; font: 800 clamp(20px, 2vw, 28px) var(--display); text-transform: uppercase; }
-.upcoming-team { min-width: 0; padding: 12px 10px; background: rgba(1, 8, 18, .28); line-height: 1.05; }
+.upcoming-team { min-width: 0; padding: 12px 4px; line-height: 1.05; }
 .upcoming-home { text-align: right; }
 .upcoming-away { text-align: left; }
 .upcoming-versus { color: var(--yellow); font: 800 11px var(--body); letter-spacing: .2em; }
