@@ -23,19 +23,6 @@ const TEAM_NAME_MAP = {
   Ghana: "Gana",
 };
 
-const COUNTRY_CODES = {
-  brasil: "BR", alemanha: "DE", franca: "FR", inglaterra: "GB", espanha: "ES",
-  portugal: "PT", argentina: "AR", holanda: "NL", croacia: "HR", marrocos: "MA",
-  mexico: "MX", estadosunidos: "US", coreiadosul: "KR", africadosul: "ZA",
-  arabiasaudita: "SA", novazelandia: "NZ", costadomarfim: "CI", caboverde: "CV",
-  curacao: "CW", suica: "CH", belgica: "BE", austria: "AT", republicatcheca: "CZ",
-  bosniaeherzegovina: "BA", rdcongo: "CD", turquia: "TR", japao: "JP", egito: "EG",
-  escocia: "GB", suecia: "SE", tunisia: "TN", argelia: "DZ", colombia: "CO",
-  paraguai: "PY", uruguai: "UY", noruega: "NO", gana: "GH", canada: "CA",
-  qatar: "QA", haiti: "HT", australia: "AU", equador: "EC", ira: "IR",
-  iraque: "IQ", jordania: "JO", uzbequistao: "UZ", panama: "PA",
-};
-
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const elements = {
@@ -103,12 +90,6 @@ function canonicalTeam(name) {
 
 function displayTeam(name) {
   return TEAM_NAME_MAP[String(name ?? "").trim()] ?? String(name ?? "");
-}
-
-function flagEmoji(name) {
-  const code = COUNTRY_CODES[canonicalTeam(name)];
-  if (!code) return "⚽";
-  return [...code].map((character) => String.fromCodePoint(127397 + character.charCodeAt())).join("");
 }
 
 function formatBrasilia(value) {
@@ -184,8 +165,10 @@ function normalizePrimaryGames(payload, fallbackPayload) {
     const fallback = fallbackById.get(String(game.id));
     return {
       id: String(game.id),
-      homeTeam: game.home_team_name_en ?? game.home_team_label,
-      awayTeam: game.away_team_name_en ?? game.away_team_label,
+      // O fallback segue a mesma numeração oficial usada nas previsões.
+      // Quando disponível, ele também corrige participantes divergentes da API principal.
+      homeTeam: fallback?.homeTeam ?? game.home_team_name_en ?? game.home_team_label,
+      awayTeam: fallback?.awayTeam ?? game.away_team_name_en ?? game.away_team_label,
       date: fallback?.date ?? parsePrimaryDate(game.local_date),
       finished: String(game.finished).toUpperCase() === "TRUE",
     };
@@ -226,6 +209,11 @@ async function fetchPredictionsForUpcoming() {
 }
 
 function matchPrediction(game, predictions) {
+  const officialMatchId = `WC2026_${String(game.id).padStart(3, "0")}`;
+  const predictionById = predictions.find((prediction) => prediction.match_id === officialMatchId);
+  if (predictionById) return predictionById;
+
+  // Mantém o pareamento por nomes como fallback para fontes sem ID oficial.
   const pair = `${canonicalTeam(game.homeTeam)}:${canonicalTeam(game.awayTeam)}`;
   const candidates = predictions.filter((prediction) => (
     `${canonicalTeam(prediction.home_team)}:${canonicalTeam(prediction.away_team)}` === pair
@@ -244,9 +232,9 @@ function renderUpcomingGames(games) {
         <span class="upcoming-time">${formatBrasilia(date)} · Brasília</span>
       </div>
       <div class="upcoming-teams">
-        <span class="upcoming-team"><span class="team-flag">${flagEmoji(game.homeTeam)}</span>${escapeHtml(displayTeam(game.homeTeam))}</span>
+        <span class="upcoming-team upcoming-home">${escapeHtml(displayTeam(game.homeTeam))}</span>
         <span class="upcoming-versus">VERSUS</span>
-        <span class="upcoming-team"><span class="team-flag">${flagEmoji(game.awayTeam)}</span>${escapeHtml(displayTeam(game.awayTeam))}</span>
+        <span class="upcoming-team upcoming-away">${escapeHtml(displayTeam(game.awayTeam))}</span>
       </div>
       <div class="upcoming-prediction">
         <span class="prediction-label">Palpite do modelo</span>

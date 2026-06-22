@@ -150,20 +150,22 @@ h1 strong { color: transparent; font: inherit; background: linear-gradient(115de
 .upcoming-heading h2 { color: white; }
 .upcoming-heading > p { color: var(--muted); }
 .upcoming-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
-.upcoming-card { display: flex; flex-direction: column; min-width: 0; padding: 19px; border: 1px solid rgba(142,224,0,.26); background: linear-gradient(145deg, rgba(11,36,50,.72), rgba(2,13,24,.92)); clip-path: polygon(11px 0, 100% 0, 100% calc(100% - 11px), calc(100% - 11px) 100%, 0 100%, 0 11px); transition: border-color .2s, transform .2s; }
+.upcoming-card { display: flex; flex-direction: column; min-width: 0; min-height: 330px; padding: 19px; border: 1px solid rgba(142,224,0,.26); background: linear-gradient(145deg, rgba(11,36,50,.72), rgba(2,13,24,.92)); clip-path: polygon(11px 0, 100% 0, 100% calc(100% - 11px), calc(100% - 11px) 100%, 0 100%, 0 11px); transition: border-color .2s, transform .2s; }
 .upcoming-card:hover { border-color: var(--lime); transform: translateY(-2px); }
 .upcoming-card-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .countdown-badge { padding: 5px 9px; color: #07110b; border: 1px solid var(--lime); border-radius: 2px; background: var(--lime); font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; }
 .upcoming-time { color: var(--muted); font-size: 11px; }
-.upcoming-teams { display: grid; gap: 7px; margin: 19px 0; font: 800 21px var(--display); text-transform: uppercase; }
-.upcoming-team { display: flex; align-items: center; gap: 10px; min-width: 0; }
-.team-flag { width: 26px; text-align: center; font-size: 20px; }
-.upcoming-versus { margin-left: 36px; color: var(--yellow); font: 800 11px var(--body); letter-spacing: .2em; }
-.upcoming-prediction { margin-top: auto; padding-top: 14px; border-top: 1px dotted rgba(142,224,0,.28); }
-.prediction-label { color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: .12em; }
-.prediction-score { display: block; margin: 3px 0 11px; color: var(--white); font: italic 900 28px var(--display); }
-.prediction-unavailable { display: block; margin-top: 5px; color: var(--muted); font-size: 13px; }
+.upcoming-teams { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 14px; min-height: 78px; margin: 22px 0 10px; font: 800 clamp(20px, 2vw, 28px) var(--display); text-transform: uppercase; }
+.upcoming-team { min-width: 0; padding: 12px 10px; background: rgba(1, 8, 18, .28); line-height: 1.05; }
+.upcoming-home { text-align: right; }
+.upcoming-away { text-align: left; }
+.upcoming-versus { color: var(--yellow); font: 800 11px var(--body); letter-spacing: .2em; }
+.upcoming-prediction { display: flex; flex: 1; flex-direction: column; align-items: center; justify-content: center; margin-top: 4px; padding: 17px 0 0; text-align: center; border-top: 1px dotted rgba(142,224,0,.28); }
+.prediction-label { color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: .16em; }
+.prediction-score { display: block; margin: 3px 0 13px; color: var(--white); font: italic 900 clamp(54px, 5.4vw, 78px) var(--display); line-height: 1; text-shadow: 0 0 22px rgba(255,255,255,.08); }
+.prediction-unavailable { display: block; margin: 24px 0; color: var(--muted); font-size: 15px; }
 .upcoming-card .probability { min-width: 0; }
+.upcoming-card .probability { width: 100%; margin-top: auto; text-align: left; }
 
 /* Estados */
 .state-panel { display: flex; align-items: center; justify-content: center; gap: 12px; min-height: 120px; margin-top: 22px; padding: 24px; text-align: center; border: 1px solid var(--line-soft); color: var(--silver); background: var(--panel); }
@@ -185,7 +187,7 @@ h1 strong { color: transparent; font: inherit; background: linear-gradient(115de
 .metric-value { display: block; margin: 4px 0 2px; color: var(--white); font-size: clamp(38px, 4.6vw, 58px); font-style: italic; font-weight: 900; letter-spacing: -.02em; }
 .metric-primary .metric-value { color: var(--lime-bright); }
 .metric-green .metric-value { color: var(--yellow); }
-.metric-value-small { max-width: 100%; overflow: hidden; font-size: clamp(23px, 2.5vw, 34px); text-overflow: ellipsis; white-space: nowrap; }
+.metric-value-small { max-width: 100%; overflow-wrap: anywhere; font-size: clamp(22px, 2.2vw, 32px); line-height: 1.02; white-space: normal; }
 .metric-detail { color: var(--muted); font-size: 13px; }
 
 /* Seções */
@@ -244,6 +246,10 @@ tbody tr:hover { background: rgba(142,224,0,.035); }
   .hero-copy { grid-column: 1; }
   .update-box { width: 100%; align-self: auto; }
   .upcoming-section { padding: 19px; }
+  .upcoming-card { min-height: 300px; }
+  .upcoming-teams { gap: 8px; font-size: 21px; }
+  .upcoming-team { padding-inline: 5px; }
+  .prediction-score { font-size: 62px; }
   .summary-grid { grid-template-columns: 1fr; }
   .metric-card { min-height: 150px; }
   .section-heading { align-items: flex-start; flex-direction: column; }
