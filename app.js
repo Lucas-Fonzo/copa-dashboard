@@ -1,7 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 // Use somente a URL pública e a anon key. Nunca coloque a service_role no frontend.
-const SUPABASE_URL = "https://tmkzvfxpdyoetdfrysfn.supabase.co/rest/v1/";
+const SUPABASE_URL = "https://tmkzvfxpdyoetdfrysfn.supabase.co;
 const SUPABASE_ANON_KEY = "sb_publishable_j_qmH14lt88_rdosFL8A_w_PnSOzeVU";
 
 const PRIMARY_GAMES_API = "https://worldcup26.ir/get/games";

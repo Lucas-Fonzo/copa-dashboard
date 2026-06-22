@@ -1,4 +1,4 @@
-[
+python upload_predictions.py[
   {
     "match_id": "BRA_SRB_grupos_r1",
     "home_team": "Brasil",
@@ -12,4 +12,3 @@
     "match_date": "2026-06-15T16:00:00-03:00"
   }
 ]
-
