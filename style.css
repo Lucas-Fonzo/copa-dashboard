@@ -171,25 +171,47 @@ h1 strong { color: transparent; font: inherit; background: linear-gradient(115de
 
 /* Probabilidades de título */
 .championship-section { border-color: rgba(142,224,0,.26); }
-.brazil-grid { display: grid; grid-template-columns: minmax(260px,.72fr) minmax(0,1.28fr); gap: 14px; }
-.brazil-odds-card, .brazil-game-card { min-height: 230px; padding: clamp(22px,3vw,34px); border: 1px solid rgba(142,224,0,.25); background: linear-gradient(145deg, rgba(10,34,48,.88), rgba(2,13,24,.96)); clip-path: polygon(12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%,0 12px); }
-.brazil-odds-card { display: flex; flex-direction: column; justify-content: center; box-shadow: inset 0 0 45px rgba(142,224,0,.04); }
-.brazil-probability { display: block; margin: 10px 0; color: var(--lime-bright); font: italic 900 clamp(88px,12vw,160px) var(--display); line-height: .78; letter-spacing: -.035em; text-shadow: 0 0 30px rgba(142,224,0,.24); }
-.brazil-probability.is-eliminated { color: var(--muted); font-size: clamp(48px,7vw,82px); }
+.brazil-section-title { display: flex; align-items: center; gap: 12px; }
+.brazil-flag { position: relative; flex: 0 0 auto; overflow: hidden; width: 38px; height: 26px; border: 1px solid rgba(255,255,255,.35); background: #159447; box-shadow: 0 0 14px rgba(142,224,0,.25); transform: skewX(-5deg); }
+.brazil-flag::before { content: ""; position: absolute; left: 9px; top: 4px; width: 18px; height: 18px; background: #ffcf20; transform: rotate(45deg); }
+.brazil-flag i { position: absolute; z-index: 1; left: 14px; top: 8px; width: 10px; height: 10px; border-radius: 50%; background: #174ea6; }
+.brazil-grid { display: grid; grid-template-columns: minmax(220px,.8fr) minmax(330px,1.25fr) minmax(270px,1fr); gap: 14px; }
+.brazil-card { min-width: 0; min-height: 286px; padding: clamp(20px,2.4vw,30px); border: 1px solid rgba(142,224,0,.25); background: linear-gradient(145deg,rgba(10,34,48,.88),rgba(2,13,24,.96)); box-shadow: inset 0 0 45px rgba(142,224,0,.035); clip-path: polygon(12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%,0 12px); }
+.brazil-card-kicker, .brazil-game-kicker { color: var(--yellow); font-size: 10px; font-weight: 800; letter-spacing: .15em; text-transform: uppercase; }
+.brazil-rank-card { display: flex; flex-direction: column; justify-content: center; }
+.brazil-rank { display: block; margin: 5px 0 2px; color: var(--lime-bright); font: italic 900 clamp(86px,9vw,126px) var(--display); line-height: .82; letter-spacing: -.015em; text-shadow: 0 0 28px rgba(142,224,0,.24); }
+.brazil-rank sup { display: inline-block; margin-left: .08em; font-size: .38em; line-height: 1; vertical-align: top; transform: translateY(.12em); }
+.brazil-rank-label { color: var(--white); font: 800 22px var(--display); text-transform: uppercase; }
+.brazil-chance-detail { display: flex; align-items: baseline; gap: 7px; margin-top: 16px; padding: 10px 12px; color: var(--white); border-left: 3px solid var(--lime); background: rgba(142,224,0,.065); box-shadow: inset 0 0 18px rgba(142,224,0,.025); }
+.brazil-chance-detail span { color: var(--lime-bright); font: italic 900 25px var(--display); white-space: nowrap; }
+.brazil-chance-detail small { color: var(--silver); font-size: 13px; font-weight: 700; line-height: 1.1; }
+.brazil-chance-detail.is-eliminated { color: var(--muted); font: italic 800 28px var(--display); }
 .brazil-game-card { display: flex; flex-direction: column; justify-content: center; }
-.brazil-game-kicker { color: var(--yellow); font-size: 11px; font-weight: 800; letter-spacing: .15em; text-transform: uppercase; }
-.brazil-opponent { margin: 5px 0 2px; color: var(--white); font: italic 900 clamp(32px,5vw,58px) var(--display); line-height: 1; text-transform: uppercase; }
-.brazil-game-date { color: var(--muted); font-size: 13px; }
-.brazil-game-prediction { display: flex; align-items: flex-end; justify-content: space-between; gap: 22px; margin-top: 18px; padding-top: 14px; border-top: 1px dotted var(--line); }
-.brazil-game-prediction .prediction-score { margin: 2px 0 0; font-size: 48px; }
-.brazil-game-prediction .probability { width: min(100%,390px); }
+.brazil-matchup { margin: 7px 0 1px; color: var(--white); font: italic 900 clamp(27px,3.2vw,44px) var(--display); line-height: 1; text-align: center; text-transform: uppercase; }
+.brazil-matchup small { color: var(--yellow); font-size: .55em; }
+.brazil-game-date { color: var(--muted); font-size: 12px; }
+.brazil-prediction-label { display: block; margin-top: 15px; text-align: center; }
+.brazil-main-score { display: block; margin: 0 0 13px; color: var(--white); font: italic 900 clamp(58px,6vw,82px) var(--display); line-height: .9; text-align: center; text-shadow: 0 0 22px rgba(255,255,255,.08); }
+.brazil-main-score small { color: var(--yellow); font-size: .55em; }
+.brazil-result-probability { width: 100%; min-width: 0; }
+.brazil-result-probability .probability-labels { gap: 8px; font-size: 9px; }
+.brazil-result-probability .probability-labels span:nth-child(2) { text-align: center; }
+.brazil-result-probability .probability-labels span:last-child { text-align: right; }
+.brazil-scorelines-card { display: flex; flex-direction: column; justify-content: center; }
+.scorelines-match { margin: 7px 0 16px; color: var(--white); font: italic 800 25px var(--display); text-transform: uppercase; }
+.scoreline-ranking { display: grid; gap: 8px; }
+.scoreline-row { display: grid; grid-template-columns: 32px 1fr auto; align-items: center; gap: 10px; min-height: 48px; padding: 8px 11px; border-left: 2px solid var(--cyan); background: rgba(1,8,18,.62); }
+.scoreline-row.is-leading { min-height: 58px; border-color: var(--lime); background: rgba(142,224,0,.065); }
+.scoreline-position { color: var(--muted); font: italic 800 19px var(--display); }
+.scoreline-row strong { color: var(--white); font: italic 900 29px var(--display); }
+.scoreline-row.is-leading strong { color: var(--lime-bright); font-size: 36px; }
+.scoreline-row > span:last-child { color: var(--yellow); font: 800 17px var(--display); }
 
 .favorites-grid { display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); gap: 12px; }
 .favorite-card { position: relative; overflow: hidden; min-height: 190px; padding: 20px; border: 1px solid rgba(142,224,0,.22); background: linear-gradient(155deg, rgba(11,36,50,.78), rgba(2,13,24,.96)); clip-path: polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px); }
 .favorite-card.is-eliminated { opacity: .4; filter: grayscale(1); }
 .favorite-position { color: var(--yellow); font: italic 900 32px var(--display); }
 .favorite-team { display: block; min-height: 52px; margin: 9px 0 17px; color: var(--white); font: 800 24px var(--display); line-height: 1; text-transform: uppercase; }
-.favorite-flag { margin-right: 7px; font-size: 20px; font-style: normal; }
 .favorite-probability { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; color: var(--muted); font-size: 11px; text-transform: uppercase; }
 .favorite-probability strong { color: var(--lime-bright); font: italic 900 27px var(--display); }
 .favorite-bar { overflow: hidden; height: 7px; margin-top: 7px; background: rgba(121,144,156,.16); }
@@ -225,6 +247,7 @@ h1 strong { color: transparent; font: inherit; background: linear-gradient(115de
 
 /* Métricas */
 .summary-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 13px; margin: 22px 0; }
+.model-stats-section .summary-grid { margin: 0; }
 .metric-card { position: relative; min-height: 178px; padding: 23px; border: 1px solid var(--line-soft); background: linear-gradient(145deg, rgba(10,34,48,.88), rgba(2,13,24,.96)); box-shadow: inset 0 0 30px rgba(8,169,184,.035); clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px); }
 .metric-card::before { content: ""; display: block; width: 42px; height: 3px; margin-bottom: 25px; background: var(--muted); }
 .metric-card::after { content: ""; position: absolute; width: 6px; height: 6px; right: 15px; top: 15px; border: 1px solid var(--line); border-radius: 50%; }
@@ -282,6 +305,8 @@ tbody tr:hover { background: rgba(142,224,0,.035); }
   .summary-grid { grid-template-columns: repeat(2, 1fr); }
   .hero { align-items: flex-start; flex-direction: column; }
   .upcoming-grid { grid-template-columns: 1fr; }
+  .brazil-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .brazil-scorelines-card { grid-column: 1 / -1; }
   .favorites-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
   .update-box { align-self: flex-end; }
 }
@@ -300,7 +325,8 @@ tbody tr:hover { background: rgba(142,224,0,.035); }
   .upcoming-team { padding-inline: 5px; }
   .prediction-score { font-size: 62px; }
   .brazil-grid { grid-template-columns: 1fr; }
-  .brazil-game-prediction { align-items: stretch; flex-direction: column; }
+  .brazil-scorelines-card { grid-column: auto; }
+  .brazil-card { min-height: 250px; }
   .favorites-grid { grid-template-columns: 1fr; }
   .favorite-card { min-height: 160px; }
   .map-frame, #probability-map { min-height: 300px; }

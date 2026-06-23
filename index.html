@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;0,900;1,800;1,900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=20260622-2">
+  <link rel="stylesheet" href="style.css?v=20260622-5">
 </head>
 <body>
   <main class="page-shell">
@@ -42,7 +42,7 @@
       <div class="section-heading upcoming-heading">
         <div>
           <p class="eyebrow light">AGENDA AO VIVO</p>
-          <h2>Próximos jogos</h2>
+          <h2>Previsões dos próximos jogos</h2>
         </div>
         <p>Horários de Brasília e o palpite registrado antes de a bola rolar.</p>
       </div>
@@ -52,18 +52,23 @@
     <section id="brazil-section" class="section-block championship-section" hidden>
       <div class="section-heading">
         <div>
-          <p class="eyebrow dark">CAMINHO DO HEXA</p>
-          <h2>E o Brasil?</h2>
+          <p class="eyebrow dark">BRASIL NO MODELO</p>
+          <h2 class="brazil-section-title">
+            <span class="brazil-flag" aria-hidden="true"><i></i></span>
+            Caminho do Hexa
+          </h2>
         </div>
-        <p>Probabilidade recalculada pelas simulações Monte Carlo.</p>
+        <p>Probabilidades recalculadas pelas simulações Monte Carlo.</p>
       </div>
       <div class="brazil-grid">
-        <article class="brazil-odds-card">
-          <span class="prediction-label">Chance de título</span>
-          <strong id="brazil-champion-prob" class="brazil-probability">—</strong>
-          <span id="brazil-champion-caption" class="metric-detail">de chance de ser campeão</span>
+        <article class="brazil-card brazil-rank-card">
+          <span class="brazil-card-kicker">Ranking do Brasil</span>
+          <strong id="brazil-title-rank" class="brazil-rank">—</strong>
+          <span class="brazil-rank-label">favorito ao título</span>
+          <strong id="brazil-champion-prob" class="brazil-chance-detail">—</strong>
         </article>
-        <article id="brazil-next-game" class="brazil-game-card"></article>
+        <article id="brazil-next-game" class="brazil-card brazil-game-card"></article>
+        <article id="brazil-scorelines" class="brazil-card brazil-scorelines-card"></article>
       </div>
     </section>
 
@@ -84,27 +89,36 @@
     </section>
 
     <div id="dashboard" hidden>
-      <section class="summary-grid" aria-label="Resumo geral">
-        <article class="metric-card metric-primary">
-          <span class="metric-kicker">Acerto de resultado</span>
-          <strong id="result-accuracy" class="metric-value">—</strong>
-          <span id="result-count" class="metric-detail">—</span>
-        </article>
-        <article class="metric-card metric-green">
-          <span class="metric-kicker">Placar exato</span>
-          <strong id="exact-accuracy" class="metric-value">—</strong>
-          <span id="exact-count" class="metric-detail">—</span>
-        </article>
-        <article class="metric-card">
-          <span class="metric-kicker">Jogos analisados</span>
-          <strong id="total-matches" class="metric-value">—</strong>
-          <span class="metric-detail">com resultado disponível</span>
-        </article>
-        <article class="metric-card">
-          <span class="metric-kicker">Melhor rodada</span>
-          <strong id="best-round-value" class="metric-value metric-value-small">—</strong>
-          <span id="best-round-detail" class="metric-detail">—</span>
-        </article>
+      <section class="section-block model-stats-section" aria-label="Estatísticas do modelo">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow dark">RAIO-X DO MODELO</p>
+            <h2>Estatísticas do modelo</h2>
+          </div>
+          <p>Resumo consolidado dos palpites já comparados com os resultados reais.</p>
+        </div>
+        <div class="summary-grid">
+          <article class="metric-card metric-primary">
+            <span class="metric-kicker">Acerto de resultado</span>
+            <strong id="result-accuracy" class="metric-value">—</strong>
+            <span id="result-count" class="metric-detail">—</span>
+          </article>
+          <article class="metric-card metric-green">
+            <span class="metric-kicker">Placar exato</span>
+            <strong id="exact-accuracy" class="metric-value">—</strong>
+            <span id="exact-count" class="metric-detail">—</span>
+          </article>
+          <article class="metric-card">
+            <span class="metric-kicker">Jogos analisados</span>
+            <strong id="total-matches" class="metric-value">—</strong>
+            <span class="metric-detail">com resultado disponível</span>
+          </article>
+          <article class="metric-card">
+            <span class="metric-kicker">Melhor rodada</span>
+            <strong id="best-round-value" class="metric-value metric-value-small">—</strong>
+            <span id="best-round-detail" class="metric-detail">—</span>
+          </article>
+        </div>
       </section>
 
       <section class="section-block">
@@ -188,6 +202,6 @@
     integrity="sha384-su5kReKyYlIFrI62mbQRKXHzFobMa7BHp1cK6julLPbnYcCW9NIZKJiTODjLPeDh"
     crossorigin="anonymous"
   ></script>
-  <script type="module" src="app.js?v=20260622-4"></script>
+  <script type="module" src="app.js?v=20260622-8"></script>
 </body>
 </html>
