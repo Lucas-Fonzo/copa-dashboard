@@ -62,9 +62,10 @@ const elements = {
   upcomingSection: document.querySelector("#upcoming-section"),
   upcomingGames: document.querySelector("#upcoming-games"),
   brazilSection: document.querySelector("#brazil-section"),
+  brazilTitleRank: document.querySelector("#brazil-title-rank"),
   brazilChampionProb: document.querySelector("#brazil-champion-prob"),
-  brazilChampionCaption: document.querySelector("#brazil-champion-caption"),
   brazilNextGame: document.querySelector("#brazil-next-game"),
+  brazilScorelines: document.querySelector("#brazil-scorelines"),
   favoritesSection: document.querySelector("#favorites-section"),
   favoritesGrid: document.querySelector("#favorites-grid"),
   simulationsDetail: document.querySelector("#simulations-detail"),
@@ -281,12 +282,112 @@ function championPercent(value) {
   })}%`;
 }
 
-function teamFlag(team) {
-  const iso2 = ISO3_TO_ISO2[TEAM_TO_ISO[team]];
-  if (!iso2) return "";
-  return [...iso2]
-    .map((character) => String.fromCodePoint(127397 + character.charCodeAt()))
-    .join("");
+function clampPercent(value) {
+  return Math.max(0, Math.min(100, value));
+}
+
+function brazilResultProbability(match, brazilIsHome, opponent) {
+  const brazilWin = Number(brazilIsHome ? match.home_win_prob : match.away_win_prob);
+  const opponentWin = Number(brazilIsHome ? match.away_win_prob : match.home_win_prob);
+  const brazilPct = Math.round(brazilWin * 100);
+  const opponentPct = Math.round(opponentWin * 100);
+  // O empate absorve o ajuste de arredondamento para a barra sempre fechar em 100%.
+  const drawPct = Math.max(0, 100 - brazilPct - opponentPct);
+
+  return `
+    <div class="probability brazil-result-probability"
+         aria-label="Brasil vence ${brazilPct}%, empate ${drawPct}%, ${escapeHtml(opponent)} vence ${opponentPct}%">
+      <div class="probability-labels">
+        <span>Brasil vence ${brazilPct}%</span>
+        <span>Empate ${drawPct}%</span>
+        <span>${escapeHtml(opponent)} vence ${opponentPct}%</span>
+      </div>
+      <div class="probability-bar">
+        <span class="prob-home" style="width:${clampPercent(brazilPct)}%"></span>
+        <span class="prob-draw" style="width:${clampPercent(drawPct)}%"></span>
+        <span class="prob-away" style="width:${clampPercent(opponentPct)}%"></span>
+      </div>
+    </div>`;
+}
+
+function poissonDistribution(lambda, maxGoals = 8) {
+  const values = [];
+  let total = 0;
+  for (let goals = 0; goals <= maxGoals; goals += 1) {
+    let factorial = 1;
+    for (let index = 2; index <= goals; index += 1) factorial *= index;
+    const probability = (Math.exp(-lambda) * (lambda ** goals)) / factorial;
+    values.push(probability);
+    total += probability;
+  }
+  return values.map((probability) => probability / total);
+}
+
+function outcomeFromLambdas(homeLambda, awayLambda) {
+  const homeDistribution = poissonDistribution(homeLambda);
+  const awayDistribution = poissonDistribution(awayLambda);
+  let home = 0;
+  let draw = 0;
+  let away = 0;
+
+  for (let homeGoals = 0; homeGoals < homeDistribution.length; homeGoals += 1) {
+    for (let awayGoals = 0; awayGoals < awayDistribution.length; awayGoals += 1) {
+      const probability = homeDistribution[homeGoals] * awayDistribution[awayGoals];
+      if (homeGoals > awayGoals) home += probability;
+      else if (homeGoals === awayGoals) draw += probability;
+      else away += probability;
+    }
+  }
+
+  return { home, draw, away };
+}
+
+function estimatePoissonLambdas(match) {
+  const targetHome = Number(match.home_win_prob);
+  const targetDraw = Number(match.draw_prob);
+  const targetAway = Number(match.away_win_prob);
+  const predictedHome = Number(match.predicted_home_goals ?? 1.4);
+  const predictedAway = Number(match.predicted_away_goals ?? 1);
+  let best = { homeLambda: Math.max(0.25, predictedHome), awayLambda: Math.max(0.25, predictedAway), loss: Number.POSITIVE_INFINITY };
+
+  for (let homeLambda = 0.2; homeLambda <= 4.05; homeLambda += 0.1) {
+    for (let awayLambda = 0.2; awayLambda <= 4.05; awayLambda += 0.1) {
+      const outcome = outcomeFromLambdas(homeLambda, awayLambda);
+      const probabilityLoss =
+        ((outcome.home - targetHome) ** 2)
+        + ((outcome.draw - targetDraw) ** 2)
+        + ((outcome.away - targetAway) ** 2);
+      const scoreLoss = 0.015 * (
+        ((homeLambda - predictedHome) ** 2)
+        + ((awayLambda - predictedAway) ** 2)
+      );
+      const loss = probabilityLoss + scoreLoss;
+      if (loss < best.loss) best = { homeLambda, awayLambda, loss };
+    }
+  }
+
+  return best;
+}
+
+function mostLikelyBrazilScores(match, brazilIsHome) {
+  const { homeLambda, awayLambda } = estimatePoissonLambdas(match);
+  const homeDistribution = poissonDistribution(homeLambda, 7);
+  const awayDistribution = poissonDistribution(awayLambda, 7);
+  const scorelines = [];
+
+  for (let homeGoals = 0; homeGoals < homeDistribution.length; homeGoals += 1) {
+    for (let awayGoals = 0; awayGoals < awayDistribution.length; awayGoals += 1) {
+      scorelines.push({
+        brazilGoals: brazilIsHome ? homeGoals : awayGoals,
+        opponentGoals: brazilIsHome ? awayGoals : homeGoals,
+        probability: homeDistribution[homeGoals] * awayDistribution[awayGoals],
+      });
+    }
+  }
+
+  return scorelines
+    .sort((a, b) => b.probability - a.probability)
+    .slice(0, 3);
 }
 
 async function fetchChampionshipOdds() {
@@ -305,16 +406,28 @@ function renderBrazilSection(odds, predictions) {
     return;
   }
 
+  const titleRanking = [...odds]
+    .sort((a, b) => Number(b.champion_prob) - Number(a.champion_prob))
+    .findIndex((row) => row.team === "Brasil") + 1;
+
+  if (brazil.eliminated) {
+    elements.brazilTitleRank.textContent = "—";
+  } else {
+    elements.brazilTitleRank.innerHTML = `${titleRanking || "—"}<sup>º</sup>`;
+  }
+
   elements.brazilChampionProb.classList.toggle("is-eliminated", Boolean(brazil.eliminated));
-  elements.brazilChampionProb.textContent = brazil.eliminated
-    ? "Eliminado"
-    : championPercent(brazil.champion_prob);
-  elements.brazilChampionCaption.textContent = brazil.eliminated
-    ? "fora da disputa pelo título"
-    : "de chance de ser campeão";
+  if (brazil.eliminated) {
+    elements.brazilChampionProb.textContent = "Eliminado";
+  } else {
+    elements.brazilChampionProb.innerHTML = `
+      <span>${championPercent(brazil.champion_prob)}</span>
+      <small>de chance de ser campeão</small>`;
+  }
 
   if (brazil.eliminated) {
     elements.brazilNextGame.hidden = true;
+    elements.brazilScorelines.hidden = true;
   } else {
     const now = new Date();
     const nextGame = predictions
@@ -326,23 +439,38 @@ function renderBrazilSection(odds, predictions) {
       .sort((a, b) => new Date(a.match_date) - new Date(b.match_date))[0];
 
     elements.brazilNextGame.hidden = false;
+    elements.brazilScorelines.hidden = false;
     if (!nextGame) {
       elements.brazilNextGame.innerHTML = `
         <span class="brazil-game-kicker">Próximo jogo do Brasil</span>
-        <strong class="brazil-opponent">Nenhum jogo previsto</strong>`;
+        <strong class="brazil-matchup">Nenhum jogo previsto</strong>`;
+      elements.brazilScorelines.innerHTML = `
+        <span class="brazil-card-kicker">Placares mais prováveis</span>
+        <strong class="scorelines-match">Aguardando previsão</strong>`;
     } else {
       const brazilIsHome = displayTeam(nextGame.home_team) === "Brasil";
       const opponent = displayTeam(brazilIsHome ? nextGame.away_team : nextGame.home_team);
+      const brazilGoals = brazilIsHome ? nextGame.predicted_home_goals : nextGame.predicted_away_goals;
+      const opponentGoals = brazilIsHome ? nextGame.predicted_away_goals : nextGame.predicted_home_goals;
+      const scorelines = mostLikelyBrazilScores(nextGame, brazilIsHome);
       elements.brazilNextGame.innerHTML = `
         <span class="brazil-game-kicker">Próximo jogo do Brasil</span>
-        <strong class="brazil-opponent">contra ${escapeHtml(opponent)}</strong>
+        <strong class="brazil-matchup">Brasil <small>×</small> ${escapeHtml(opponent)}</strong>
         <span class="brazil-game-date">${formatBrasilia(nextGame.match_date)} · Brasília</span>
-        <div class="brazil-game-prediction">
-          <div>
-            <span class="prediction-label">${escapeHtml(displayTeam(nextGame.home_team))} × ${escapeHtml(displayTeam(nextGame.away_team))}</span>
-            <strong class="prediction-score">${nextGame.predicted_home_goals} × ${nextGame.predicted_away_goals}</strong>
-          </div>
-          ${probabilityCell(nextGame)}
+        <span class="prediction-label brazil-prediction-label">Palpite principal</span>
+        <strong class="brazil-main-score">${brazilGoals} <small>×</small> ${opponentGoals}</strong>
+        ${brazilResultProbability(nextGame, brazilIsHome, opponent)}`;
+      elements.brazilScorelines.innerHTML = `
+        <span class="brazil-card-kicker">Placares mais prováveis</span>
+        <strong class="scorelines-match">Brasil × ${escapeHtml(opponent)}</strong>
+        <div class="scoreline-ranking">
+          ${scorelines.map((scoreline, index) => `
+            <div class="scoreline-row ${index === 0 ? "is-leading" : ""}">
+              <span class="scoreline-position">${index + 1}º</span>
+              <strong>${scoreline.brazilGoals} × ${scoreline.opponentGoals}</strong>
+              <span>${championPercent(scoreline.probability)}</span>
+            </div>
+          `).join("")}
         </div>`;
     }
   }
@@ -358,9 +486,7 @@ function renderFavorites(odds) {
   elements.favoritesGrid.innerHTML = favorites.map((row, index) => `
     <article class="favorite-card ${row.eliminated ? "is-eliminated" : ""}">
       <span class="favorite-position">${index + 1}º</span>
-      <strong class="favorite-team">
-        <span class="favorite-flag" aria-hidden="true">${teamFlag(row.team)}</span>${escapeHtml(row.team)}
-      </strong>
+      <strong class="favorite-team">${escapeHtml(row.team)}</strong>
       <div class="favorite-probability"><span>chance de título</span><strong>${championPercent(row.champion_prob)}</strong></div>
       <div class="favorite-bar"><span style="width:${Math.max(0, Math.min(100, Number(row.champion_prob) * 100))}%"></span></div>
       ${row.eliminated ? '<span class="eliminated-badge">ELIMINADO</span>' : ""}
