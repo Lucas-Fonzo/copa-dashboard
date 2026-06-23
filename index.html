@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;0,900;1,800;1,900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=20260622-2">
 </head>
 <body>
   <main class="page-shell">
@@ -53,7 +53,7 @@
       <div class="section-heading">
         <div>
           <p class="eyebrow dark">CAMINHO DO HEXA</p>
-          <h2>E o Brasil? 🇧🇷</h2>
+          <h2>E o Brasil?</h2>
         </div>
         <p>Probabilidade recalculada pelas simulações Monte Carlo.</p>
       </div>
@@ -64,38 +64,6 @@
           <span id="brazil-champion-caption" class="metric-detail">de chance de ser campeão</span>
         </article>
         <article id="brazil-next-game" class="brazil-game-card"></article>
-      </div>
-    </section>
-
-    <section id="favorites-section" class="section-block championship-section" hidden>
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow dark">MONTE CARLO</p>
-          <h2>Favoritos ao título</h2>
-        </div>
-        <p id="simulations-detail">Probabilidades estimadas pelo modelo.</p>
-      </div>
-      <div id="favorites-grid" class="favorites-grid"></div>
-    </section>
-
-    <section id="probability-map-section" class="section-block map-section" hidden>
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow dark">VISÃO GLOBAL</p>
-          <h2>Mapa de probabilidades — Copa 2026</h2>
-        </div>
-        <p>Passe o cursor sobre um país participante para ver sua chance.</p>
-      </div>
-      <div class="map-frame">
-        <svg id="probability-map" role="img" aria-label="Mapa mundial das probabilidades de título"></svg>
-        <div id="map-tooltip" class="map-tooltip" hidden></div>
-      </div>
-      <div class="map-legend" aria-label="Legenda do mapa">
-        <span><i class="legend-high"></i>&gt; 15%</span>
-        <span><i class="legend-medium"></i>5–15%</span>
-        <span><i class="legend-low"></i>1–5%</span>
-        <span><i class="legend-minimal"></i>&lt; 1%</span>
-        <span><i class="legend-eliminated"></i>Eliminado</span>
       </div>
     </section>
 
@@ -173,6 +141,38 @@
             </thead>
             <tbody id="matches-body"></tbody>
           </table>
+        </div>
+      </section>
+
+      <section id="favorites-section" class="section-block championship-section" hidden>
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow dark">MONTE CARLO</p>
+            <h2>Favoritos ao título</h2>
+          </div>
+          <p id="simulations-detail">Probabilidades estimadas pelo modelo.</p>
+        </div>
+        <div id="favorites-grid" class="favorites-grid"></div>
+      </section>
+
+      <section id="probability-map-section" class="section-block map-section" hidden>
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow dark">VISÃO GLOBAL</p>
+            <h2>Mapa de probabilidades — Copa 2026</h2>
+          </div>
+          <p>Passe o cursor sobre um país participante para ver sua chance.</p>
+        </div>
+        <div class="map-frame">
+          <svg id="probability-map" role="img" aria-label="Mapa mundial das probabilidades de título"></svg>
+          <div id="map-tooltip" class="map-tooltip" hidden></div>
+        </div>
+        <div class="map-legend" aria-label="Legenda do mapa">
+          <span><i class="legend-high"></i>&gt; 15%</span>
+          <span><i class="legend-medium"></i>5–15%</span>
+          <span><i class="legend-low"></i>1–5%</span>
+          <span><i class="legend-minimal"></i>&lt; 1%</span>
+          <span><i class="legend-eliminated"></i>Eliminado</span>
         </div>
       </section>
     </div>
