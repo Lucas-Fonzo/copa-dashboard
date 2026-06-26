@@ -986,7 +986,7 @@ function renderFavorites(odds) {
 
 function mapColor(entries) {
   if (!entries?.length) return "#1a1a2e";
-  if (entries.every((entry) => entry.eliminated)) return "#444444";
+  if (entries.every((entry) => entry.eliminated)) return "#ff2d55";
   const probability = Math.max(
     ...entries.filter((entry) => !entry.eliminated).map((entry) => Number(entry.champion_prob)),
   );
