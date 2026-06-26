@@ -292,8 +292,8 @@ def update_predictions_json(round3_records: list[dict[str, Any]]) -> None:
         by_id[record["match_id"]] = record
 
     updated = sorted(by_id.values(), key=lambda row: row["match_id"])
-    if len(updated) != 72:
-        raise RuntimeError(f"predictions.json deveria ter 72 registros; ficou com {len(updated)}.")
+    if len(updated) < 72:
+        raise RuntimeError(f"predictions.json deveria ter pelo menos 72 registros; ficou com {len(updated)}.")
     PREDICTIONS_PATH.write_text(
         json.dumps(updated, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",

@@ -286,5 +286,65 @@
     "actual_home_goals": 1,
     "actual_away_goals": 0,
     "match_date": "2026-06-24T02:00:00+00:00"
+  },
+  {
+    "match_id": "WC2026_049",
+    "actual_home_goals": 2,
+    "actual_away_goals": 1,
+    "match_date": "2026-06-24T19:00:00+00:00"
+  },
+  {
+    "match_id": "WC2026_050",
+    "actual_home_goals": 3,
+    "actual_away_goals": 1,
+    "match_date": "2026-06-24T19:00:00+00:00"
+  },
+  {
+    "match_id": "WC2026_051",
+    "actual_home_goals": 0,
+    "actual_away_goals": 3,
+    "match_date": "2026-06-24T22:00:00+00:00"
+  },
+  {
+    "match_id": "WC2026_052",
+    "actual_home_goals": 4,
+    "actual_away_goals": 2,
+    "match_date": "2026-06-24T22:00:00+00:00"
+  },
+  {
+    "match_id": "WC2026_053",
+    "actual_home_goals": 0,
+    "actual_away_goals": 3,
+    "match_date": "2026-06-25T01:00:00+00:00"
+  },
+  {
+    "match_id": "WC2026_054",
+    "actual_home_goals": 1,
+    "actual_away_goals": 0,
+    "match_date": "2026-06-25T01:00:00+00:00"
+  },
+  {
+    "match_id": "WC2026_055",
+    "actual_home_goals": 0,
+    "actual_away_goals": 2,
+    "match_date": "2026-06-25T20:00:00+00:00"
+  },
+  {
+    "match_id": "WC2026_056",
+    "actual_home_goals": 2,
+    "actual_away_goals": 1,
+    "match_date": "2026-06-25T20:00:00+00:00"
+  },
+  {
+    "match_id": "WC2026_057",
+    "actual_home_goals": 1,
+    "actual_away_goals": 1,
+    "match_date": "2026-06-25T23:00:00+00:00"
+  },
+  {
+    "match_id": "WC2026_058",
+    "actual_home_goals": 1,
+    "actual_away_goals": 3,
+    "match_date": "2026-06-25T23:00:00+00:00"
   }
 ]

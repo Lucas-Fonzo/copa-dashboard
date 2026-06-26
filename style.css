@@ -247,6 +247,70 @@ h1 strong { color: transparent; font: inherit; background: linear-gradient(115de
 .bracket-slot.is-filled strong { color: var(--white); }
 .flag-token { position: relative; overflow: hidden; width: 28px; height: 28px; border: 1px solid rgba(255,255,255,.24); border-radius: 50%; background: linear-gradient(90deg,var(--flag-a) 0 33.3%,var(--flag-b) 33.3% 66.6%,var(--flag-c) 66.6% 100%); box-shadow: 0 0 12px rgba(142,224,0,.14); }
 .flag-token::after { content: ""; position: absolute; inset: 6px; border-radius: 50%; border: 1px solid rgba(255,255,255,.25); background: radial-gradient(circle at 50% 50%, rgba(255,255,255,.24), transparent 32%); mix-blend-mode: screen; }
+.flag-germany { background: linear-gradient(#000 0 33.3%,#dd0000 33.3% 66.6%,#ffce00 66.6%); }
+.flag-germany::after { display: none; }
+.flag-argentina { background: linear-gradient(#75aadb 0 33.3%,#fff 33.3% 66.6%,#75aadb 66.6%); }
+.flag-argentina::after { display: none; }
+.flag-argentina::before { content: ""; position: absolute; left: 50%; top: 50%; width: 7px; height: 7px; border-radius: 50%; background: #f6b40e; transform: translate(-50%,-50%); box-shadow: 0 0 0 1px rgba(246,180,14,.25); }
+.flag-australia { background: radial-gradient(circle at 70% 70%,#fff 0 5%,transparent 5.5%), radial-gradient(circle at 76% 34%,#fff 0 3%,transparent 3.5%), linear-gradient(90deg,transparent 0 48%,#fff 48% 52%,transparent 52%), linear-gradient(transparent 0 48%,#fff 48% 52%,transparent 52%), #012169; }
+.flag-australia::before { content: ""; position: absolute; left: 0; top: 0; width: 15px; height: 15px; background: linear-gradient(90deg,transparent 0 42%,#fff 42% 58%,transparent 58%), linear-gradient(transparent 0 42%,#fff 42% 58%,transparent 58%), linear-gradient(90deg,transparent 0 46%,#c8102e 46% 54%,transparent 54%), linear-gradient(transparent 0 46%,#c8102e 46% 54%,transparent 54%), #012169; }
+.flag-australia::after { display: none; }
+.flag-belgium { background: linear-gradient(90deg,#000 0 33.3%,#fae042 33.3% 66.6%,#ed2939 66.6%); }
+.flag-belgium::after { display: none; }
+.flag-canada { background: linear-gradient(90deg,#e31b23 0 25%,#fff 25% 75%,#e31b23 75%); }
+.flag-canada::before { content: ""; position: absolute; left: 50%; top: 50%; width: 12px; height: 13px; background: #e31b23; clip-path: polygon(50% 0,59% 30%,82% 17%,73% 43%,100% 45%,76% 59%,84% 87%,58% 73%,50% 100%,42% 73%,16% 87%,24% 59%,0 45%,27% 43%,18% 17%,41% 30%); transform: translate(-50%,-50%); }
+.flag-canada::after { display: none; }
+.flag-colombia { background: linear-gradient(#fcd116 0 50%,#003893 50% 75%,#ce1126 75%); }
+.flag-colombia::after { display: none; }
+.flag-ivory-coast { background: linear-gradient(90deg,#f77f00 0 33.3%,#fff 33.3% 66.6%,#009e60 66.6%); }
+.flag-ivory-coast::after { display: none; }
+.flag-croatia { background: linear-gradient(#ff0000 0 33.3%,#fff 33.3% 66.6%,#171796 66.6%); }
+.flag-croatia::before { content: ""; position: absolute; left: 50%; top: 50%; width: 10px; height: 10px; border-radius: 2px; background: conic-gradient(#d00 0 25%,#fff 0 50%,#d00 0 75%,#fff 0); transform: translate(-50%,-50%); box-shadow: 0 0 0 1px rgba(0,0,0,.15); }
+.flag-croatia::after { display: none; }
+.flag-egypt { background: linear-gradient(#ce1126 0 33.3%,#fff 33.3% 66.6%,#000 66.6%); }
+.flag-egypt::before { content: ""; position: absolute; left: 50%; top: 50%; width: 5px; height: 7px; border-radius: 1px; background: #c09300; transform: translate(-50%,-50%); }
+.flag-egypt::after { display: none; }
+.flag-england { background: linear-gradient(90deg,transparent 0 42%,#ce1124 42% 58%,transparent 58%), linear-gradient(transparent 0 42%,#ce1124 42% 58%,transparent 58%), #fff; }
+.flag-england::after { display: none; }
+.flag-spain { background: linear-gradient(#aa151b 0 25%,#f1bf00 25% 75%,#aa151b 75%); }
+.flag-spain::before { content: ""; position: absolute; left: 35%; top: 51%; width: 5px; height: 7px; border-radius: 1px; background: #aa151b; transform: translate(-50%,-50%); }
+.flag-spain::after { display: none; }
+.flag-usa { background: repeating-linear-gradient(#b22234 0 2.15px,#fff 2.15px 4.3px); }
+.flag-usa::before { content: ""; position: absolute; left: 0; top: 0; width: 15px; height: 15px; background: radial-gradient(circle at 27% 28%,#fff 0 1px,transparent 1.2px), radial-gradient(circle at 55% 45%,#fff 0 1px,transparent 1.2px), radial-gradient(circle at 78% 27%,#fff 0 1px,transparent 1.2px), #3c3b6e; }
+.flag-usa::after { display: none; }
+.flag-france { background: linear-gradient(90deg,#0055a4 0 33.3%,#fff 33.3% 66.6%,#ef4135 66.6%); }
+.flag-france::after { display: none; }
+.flag-ghana { background: linear-gradient(#ce1126 0 33.3%,#fcd116 33.3% 66.6%,#006b3f 66.6%); }
+.flag-ghana::before { content: ""; position: absolute; left: 50%; top: 50%; width: 8px; height: 8px; background: #111; clip-path: polygon(50% 0,61% 36%,98% 36%,68% 57%,79% 92%,50% 70%,21% 92%,32% 57%,2% 36%,39% 36%); transform: translate(-50%,-50%); }
+.flag-ghana::after { display: none; }
+.flag-netherlands { background: linear-gradient(#ae1c28 0 33.3%,#fff 33.3% 66.6%,#21468b 66.6%); }
+.flag-netherlands::after { display: none; }
+.flag-iran { background: linear-gradient(#239f40 0 33.3%,#fff 33.3% 66.6%,#da0000 66.6%); }
+.flag-iran::before { content: ""; position: absolute; left: 50%; top: 50%; width: 6px; height: 6px; border-radius: 50%; background: #da0000; transform: translate(-50%,-50%); }
+.flag-iran::after { display: none; }
+.flag-japan { background: #fff; }
+.flag-japan::before { content: ""; position: absolute; left: 50%; top: 50%; width: 13px; height: 13px; border-radius: 50%; background: #bc002d; transform: translate(-50%,-50%); }
+.flag-japan::after { display: none; }
+.flag-mexico { background: linear-gradient(90deg,#006847 0 33.3%,#fff 33.3% 66.6%,#ce1126 66.6%); }
+.flag-mexico::before { content: ""; position: absolute; left: 50%; top: 50%; width: 6px; height: 6px; border-radius: 50%; background: #b58a00; transform: translate(-50%,-50%); }
+.flag-mexico::after { display: none; }
+.flag-norway { background: linear-gradient(90deg,transparent 0 31%,#fff 31% 39%,#00205b 39% 50%,#fff 50% 58%,transparent 58%), linear-gradient(transparent 0 34%,#fff 34% 42%,#00205b 42% 53%,#fff 53% 61%,transparent 61%), #ba0c2f; }
+.flag-norway::after { display: none; }
+.flag-paraguay { background: linear-gradient(#d52b1e 0 33.3%,#fff 33.3% 66.6%,#0038a8 66.6%); }
+.flag-paraguay::before { content: ""; position: absolute; left: 50%; top: 50%; width: 5px; height: 5px; border-radius: 50%; background: #f2c94c; transform: translate(-50%,-50%); }
+.flag-paraguay::after { display: none; }
+.flag-portugal { background: linear-gradient(90deg,#046a38 0 42%,#da291c 42%); }
+.flag-portugal::before { content: ""; position: absolute; left: 42%; top: 50%; width: 8px; height: 8px; border-radius: 50%; background: #ffcc00; transform: translate(-50%,-50%); box-shadow: inset 0 0 0 2px #da291c; }
+.flag-portugal::after { display: none; }
+.flag-senegal { background: linear-gradient(90deg,#00853f 0 33.3%,#fdef42 33.3% 66.6%,#e31b23 66.6%); }
+.flag-senegal::before { content: ""; position: absolute; left: 50%; top: 50%; width: 8px; height: 8px; background: #00853f; clip-path: polygon(50% 0,61% 36%,98% 36%,68% 57%,79% 92%,50% 70%,21% 92%,32% 57%,2% 36%,39% 36%); transform: translate(-50%,-50%); }
+.flag-senegal::after { display: none; }
+.flag-turkey { background: #e30a17; }
+.flag-turkey::before { content: ""; position: absolute; left: 43%; top: 50%; width: 14px; height: 14px; border-radius: 50%; background: radial-gradient(circle at 62% 50%,#e30a17 0 43%,transparent 44%), #fff; transform: translate(-50%,-50%); }
+.flag-turkey::after { content: ""; position: absolute; left: 61%; top: 50%; width: 7px; height: 7px; border: 0; border-radius: 0; background: #fff; clip-path: polygon(50% 0,61% 36%,98% 36%,68% 57%,79% 92%,50% 70%,21% 92%,32% 57%,2% 36%,39% 36%); transform: translate(-50%,-50%) rotate(18deg); mix-blend-mode: normal; }
+.flag-uruguay { background: repeating-linear-gradient(#fff 0 3.1px,#0038a8 3.1px 6.2px); }
+.flag-uruguay::before { content: ""; position: absolute; left: 2px; top: 2px; width: 12px; height: 12px; background: radial-gradient(circle,#fcd116 0 32%,transparent 34%), #fff; }
+.flag-uruguay::after { display: none; }
 .flag-south-africa { background: center / cover no-repeat url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2090%2060%27%3E%3Cdefs%3E%3CclipPath%20id%3D%27a%27%3E%3Cpath%20d%3D%27M0%200h90v60H0z%27%2F%3E%3C%2FclipPath%3E%3CclipPath%20id%3D%27b%27%3E%3Cpath%20d%3D%27m0%200%2045%2030L0%2060z%27%2F%3E%3C%2FclipPath%3E%3C%2Fdefs%3E%3Cpath%20fill%3D%27%23E03C31%27%20d%3D%27M0%200h90v30H45z%27%2F%3E%3Cpath%20fill%3D%27%23001489%27%20d%3D%27M0%2060h90V30H45z%27%2F%3E%3Cg%20clip-path%3D%27url%28%23a%29%27%20fill%3D%27none%27%3E%3Cpath%20stroke%3D%27%23fff%27%20stroke-width%3D%2720%27%20d%3D%27M90%2030H45L0%200v60l45-30%27%2F%3E%3Cpath%20fill%3D%27%23000%27%20stroke%3D%27%23FFB81C%27%20stroke-width%3D%2720%27%20clip-path%3D%27url%28%23b%29%27%20d%3D%27m0%200%2045%2030L0%2060%27%2F%3E%3Cpath%20stroke%3D%27%23007749%27%20stroke-width%3D%2712%27%20d%3D%27m0%200%2045%2030h45M0%2060l45-30%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E"); }
 .flag-south-africa::before { display: none; }
 .flag-south-africa::after { display: none; }
