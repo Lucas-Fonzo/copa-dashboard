@@ -180,6 +180,13 @@ h1 strong { color: transparent; font: inherit; background: linear-gradient(115de
 .prediction-unavailable { display: block; margin: 24px 0; color: var(--muted); font-size: 15px; }
 .upcoming-card .probability { min-width: 0; }
 .upcoming-card .probability { width: 100%; margin-top: auto; text-align: left; }
+.live-score-card { width: 100%; margin-top: 13px; padding: 10px 11px; border: 1px solid rgba(255,86,86,.35); background: linear-gradient(135deg, rgba(255,86,86,.08), rgba(8,169,184,.055)); box-shadow: inset 0 0 22px rgba(255,86,86,.04); text-align: left; }
+.live-score-top { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; color: var(--muted); font-size: 10px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+.live-score-top strong { color: var(--white); font: italic 900 25px var(--display); letter-spacing: 0; text-shadow: 0 0 16px rgba(255,255,255,.08); }
+.live-score-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 7px; }
+.live-badge { padding: 4px 7px; border: 1px solid rgba(121,144,156,.3); color: var(--silver); background: rgba(1,8,18,.55); font-size: 9px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+.live-badge-ok { border-color: rgba(142,224,0,.55); color: var(--lime-bright); background: rgba(142,224,0,.08); }
+.live-badge-warn { border-color: rgba(255,196,0,.55); color: var(--yellow); background: rgba(255,196,0,.08); }
 
 /* Probabilidades de título */
 .championship-section { border-color: rgba(142,224,0,.26); }

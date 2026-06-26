@@ -12,7 +12,7 @@ import os
 import time
 import unicodedata
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 
 import requests
@@ -81,6 +81,18 @@ class FinishedGame:
     match_date: datetime | None = None
 
 
+@dataclass(frozen=True)
+class ApiGame:
+    home_team: str
+    away_team: str
+    home_goals: int | None
+    away_goals: int | None
+    finished: bool
+    status: str
+    minute: str | None = None
+    match_date: datetime | None = None
+
+
 def canonical_team(name: str | None) -> str:
     """Normaliza idioma, acentos, caixa e pontuação sem falhar em nomes desconhecidos."""
     raw = " ".join(str(name or "").strip().split())
@@ -89,31 +101,78 @@ def canonical_team(name: str | None) -> str:
     return "".join(character for character in ascii_name.lower() if character.isalnum())
 
 
-def parse_primary(payload: dict[str, Any]) -> list[FinishedGame]:
+def parse_primary_games(payload: dict[str, Any]) -> list[ApiGame]:
     """Converte o formato de worldcup26.ir em uma lista interna estável."""
-    games: list[FinishedGame] = []
+    games: list[ApiGame] = []
     for item in payload.get("games", []):
         finished = str(item.get("finished", "")).upper() == "TRUE"
-        if not finished:
-            continue
         home = item.get("home_team_name_en") or item.get("home_team_label")
         away = item.get("away_team_name_en") or item.get("away_team_label")
-        try:
-            home_goals = int(item["home_score"])
-            away_goals = int(item["away_score"])
-        except (KeyError, TypeError, ValueError):
-            print(f"[AVISO] Jogo finalizado com placar inválido na API principal: {item!r}")
-            continue
         if not home or not away:
-            print(f"[AVISO] Jogo finalizado sem nomes de times na API principal: {item!r}")
+            print(f"[AVISO] Jogo sem nomes de times na API principal: {item!r}")
             continue
+
+        home_goals: int | None = None
+        away_goals: int | None = None
+        try:
+            if item.get("home_score") is not None:
+                home_goals = int(item["home_score"])
+            if item.get("away_score") is not None:
+                away_goals = int(item["away_score"])
+        except (TypeError, ValueError):
+            if finished:
+                print(f"[AVISO] Jogo finalizado com placar inválido na API principal: {item!r}")
+                continue
+
         match_date = None
         try:
             match_date = datetime.strptime(item["local_date"], "%m/%d/%Y %H:%M")
         except (KeyError, TypeError, ValueError):
             pass
-        games.append(FinishedGame(str(home), str(away), home_goals, away_goals, match_date))
+
+        raw_time = str(item.get("time_elapsed") or "").strip()
+        if finished:
+            status = "finished"
+        elif raw_time.lower() in {"live", "halftime", "half-time"} or raw_time.replace("'", "").isdigit():
+            status = "live"
+        elif raw_time:
+            status = "scheduled"
+        else:
+            status = "scheduled"
+
+        games.append(
+            ApiGame(
+                str(home),
+                str(away),
+                home_goals,
+                away_goals,
+                finished,
+                status,
+                raw_time or None,
+                match_date,
+            )
+        )
     return games
+
+
+def parse_primary(payload: dict[str, Any]) -> list[FinishedGame]:
+    """Converte o formato de worldcup26.ir em jogos finalizados."""
+    finished_games = []
+    for game in parse_primary_games(payload):
+        if not game.finished:
+            continue
+        if game.home_goals is None or game.away_goals is None:
+            continue
+        finished_games.append(
+            FinishedGame(
+                game.home_team,
+                game.away_team,
+                game.home_goals,
+                game.away_goals,
+                game.match_date,
+            )
+        )
+    return finished_games
 
 
 def parse_fallback(payload: dict[str, Any]) -> list[FinishedGame]:
@@ -172,6 +231,20 @@ def fetch_finished_games() -> tuple[list[FinishedGame], str]:
         return games, "openfootball/worldcup.json"
 
 
+def finished_from_api_games(games: list[ApiGame]) -> list[FinishedGame]:
+    return [
+        FinishedGame(
+            game.home_team,
+            game.away_team,
+            game.home_goals,
+            game.away_goals,
+            game.match_date,
+        )
+        for game in games
+        if game.finished and game.home_goals is not None and game.away_goals is not None
+    ]
+
+
 def supabase_client() -> Client:
     load_dotenv()
     url = os.getenv("SUPABASE_URL")
@@ -186,7 +259,7 @@ def prediction_pair(prediction: dict[str, Any]) -> tuple[str, str]:
 
 
 def choose_prediction(
-    game: FinishedGame,
+    game: FinishedGame | ApiGame,
     candidates: list[dict[str, Any]],
 ) -> dict[str, Any] | None:
     """Desempata confrontos repetidos pela data mais próxima, quando disponível."""
@@ -207,8 +280,66 @@ def choose_prediction(
     return min(candidates, key=distance)
 
 
+def sync_live_matches(
+    client: Client,
+    games: list[ApiGame],
+    predictions_by_pair: dict[tuple[str, str], list[dict[str, Any]]],
+    source: str,
+) -> None:
+    """Atualiza placares quase ao vivo e marca jogos encerrados como finished."""
+    if not games:
+        return
+
+    records: list[dict[str, Any]] = []
+    used_match_ids: set[str] = set()
+    for game in games:
+        if game.status not in {"live", "finished"}:
+            continue
+        pair = canonical_team(game.home_team), canonical_team(game.away_team)
+        available = [
+            prediction
+            for prediction in predictions_by_pair.get(pair, [])
+            if prediction["match_id"] not in used_match_ids
+        ]
+        prediction = choose_prediction(game, available)
+        if prediction is None:
+            continue
+
+        used_match_ids.add(prediction["match_id"])
+        records.append({
+            "match_id": prediction["match_id"],
+            "live_home_goals": game.home_goals,
+            "live_away_goals": game.away_goals,
+            "status": game.status,
+            "minute": game.minute,
+            "source": source,
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+        })
+
+    if not records:
+        print("[LIVE] Nenhum placar ao vivo para atualizar.")
+        return
+
+    try:
+        client.table("live_matches").upsert(records, on_conflict="match_id").execute()
+        live_count = sum(1 for record in records if record["status"] == "live")
+        finished_count = sum(1 for record in records if record["status"] == "finished")
+        print(f"[LIVE] {live_count} ao vivo e {finished_count} finalizado(s) atualizados em live_matches.")
+    except Exception as error:  # noqa: BLE001 - evita quebrar o Action antes do SQL novo ser aplicado.
+        print(f"[LIVE][AVISO] Não foi possível atualizar live_matches: {error}")
+
+
 def run_once(client: Client) -> None:
-    games, source = fetch_finished_games()
+    api_games: list[ApiGame] = []
+    try:
+        api_games = parse_primary_games(request_json(PRIMARY_API))
+        games = finished_from_api_games(api_games)
+        source = "worldcup26.ir"
+    except (requests.RequestException, ValueError) as error:
+        print(f"[AVISO] API principal indisponível ({error}). Tentando fallback…")
+        games = parse_fallback(request_json(FALLBACK_API))
+        source = "openfootball/worldcup.json"
+
     print(f"[INFO] {len(games)} jogo(s) finalizado(s) recebido(s) de {source}.")
 
     predictions_response = (
@@ -223,6 +354,9 @@ def run_once(client: Client) -> None:
     predictions_by_pair: dict[tuple[str, str], list[dict[str, Any]]] = {}
     for prediction in predictions:
         predictions_by_pair.setdefault(prediction_pair(prediction), []).append(prediction)
+
+    if api_games:
+        sync_live_matches(client, api_games, predictions_by_pair, source)
 
     pending: list[dict[str, Any]] = []
     used_match_ids: set[str] = set()

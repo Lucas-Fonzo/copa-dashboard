@@ -140,6 +140,41 @@ grant select on public.predictions, public.results to anon;
 grant select on public.match_summary, public.accuracy_summary to anon;
 grant all on public.predictions, public.results to service_role;
 
+-- Placar quase ao vivo usado durante a janela dos jogos.
+create table if not exists public.live_matches (
+    id uuid primary key default gen_random_uuid(),
+    match_id text not null unique references public.predictions(match_id) on delete cascade,
+    live_home_goals integer check (live_home_goals >= 0),
+    live_away_goals integer check (live_away_goals >= 0),
+    status text not null default 'scheduled',
+    minute text,
+    source text,
+    updated_at timestamptz not null default now()
+);
+
+create index if not exists live_matches_status_idx
+    on public.live_matches (status, updated_at desc);
+
+alter table public.live_matches enable row level security;
+
+drop policy if exists "Leitura pública de placares ao vivo"
+    on public.live_matches;
+create policy "Leitura pública de placares ao vivo"
+on public.live_matches for select
+to anon
+using (true);
+
+drop policy if exists "Service role gerencia placares ao vivo"
+    on public.live_matches;
+create policy "Service role gerencia placares ao vivo"
+on public.live_matches for all
+to service_role
+using (true)
+with check (true);
+
+grant select on public.live_matches to anon;
+grant all on public.live_matches to service_role;
+
 -- Probabilidades de título calculadas pelo simulador Monte Carlo independente.
 create table if not exists public.championship_odds (
     id uuid primary key default gen_random_uuid(),

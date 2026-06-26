@@ -2,10 +2,10 @@ name: Sincronizar resultados automaticamente
 
 on:
   schedule:
-    # 13h–23h UTC corresponde a 10h–20h no horário de Brasília.
-    - cron: '0 13-23 * * *'
-    # 0h–5h UTC corresponde a 21h–2h no horário de Brasília.
-    - cron: '0 0-5 * * *'
+    # A cada 10 minutos entre 13h–23h UTC, equivalente a 10h–20h em Brasília.
+    - cron: '*/10 13-23 * * *'
+    # A cada 10 minutos entre 0h–5h UTC, equivalente a 21h–2h em Brasília.
+    - cron: '*/10 0-5 * * *'
   # Mantém disponível o disparo manual pelo painel do GitHub.
   workflow_dispatch:
 
@@ -38,4 +38,3 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
-

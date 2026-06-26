@@ -169,6 +169,7 @@ python sync_results.py
 O script normaliza nomes em português e inglês, procura a previsão pelo par casa/visitante e:
 
 - insere resultados novos;
+- atualiza a tabela `live_matches` com placares quase ao vivo quando a API informar jogo em andamento;
 - informa os resultados que já estavam no banco;
 - avisa sobre jogos finalizados sem previsão correspondente;
 - nunca interrompe toda a sincronização apenas por encontrar um nome desconhecido.
@@ -200,7 +201,7 @@ o placar previsto e as probabilidades. Sem previsão, o card permanece visível 
 
 O projeto inclui dois workflows:
 
-- `.github/workflows/sync-results.yml`: execução automática de hora em hora, das 10h até 2h
+- `.github/workflows/sync-results.yml`: execução automática a cada 10 minutos, das 10h até 2h
   no horário de Brasília;
 - `.github/workflows/sync-manual.yml`: execução sob demanda pelo botão **Run workflow**.
 
@@ -226,8 +227,8 @@ O projeto inclui dois workflows:
 O GitHub Actions interpreta cron em UTC. Os dois agendamentos cobrem a janela desejada:
 
 ```yaml
-- cron: '0 13-23 * * *'  # 10h–20h em Brasília
-- cron: '0 0-5 * * *'    # 21h–2h em Brasília
+- cron: '*/10 13-23 * * *'  # 10h–20h em Brasília
+- cron: '*/10 0-5 * * *'    # 21h–2h em Brasília
 ```
 
 Agendamentos do GitHub podem começar com alguns minutos de atraso. O sincronizador é
@@ -296,7 +297,10 @@ seções são ocultadas sem interromper o restante do dashboard.
 
 ## Atualização ao vivo
 
-Partidas entre o horário previsto e 105 minutos depois recebem a tag **AGORA**, com link para
-a CazéTV. O navegador verifica o estado a cada 30 segundos. Durante essa janela, histórico e
-métricas são consultados novamente no Supabase a cada dois minutos; fora dela, os próximos
-jogos e as probabilidades são atualizados a cada cinco minutos.
+Partidas com `live_matches.status = 'live'` recebem a tag **AGORA**, com link para a CazéTV, e
+continuam visíveis mesmo se houver acréscimos, prorrogação ou pênaltis. O card só sai do ar
+quando o sincronizador grava `live_matches.status = 'finished'`. Como rede de segurança, caso o
+placar ao vivo ainda não tenha chegado ao Supabase, o navegador usa uma janela de 195 minutos a
+partir do horário previsto. O workflow do GitHub Actions sincroniza resultados e placares quase
+ao vivo a cada 10 minutos; o navegador verifica o estado a cada 30 segundos e, durante jogos ao
+vivo, recarrega os dados do Supabase a cada 10 minutos.

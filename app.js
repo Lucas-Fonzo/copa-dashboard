@@ -52,9 +52,11 @@ const ISO3_TO_ISO2 = {
 };
 
 const WORLD_GEOJSON_URL = "https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson";
-const LIVE_WINDOW_MS = 105 * 60 * 1000;
+// Fallback de tempo para quando o placar ao vivo ainda não chegou no Supabase.
+// A remoção oficial do card usa live_matches.status = "finished".
+const LIVE_WINDOW_MS = 195 * 60 * 1000;
 const LIVE_CHECK_INTERVAL_MS = 30 * 1000;
-const LIVE_REFRESH_INTERVAL_MS = 2 * 60 * 1000;
+const LIVE_REFRESH_INTERVAL_MS = 10 * 60 * 1000;
 const IDLE_REFRESH_INTERVAL_MS = 5 * 60 * 1000;
 
 const OFFICIAL_GROUPS = {
@@ -180,6 +182,7 @@ const elements = {
 };
 
 let cachedPredictions = [];
+let cachedLiveMatches = [];
 let dashboardRefreshInFlight = false;
 let lastDashboardRefresh = 0;
 let lastIdleRefresh = 0;
@@ -258,8 +261,30 @@ function isLiveMatch(matchDate, now = new Date()) {
   return Number.isFinite(start) && start <= current && current <= start + LIVE_WINDOW_MS;
 }
 
-function countdownBadge(value) {
-  if (isLiveMatch(value)) {
+function isMatchConfirmedLive(liveMatch) {
+  return liveMatch?.status === "live";
+}
+
+function isMatchConfirmedFinished(liveMatch) {
+  return liveMatch?.status === "finished";
+}
+
+function isActiveMatch(matchDate, liveMatch, now = new Date()) {
+  if (isMatchConfirmedLive(liveMatch)) return true;
+  if (isMatchConfirmedFinished(liveMatch)) return false;
+  return isLiveMatch(matchDate, now);
+}
+
+function shouldShowScheduleMatch(matchDate, liveMatch, now = new Date()) {
+  const start = new Date(matchDate).getTime();
+  if (!Number.isFinite(start)) return false;
+  if (isMatchConfirmedLive(liveMatch)) return true;
+  if (isMatchConfirmedFinished(liveMatch) && start <= now.getTime()) return false;
+  return start > now.getTime() || isLiveMatch(matchDate, now);
+}
+
+function countdownBadge(value, liveMatch = null) {
+  if (isActiveMatch(value, liveMatch)) {
     return `
       <a class="countdown-badge countdown-live" href="https://www.youtube.com/@CazéTV"
          target="_blank" rel="noopener noreferrer" aria-label="Assistir agora na CazéTV">
@@ -283,11 +308,28 @@ async function fetchPredictionsForUpcoming() {
   }
 }
 
+async function fetchLiveMatches() {
+  if (!isConfigured()) return [];
+  try {
+    const response = await supabase
+      .from("live_matches")
+      .select("match_id,live_home_goals,live_away_goals,status,minute,updated_at")
+      .in("status", ["live", "finished"]);
+    if (response.error) throw response.error;
+    return response.data ?? [];
+  } catch (error) {
+    // A tabela live_matches é incremental: enquanto o SQL novo não for aplicado,
+    // o painel continua funcionando sem a camada de placar ao vivo.
+    console.warn("Placares ao vivo indisponíveis.", error);
+    return [];
+  }
+}
+
 function renderUpcomingGames(games) {
-  elements.upcomingGames.innerHTML = games.map(({ game, prediction, date }) => `
+  elements.upcomingGames.innerHTML = games.map(({ game, prediction, date, liveMatch }) => `
     <article class="upcoming-card">
       <div class="upcoming-card-top">
-        ${countdownBadge(date)}
+        ${countdownBadge(date, liveMatch)}
         <span class="upcoming-time">${formatBrasilia(date)} · Brasília</span>
       </div>
       <div class="upcoming-teams">
@@ -300,6 +342,7 @@ function renderUpcomingGames(games) {
         ${prediction ? `
           <strong class="prediction-score">${prediction.predicted_home_goals} × ${prediction.predicted_away_goals}</strong>
           ${probabilityCell(prediction)}
+          ${liveScoreBlock(prediction, liveMatch)}
         ` : '<span class="prediction-unavailable">Previsão não disponível</span>'}
       </div>
     </article>
@@ -310,8 +353,13 @@ function renderUpcomingGames(games) {
 async function loadUpcomingGames() {
   elements.upcomingSection.hidden = true;
   try {
-    const predictions = await fetchPredictionsForUpcoming();
+    const [predictions, liveMatches] = await Promise.all([
+      fetchPredictionsForUpcoming(),
+      fetchLiveMatches(),
+    ]);
     cachedPredictions = predictions;
+    cachedLiveMatches = liveMatches;
+    const liveByMatchId = new Map(liveMatches.map((match) => [match.match_id, match]));
     const now = new Date();
 
     // Países, horário, placar e probabilidades vêm do mesmo registro. Isso evita
@@ -325,17 +373,13 @@ async function loadUpcomingGames() {
         date,
         finished: false,
       };
-      return { game, prediction, date };
-    }).filter(({ date }) => (
-      date instanceof Date
-      && !Number.isNaN(date)
-      && date.getTime() + LIVE_WINDOW_MS >= now.getTime()
-    ))
+      return { game, prediction, date, liveMatch: liveByMatchId.get(prediction.match_id) };
+    }).filter(({ date, liveMatch }) => shouldShowScheduleMatch(date, liveMatch, now))
       .sort((a, b) => a.date - b.date)
       .slice(0, 3);
 
     if (upcoming.length) renderUpcomingGames(upcoming);
-    updateLiveIndicator(predictions.some((prediction) => isLiveMatch(prediction.match_date, now)));
+    updateLiveIndicator(hasLiveGame(now));
     lastIdleRefresh = Date.now();
   } catch (error) {
     // A agenda é complementar e não interrompe as demais métricas do dashboard.
@@ -346,6 +390,57 @@ async function loadUpcomingGames() {
 
 function updateLiveIndicator(isLive) {
   elements.liveUpdateIndicator.hidden = !isLive;
+}
+
+function scoreOutcome(homeGoals, awayGoals) {
+  const home = Number(homeGoals);
+  const away = Number(awayGoals);
+  if (!Number.isFinite(home) || !Number.isFinite(away)) return null;
+  if (home > away) return "home";
+  if (home < away) return "away";
+  return "draw";
+}
+
+function predictionVsLive(prediction, liveMatch) {
+  if (!prediction || !liveMatch || liveMatch.status !== "live") return null;
+  const predictedOutcome = scoreOutcome(
+    prediction.predicted_home_goals,
+    prediction.predicted_away_goals,
+  );
+  const liveOutcome = scoreOutcome(liveMatch.live_home_goals, liveMatch.live_away_goals);
+  if (!predictedOutcome || !liveOutcome) return null;
+  return {
+    resultCorrect: predictedOutcome === liveOutcome,
+    exactScore:
+      Number(prediction.predicted_home_goals) === Number(liveMatch.live_home_goals)
+      && Number(prediction.predicted_away_goals) === Number(liveMatch.live_away_goals),
+  };
+}
+
+function liveScoreBlock(prediction, liveMatch) {
+  const comparison = predictionVsLive(prediction, liveMatch);
+  if (!comparison) return "";
+  const minute = liveMatch.minute ? ` · ${escapeHtml(liveMatch.minute)}` : "";
+  return `
+    <div class="live-score-card">
+      <div class="live-score-top">
+        <span>Placar ao vivo${minute}</span>
+        <strong>${liveMatch.live_home_goals} × ${liveMatch.live_away_goals}</strong>
+      </div>
+      <div class="live-score-badges">
+        <span class="live-badge ${comparison.resultCorrect ? "live-badge-ok" : "live-badge-warn"}">
+          ${comparison.resultCorrect ? "Resultado batendo" : "Resultado divergente"}
+        </span>
+        <span class="live-badge ${comparison.exactScore ? "live-badge-ok" : "live-badge-warn"}">
+          ${comparison.exactScore ? "Placar exato agora" : "Placar ainda não"}
+        </span>
+      </div>
+    </div>`;
+}
+
+function hasLiveGame(now = new Date()) {
+  return cachedLiveMatches.some((match) => match.status === "live")
+    || cachedPredictions.some((prediction) => isLiveMatch(prediction.match_date, now));
 }
 
 function positionBrazilSection(isBrazilLive) {
@@ -740,7 +835,7 @@ async function fetchChampionshipOdds() {
   return response.data ?? [];
 }
 
-function renderBrazilSection(odds, predictions) {
+function renderBrazilSection(odds, predictions, liveMatches = cachedLiveMatches) {
   const brazil = odds.find((row) => row.team === "Brasil");
   if (!brazil) {
     elements.brazilSection.hidden = true;
@@ -772,19 +867,25 @@ function renderBrazilSection(odds, predictions) {
     positionBrazilSection(false);
   } else {
     const now = new Date();
+    const liveByMatchId = new Map(liveMatches.map((match) => [match.match_id, match]));
     const brazilGames = predictions
       .filter((prediction) => (
         displayTeam(prediction.home_team) === "Brasil"
         || displayTeam(prediction.away_team) === "Brasil"
       ))
-      .map((prediction) => ({
-        ...prediction,
-        is_live: isLiveMatch(prediction.match_date, now),
-        starts_at: new Date(prediction.match_date),
-      }))
-      .filter((prediction) => (
-        prediction.is_live
-        || prediction.starts_at.getTime() > now.getTime()
+      .map((prediction) => {
+        const liveMatch = liveByMatchId.get(prediction.match_id);
+        return {
+          ...prediction,
+          liveMatch,
+          is_live: isActiveMatch(prediction.match_date, liveMatch, now),
+          starts_at: new Date(prediction.match_date),
+        };
+      })
+      .filter((prediction) => shouldShowScheduleMatch(
+        prediction.match_date,
+        prediction.liveMatch,
+        now,
       ))
       .sort((a, b) => {
         if (a.is_live !== b.is_live) return a.is_live ? -1 : 1;
@@ -792,6 +893,7 @@ function renderBrazilSection(odds, predictions) {
       });
     const nextGame = brazilGames[0];
     const isBrazilLive = Boolean(nextGame?.is_live);
+    const liveMatch = nextGame?.liveMatch ?? null;
     positionBrazilSection(isBrazilLive);
 
     elements.brazilNextGame.hidden = false;
@@ -819,7 +921,8 @@ function renderBrazilSection(odds, predictions) {
         <span class="brazil-game-date">${formatBrasilia(nextGame.match_date)} · Brasília</span>
         <span class="prediction-label brazil-prediction-label">Palpite principal</span>
         <strong class="brazil-main-score">${brazilGoals} <small>×</small> ${opponentGoals}</strong>
-        ${brazilResultProbability(nextGame, brazilIsHome, opponent)}`;
+        ${brazilResultProbability(nextGame, brazilIsHome, opponent)}
+        ${liveScoreBlock(nextGame, liveMatch)}`;
       elements.brazilScorelines.innerHTML = `
         <span class="brazil-card-kicker">Placares mais prováveis</span>
         <strong class="scorelines-match">Brasil × ${escapeHtml(opponent)}</strong>
@@ -932,12 +1035,14 @@ async function renderProbabilityMap(odds) {
 
 async function loadChampionshipFeatures() {
   try {
-    const [odds, predictions] = await Promise.all([
+    const [odds, predictions, liveMatches] = await Promise.all([
       fetchChampionshipOdds(),
       cachedPredictions.length ? Promise.resolve(cachedPredictions) : fetchPredictionsForUpcoming(),
+      cachedLiveMatches.length ? Promise.resolve(cachedLiveMatches) : fetchLiveMatches(),
     ]);
     if (!odds.length) return;
-    renderBrazilSection(odds, predictions);
+    cachedLiveMatches = liveMatches;
+    renderBrazilSection(odds, predictions, liveMatches);
     renderFavorites(odds);
     await renderProbabilityMap(odds);
   } catch (error) {
@@ -1058,7 +1163,7 @@ async function loadDashboard(silent = false) {
 async function pollingTick() {
   if (dashboardRefreshInFlight) return;
   const now = new Date();
-  const live = cachedPredictions.some((prediction) => isLiveMatch(prediction.match_date, now));
+  const live = hasLiveGame(now);
   updateLiveIndicator(live);
 
   const current = Date.now();
