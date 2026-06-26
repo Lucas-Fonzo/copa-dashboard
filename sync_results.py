@@ -481,6 +481,36 @@ def choose_prediction(
     return min(candidates, key=distance)
 
 
+def choose_prediction_for_game(
+    game: FinishedGame | ApiGame,
+    predictions_by_pair: dict[tuple[str, str], list[dict[str, Any]]],
+    used_match_ids: set[str],
+) -> tuple[dict[str, Any] | None, bool]:
+    """Casa jogo da API com previsão mesmo quando casa/fora vêm invertidos."""
+    home_key = canonical_team(game.home_team)
+    away_key = canonical_team(game.away_team)
+    for pair, reversed_pair in [((home_key, away_key), False), ((away_key, home_key), True)]:
+        available = [
+            prediction
+            for prediction in predictions_by_pair.get(pair, [])
+            if prediction["match_id"] not in used_match_ids
+        ]
+        prediction = choose_prediction(game, available)
+        if prediction is not None:
+            return prediction, reversed_pair
+    return None, False
+
+
+def orient_score_to_prediction(
+    game: FinishedGame | ApiGame,
+    reversed_pair: bool,
+) -> tuple[int | None, int | None]:
+    """Retorna placar na ordem home/away da previsão salva no Supabase."""
+    if reversed_pair:
+        return game.away_goals, game.home_goals
+    return game.home_goals, game.away_goals
+
+
 def sync_live_matches(
     client: Client,
     games: list[ApiGame],
@@ -496,21 +526,16 @@ def sync_live_matches(
     for game in games:
         if game.status not in {"live", "finished"}:
             continue
-        pair = canonical_team(game.home_team), canonical_team(game.away_team)
-        available = [
-            prediction
-            for prediction in predictions_by_pair.get(pair, [])
-            if prediction["match_id"] not in used_match_ids
-        ]
-        prediction = choose_prediction(game, available)
+        prediction, reversed_pair = choose_prediction_for_game(game, predictions_by_pair, used_match_ids)
         if prediction is None:
             continue
 
         used_match_ids.add(prediction["match_id"])
+        home_goals, away_goals = orient_score_to_prediction(game, reversed_pair)
         records.append({
             "match_id": prediction["match_id"],
-            "live_home_goals": game.home_goals,
-            "live_away_goals": game.away_goals,
+            "live_home_goals": home_goals,
+            "live_away_goals": away_goals,
             "status": game.status,
             "minute": game.minute,
             "source": source,
@@ -567,13 +592,7 @@ def run_once(client: Client) -> None:
     pending: list[dict[str, Any]] = []
     used_match_ids: set[str] = set()
     for game in games:
-        pair = canonical_team(game.home_team), canonical_team(game.away_team)
-        available = [
-            prediction
-            for prediction in predictions_by_pair.get(pair, [])
-            if prediction["match_id"] not in used_match_ids
-        ]
-        prediction = choose_prediction(game, available)
+        prediction, reversed_pair = choose_prediction_for_game(game, predictions_by_pair, used_match_ids)
         label = f"{game.home_team} {game.home_goals}×{game.away_goals} {game.away_team}"
 
         if prediction is None:
@@ -582,6 +601,7 @@ def run_once(client: Client) -> None:
 
         match_id = prediction["match_id"]
         used_match_ids.add(match_id)
+        home_goals, away_goals = orient_score_to_prediction(game, reversed_pair)
         if match_id in existing_results:
             print(f"[JÁ EXISTE] {match_id}: {label}")
             continue
@@ -589,8 +609,8 @@ def run_once(client: Client) -> None:
         pending.append(
             {
                 "match_id": match_id,
-                "actual_home_goals": game.home_goals,
-                "actual_away_goals": game.away_goals,
+                "actual_home_goals": home_goals,
+                "actual_away_goals": away_goals,
                 # A previsão contém o horário oficial completo e com fuso.
                 "match_date": prediction["match_date"],
             }
