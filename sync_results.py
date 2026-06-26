@@ -54,6 +54,8 @@ TEAM_NAME_MAP = {
     "Czech Republic": "República Tcheca",
     "Bosnia and Herzegovina": "Bósnia e Herzegovina",
     "DR Congo": "RD Congo",
+    "Democratic Republic of the Congo": "RD Congo",
+    "Congo DR": "RD Congo",
     "Türkiye": "Turquia",
     "Turkey": "Turquia",
     "Japan": "Japão",
@@ -300,4 +302,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

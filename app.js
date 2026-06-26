@@ -14,6 +14,7 @@ const TEAM_NAME_MAP = {
   "Cape Verde": "Cabo Verde", Switzerland: "Suíça", Belgium: "Bélgica",
   Austria: "Áustria", "Czech Republic": "República Tcheca",
   "Bosnia and Herzegovina": "Bósnia e Herzegovina", "DR Congo": "RD Congo",
+  "Democratic Republic of the Congo": "RD Congo", "Congo DR": "RD Congo",
   Türkiye: "Turquia", Turkey: "Turquia", Japan: "Japão", Egypt: "Egito",
   Scotland: "Escócia", Sweden: "Suécia", Tunisia: "Tunísia", Algeria: "Argélia",
   Colombia: "Colômbia", Paraguay: "Paraguai", Uruguay: "Uruguai", Norway: "Noruega",
@@ -56,6 +57,90 @@ const LIVE_CHECK_INTERVAL_MS = 30 * 1000;
 const LIVE_REFRESH_INTERVAL_MS = 2 * 60 * 1000;
 const IDLE_REFRESH_INTERVAL_MS = 5 * 60 * 1000;
 
+const OFFICIAL_GROUPS = {
+  A: ["Mexico", "South Africa", "South Korea", "Czech Republic"],
+  B: ["Canada", "Bosnia and Herzegovina", "Qatar", "Switzerland"],
+  C: ["Brazil", "Morocco", "Haiti", "Scotland"],
+  D: ["United States", "Paraguay", "Australia", "Turkey"],
+  E: ["Germany", "Curaçao", "Ivory Coast", "Ecuador"],
+  F: ["Netherlands", "Japan", "Sweden", "Tunisia"],
+  G: ["Belgium", "Egypt", "Iran", "New Zealand"],
+  H: ["Spain", "Cape Verde", "Saudi Arabia", "Uruguay"],
+  I: ["France", "Senegal", "Iraq", "Norway"],
+  J: ["Argentina", "Algeria", "Austria", "Jordan"],
+  K: ["Portugal", "DR Congo", "Uzbekistan", "Colombia"],
+  L: ["England", "Croatia", "Ghana", "Panama"],
+};
+
+const ROUND_OF_32 = [
+  ["Runner-up Group A", "Runner-up Group B"],
+  ["Winner Group C", "Runner-up Group F"],
+  ["Winner Group E", "Best 3rd (Groups A/B/C/D/F)"],
+  ["Winner Group F", "Runner-up Group C"],
+  ["Runner-up Group E", "Runner-up Group I"],
+  ["Winner Group I", "Best 3rd (Groups C/D/F/G/H)"],
+  ["Winner Group A", "Best 3rd (Groups C/E/F/H/I)"],
+  ["Winner Group L", "Best 3rd (Groups E/H/I/J/K)"],
+  ["Winner Group G", "Best 3rd (Groups A/E/H/I/J)"],
+  ["Winner Group D", "Best 3rd (Groups B/E/F/I/J)"],
+  ["Runner-up Group K", "Runner-up Group L"],
+  ["Winner Group H", "Runner-up Group J"],
+  ["Winner Group B", "Best 3rd (Groups E/F/G/I/J)"],
+  ["Runner-up Group D", "Runner-up Group G"],
+  ["Winner Group J", "Runner-up Group H"],
+  ["Winner Group K", "Best 3rd (Groups D/E/I/J/L)"],
+];
+
+const FLAG_STYLES = {
+  "África do Sul": ["#007749", "#ffb81c", "#de3831"],
+  Alemanha: ["#000000", "#dd0000", "#ffce00"],
+  Argélia: ["#006233", "#ffffff", "#d21034"],
+  Argentina: ["#75aadb", "#ffffff", "#f6b40e"],
+  Austrália: ["#012169", "#ffffff", "#e4002b"],
+  Áustria: ["#ed2939", "#ffffff", "#ed2939"],
+  Bélgica: ["#000000", "#fae042", "#ed2939"],
+  "Bósnia e Herzegovina": ["#002395", "#fecb00", "#ffffff"],
+  Brasil: ["#009b3a", "#ffdf00", "#002776"],
+  "Cabo Verde": ["#003893", "#ffffff", "#cf2027"],
+  Canadá: ["#ff0000", "#ffffff", "#ff0000"],
+  Catar: ["#8a1538", "#ffffff", "#8a1538"],
+  Colômbia: ["#fcd116", "#003893", "#ce1126"],
+  "Coreia do Sul": ["#ffffff", "#c60c30", "#003478"],
+  "Costa do Marfim": ["#f77f00", "#ffffff", "#009e60"],
+  Croácia: ["#ff0000", "#ffffff", "#171796"],
+  Curaçao: ["#002b7f", "#f9e814", "#ffffff"],
+  Egito: ["#ce1126", "#ffffff", "#000000"],
+  Equador: ["#ffdd00", "#034ea2", "#ed1c24"],
+  Escócia: ["#0065bd", "#ffffff", "#0065bd"],
+  Espanha: ["#aa151b", "#f1bf00", "#aa151b"],
+  "Estados Unidos": ["#b22234", "#ffffff", "#3c3b6e"],
+  França: ["#0055a4", "#ffffff", "#ef4135"],
+  Gana: ["#ce1126", "#fcd116", "#006b3f"],
+  Haiti: ["#00209f", "#d21034", "#ffffff"],
+  Holanda: ["#ae1c28", "#ffffff", "#21468b"],
+  Inglaterra: ["#ffffff", "#ce1124", "#ffffff"],
+  Irã: ["#239f40", "#ffffff", "#da0000"],
+  Iraque: ["#ce1126", "#ffffff", "#000000"],
+  Japão: ["#ffffff", "#bc002d", "#ffffff"],
+  Jordânia: ["#000000", "#ffffff", "#007a3d"],
+  Marrocos: ["#c1272d", "#006233", "#c1272d"],
+  México: ["#006847", "#ffffff", "#ce1126"],
+  "Nova Zelândia": ["#00247d", "#cc142b", "#ffffff"],
+  Noruega: ["#ba0c2f", "#ffffff", "#00205b"],
+  Panamá: ["#ffffff", "#d21034", "#005293"],
+  Paraguai: ["#d52b1e", "#ffffff", "#0038a8"],
+  Portugal: ["#006600", "#ff0000", "#ffcc00"],
+  "RD Congo": ["#00a3e0", "#f7d618", "#ce1021"],
+  "República Tcheca": ["#ffffff", "#d7141a", "#11457e"],
+  Senegal: ["#00853f", "#fdef42", "#e31b23"],
+  Suécia: ["#006aa7", "#fecc00", "#006aa7"],
+  Suíça: ["#ff0000", "#ffffff", "#ff0000"],
+  Tunísia: ["#e70013", "#ffffff", "#e70013"],
+  Turquia: ["#e30a17", "#ffffff", "#e30a17"],
+  Uruguai: ["#ffffff", "#0038a8", "#fcd116"],
+  Uzbequistão: ["#1eb53a", "#0099b5", "#ce1126"],
+};
+
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const elements = {
@@ -72,6 +157,9 @@ const elements = {
   probabilityMapSection: document.querySelector("#probability-map-section"),
   probabilityMap: document.querySelector("#probability-map"),
   mapTooltip: document.querySelector("#map-tooltip"),
+  bracketSection: document.querySelector("#bracket-section"),
+  bracketBoard: document.querySelector("#bracket-board"),
+  bracketStatus: document.querySelector("#bracket-status"),
   liveUpdateIndicator: document.querySelector("#live-update-indicator"),
   loading: document.querySelector("#loading"),
   error: document.querySelector("#error-state"),
@@ -260,6 +348,22 @@ function updateLiveIndicator(isLive) {
   elements.liveUpdateIndicator.hidden = !isLive;
 }
 
+function positionBrazilSection(isBrazilLive) {
+  const parent = elements.brazilSection.parentElement;
+  if (!parent) return;
+
+  elements.brazilSection.classList.toggle("brazil-live-section", isBrazilLive);
+  if (isBrazilLive) {
+    parent.insertBefore(elements.brazilSection, elements.upcomingSection);
+    return;
+  }
+
+  const nextNode = elements.upcomingSection.nextSibling;
+  if (nextNode !== elements.brazilSection) {
+    parent.insertBefore(elements.brazilSection, nextNode);
+  }
+}
+
 function probabilityCell(match) {
   const home = Number(match.home_win_prob) * 100;
   const draw = Number(match.draw_prob) * 100;
@@ -273,6 +377,243 @@ function probabilityCell(match) {
         <span class="prob-away" style="width:${away}%"></span>
       </div>
     </div>`;
+}
+
+function slotShortLabel(slot) {
+  const winner = slot.match(/^Winner Group ([A-L])$/);
+  if (winner) return `1${winner[1]}`;
+  const runner = slot.match(/^Runner-up Group ([A-L])$/);
+  if (runner) return `2${runner[1]}`;
+  const third = slot.match(/^Best 3rd/);
+  if (third) return "3º";
+  return "—";
+}
+
+function allowedThirdGroups(slot) {
+  const match = slot.match(/^Best 3rd \(Groups ([A-L/]+)\)$/);
+  return match ? match[1].split("/") : [];
+}
+
+function flagToken(team) {
+  if (!team) return '<span class="flag-token flag-empty" aria-hidden="true"></span>';
+  const colors = FLAG_STYLES[team] ?? ["#0d2637", "#8ee000", "#ffc400"];
+  const specialClass = {
+    "África do Sul": "flag-south-africa",
+    Brasil: "flag-brazil",
+    Marrocos: "flag-morocco",
+    Suíça: "flag-switzerland",
+  }[team] ?? "";
+  return `
+    <span class="flag-token ${specialClass}" aria-hidden="true"
+      style="--flag-a:${colors[0]};--flag-b:${colors[1]};--flag-c:${colors[2]}">
+    </span>`;
+}
+
+function emptyStanding(team) {
+  return { team, points: 0, gf: 0, ga: 0, wins: 0, played: 0 };
+}
+
+function registerGroupResult(table, home, away, homeGoals, awayGoals) {
+  table[home].played += 1;
+  table[away].played += 1;
+  table[home].gf += homeGoals;
+  table[home].ga += awayGoals;
+  table[away].gf += awayGoals;
+  table[away].ga += homeGoals;
+  if (homeGoals > awayGoals) {
+    table[home].points += 3;
+    table[home].wins += 1;
+  } else if (awayGoals > homeGoals) {
+    table[away].points += 3;
+    table[away].wins += 1;
+  } else {
+    table[home].points += 1;
+    table[away].points += 1;
+  }
+}
+
+function buildGroupTables(predictions, results) {
+  const resultByMatch = new Map(results.map((result) => [result.match_id, result]));
+  const groupByTeam = new Map();
+  const tables = {};
+  const completedGroups = new Set();
+
+  for (const [group, teams] of Object.entries(OFFICIAL_GROUPS)) {
+    tables[group] = {};
+    for (const team of teams.map(displayTeam)) {
+      tables[group][team] = emptyStanding(team);
+      groupByTeam.set(team, group);
+    }
+  }
+
+  for (const prediction of predictions) {
+    if (!String(prediction.round ?? "").toLowerCase().includes("fase de grupos")) continue;
+    const result = resultByMatch.get(prediction.match_id);
+    if (!result) continue;
+    const home = displayTeam(prediction.home_team);
+    const away = displayTeam(prediction.away_team);
+    const group = groupByTeam.get(home) ?? groupByTeam.get(away);
+    if (!group || !tables[group]?.[home] || !tables[group]?.[away]) continue;
+    registerGroupResult(
+      tables[group],
+      home,
+      away,
+      Number(result.actual_home_goals),
+      Number(result.actual_away_goals),
+    );
+  }
+
+  const standings = {};
+  for (const [group, table] of Object.entries(tables)) {
+    standings[group] = Object.values(table)
+      .map((row) => ({ ...row, gd: row.gf - row.ga }))
+      .sort((a, b) => (
+        b.points - a.points
+        || b.gd - a.gd
+        || b.gf - a.gf
+        || b.wins - a.wins
+        || a.team.localeCompare(b.team, "pt-BR")
+      ));
+    if (standings[group].every((row) => row.played === 3)) completedGroups.add(group);
+  }
+
+  return { standings, completedGroups };
+}
+
+function assignThirdPlaces(standings, completedGroups) {
+  if (completedGroups.size < Object.keys(OFFICIAL_GROUPS).length) return {};
+
+  const thirdByGroup = Object.fromEntries(
+    Object.entries(standings)
+      .map(([group, rows]) => ({ group, ...rows[2] }))
+      .sort((a, b) => (
+        b.points - a.points
+        || b.gd - a.gd
+        || b.gf - a.gf
+        || b.wins - a.wins
+        || a.team.localeCompare(b.team, "pt-BR")
+      ))
+      .slice(0, 8)
+      .map((row) => [row.group, row.team]),
+  );
+
+  const thirdSlots = ROUND_OF_32
+    .flat()
+    .filter((slot) => slot.startsWith("Best 3rd"))
+    .sort((a, b) => (
+      allowedThirdGroups(a).filter((group) => thirdByGroup[group]).length
+      - allowedThirdGroups(b).filter((group) => thirdByGroup[group]).length
+    ));
+
+  function backtrack(index = 0, used = new Set(), assigned = {}) {
+    if (index === thirdSlots.length) return { ...assigned };
+    const slot = thirdSlots[index];
+    for (const group of allowedThirdGroups(slot)) {
+      if (!thirdByGroup[group] || used.has(group)) continue;
+      used.add(group);
+      assigned[slot] = thirdByGroup[group];
+      const solved = backtrack(index + 1, used, assigned);
+      if (solved) return solved;
+      used.delete(group);
+      delete assigned[slot];
+    }
+    return null;
+  }
+
+  return backtrack() ?? {};
+}
+
+function resolveBracketSlot(slot, standings, completedGroups, thirdAssignment) {
+  const winner = slot.match(/^Winner Group ([A-L])$/);
+  if (winner) return completedGroups.has(winner[1]) ? standings[winner[1]]?.[0]?.team : null;
+  const runner = slot.match(/^Runner-up Group ([A-L])$/);
+  if (runner) return completedGroups.has(runner[1]) ? standings[runner[1]]?.[1]?.team : null;
+  if (slot.startsWith("Best 3rd")) return thirdAssignment[slot] ?? null;
+  return null;
+}
+
+function bracketSlot(slot, team) {
+  return `
+    <div class="bracket-slot ${team ? "is-filled" : ""}" title="${escapeHtml(slot)}">
+      <span class="slot-seed">${escapeHtml(slotShortLabel(slot))}</span>
+      ${flagToken(team)}
+      <strong>${team ? escapeHtml(team) : "A definir"}</strong>
+    </div>`;
+}
+
+function bracketMatch(match, standings, completedGroups, thirdAssignment) {
+  const [homeSlot, awaySlot] = match;
+  const home = resolveBracketSlot(homeSlot, standings, completedGroups, thirdAssignment);
+  const away = resolveBracketSlot(awaySlot, standings, completedGroups, thirdAssignment);
+  return `
+    <article class="bracket-match ${(home || away) ? "has-team" : ""}">
+      ${bracketSlot(homeSlot, home)}
+      ${bracketSlot(awaySlot, away)}
+    </article>`;
+}
+
+function futureBracketNode(label, size = "normal") {
+  return `
+    <article class="bracket-future bracket-future-${size}">
+      <span class="flag-token flag-empty" aria-hidden="true"></span>
+      <strong>${escapeHtml(label)}</strong>
+    </article>`;
+}
+
+function renderBracket(predictions, results) {
+  if (!elements.bracketSection || !predictions.length) return;
+  const { standings, completedGroups } = buildGroupTables(predictions, results);
+  const thirdAssignment = assignThirdPlaces(standings, completedGroups);
+  const filledRound32 = ROUND_OF_32.flat()
+    .map((slot) => resolveBracketSlot(slot, standings, completedGroups, thirdAssignment))
+    .filter(Boolean).length;
+
+  const columns = [
+    { title: "Fase de 32", side: "left", items: ROUND_OF_32.slice(0, 8).map((match) => bracketMatch(match, standings, completedGroups, thirdAssignment)) },
+    { title: "Oitavas", side: "left", items: Array.from({ length: 4 }, (_, index) => futureBracketNode(`Vencedor ${73 + index * 2}`)) },
+    { title: "Quartas", side: "left", items: Array.from({ length: 2 }, (_, index) => futureBracketNode(`Quartas ${index + 1}`)) },
+    { title: "Semi", side: "left", items: [futureBracketNode("Semifinal 1", "large")] },
+    {
+      title: "Campeão",
+      side: "center",
+      items: [
+        futureBracketNode("Campeão", "trophy"),
+        futureBracketNode("3º lugar", "third"),
+      ],
+    },
+    { title: "Semi", side: "right", items: [futureBracketNode("Semifinal 2", "large")] },
+    { title: "Quartas", side: "right", items: Array.from({ length: 2 }, (_, index) => futureBracketNode(`Quartas ${index + 3}`)) },
+    { title: "Oitavas", side: "right", items: Array.from({ length: 4 }, (_, index) => futureBracketNode(`Vencedor ${81 + index * 2}`)) },
+    { title: "Fase de 32", side: "right", items: ROUND_OF_32.slice(8).map((match) => bracketMatch(match, standings, completedGroups, thirdAssignment)) },
+  ];
+
+  elements.bracketStatus.innerHTML = `
+    <span>${completedGroups.size}/12 grupos completos</span>
+    <span>${filledRound32}/32 vagas preenchidas</span>
+    <span>${Object.keys(thirdAssignment).length ? "Melhores terceiros definidos" : "Melhores terceiros aguardando fechamento dos grupos"}</span>`;
+  elements.bracketBoard.innerHTML = columns.map((column) => `
+    <div class="bracket-column bracket-${column.side}">
+      <h3>${escapeHtml(column.title)}</h3>
+      <div class="bracket-column-items">${column.items.join("")}</div>
+    </div>
+  `).join("");
+  elements.bracketSection.hidden = false;
+}
+
+async function loadBracket() {
+  if (!elements.bracketSection || !isConfigured()) return;
+  try {
+    const [predictionsResponse, resultsResponse] = await Promise.all([
+      supabase.from("predictions").select("match_id,home_team,away_team,round").order("match_id"),
+      supabase.from("results").select("match_id,actual_home_goals,actual_away_goals"),
+    ]);
+    if (predictionsResponse.error) throw predictionsResponse.error;
+    if (resultsResponse.error) throw resultsResponse.error;
+    renderBracket(predictionsResponse.data ?? [], resultsResponse.data ?? []);
+  } catch (error) {
+    console.warn("Chaveamento indisponível.", error);
+    elements.bracketSection.hidden = true;
+  }
 }
 
 function championPercent(value) {
@@ -428,15 +769,30 @@ function renderBrazilSection(odds, predictions) {
   if (brazil.eliminated) {
     elements.brazilNextGame.hidden = true;
     elements.brazilScorelines.hidden = true;
+    positionBrazilSection(false);
   } else {
     const now = new Date();
-    const nextGame = predictions
+    const brazilGames = predictions
       .filter((prediction) => (
         displayTeam(prediction.home_team) === "Brasil"
         || displayTeam(prediction.away_team) === "Brasil"
       ))
-      .filter((prediction) => new Date(prediction.match_date) > now)
-      .sort((a, b) => new Date(a.match_date) - new Date(b.match_date))[0];
+      .map((prediction) => ({
+        ...prediction,
+        is_live: isLiveMatch(prediction.match_date, now),
+        starts_at: new Date(prediction.match_date),
+      }))
+      .filter((prediction) => (
+        prediction.is_live
+        || prediction.starts_at.getTime() > now.getTime()
+      ))
+      .sort((a, b) => {
+        if (a.is_live !== b.is_live) return a.is_live ? -1 : 1;
+        return a.starts_at - b.starts_at;
+      });
+    const nextGame = brazilGames[0];
+    const isBrazilLive = Boolean(nextGame?.is_live);
+    positionBrazilSection(isBrazilLive);
 
     elements.brazilNextGame.hidden = false;
     elements.brazilScorelines.hidden = false;
@@ -454,7 +810,11 @@ function renderBrazilSection(odds, predictions) {
       const opponentGoals = brazilIsHome ? nextGame.predicted_away_goals : nextGame.predicted_home_goals;
       const scorelines = mostLikelyBrazilScores(nextGame, brazilIsHome);
       elements.brazilNextGame.innerHTML = `
-        <span class="brazil-game-kicker">Próximo jogo do Brasil</span>
+        <span class="brazil-game-kicker">${isBrazilLive ? "Brasil em campo agora" : "Próximo jogo do Brasil"}</span>
+        ${isBrazilLive ? `
+          <a class="brazil-live-pill" href="https://www.youtube.com/@CazéTV"
+             target="_blank" rel="noopener noreferrer">AGORA</a>
+        ` : ""}
         <strong class="brazil-matchup">Brasil <small>×</small> ${escapeHtml(opponent)}</strong>
         <span class="brazil-game-date">${formatBrasilia(nextGame.match_date)} · Brasília</span>
         <span class="prediction-label brazil-prediction-label">Palpite principal</span>
@@ -709,10 +1069,11 @@ async function pollingTick() {
   dashboardRefreshInFlight = true;
   try {
     if (shouldRefreshLive) {
-      await Promise.all([loadDashboard(true), loadUpcomingGames()]);
+      await Promise.all([loadDashboard(true), loadUpcomingGames(), loadChampionshipFeatures(), loadBracket()]);
     } else {
       await loadUpcomingGames();
       await loadChampionshipFeatures();
+      await loadBracket();
     }
   } finally {
     dashboardRefreshInFlight = false;
@@ -720,7 +1081,7 @@ async function pollingTick() {
 }
 
 async function initializeDashboard() {
-  await Promise.all([loadDashboard(), loadUpcomingGames()]);
+  await Promise.all([loadDashboard(), loadUpcomingGames(), loadBracket()]);
   await loadChampionshipFeatures();
   setInterval(pollingTick, LIVE_CHECK_INTERVAL_MS);
 }

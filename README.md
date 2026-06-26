@@ -18,6 +18,7 @@ copa-dashboard/
 ├── upload_predictions.py
 ├── upload_results.py
 ├── sync_results.py
+├── retrain_after_second_round.py
 ├── simulate_champion.py
 ├── mark_eliminated.py
 ├── predictions.json
@@ -128,6 +129,30 @@ uma branch `gh-pages` para publicar apenas `copa-dashboard/`.
 3. Depois dos jogos, atualize `results.json`.
 4. Rode `python upload_results.py`.
 5. Recarregue o dashboard. Não é necessário republicar o site quando apenas os dados mudam.
+
+### Retreino pós-2ª rodada
+
+Quando os 48 jogos das duas primeiras rodadas estiverem no Supabase, use o script
+operacional abaixo para recalcular a terceira rodada com Elo + Poisson:
+
+```powershell
+python sync_results.py
+python retrain_after_second_round.py
+python upload_predictions.py
+python simulate_champion.py
+```
+
+O `retrain_after_second_round.py`:
+
+- valida se existem 48 resultados das rodadas 1 e 2;
+- sincroniza o `results.json` local com o Supabase;
+- baixa o histórico internacional pelo `kagglehub`;
+- anexa os resultados observados da Copa 2026;
+- retreina Elo + Poisson;
+- sobrescreve somente as 24 previsões da Rodada 3 em `predictions.json`.
+
+Se faltar algum resultado, o script interrompe com a lista de `match_id` pendentes para
+evitar publicar uma previsão marcada como pós-2ª rodada sem todos os jogos observados.
 
 ## Sincronização automática de resultados
 
