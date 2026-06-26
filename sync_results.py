@@ -71,6 +71,43 @@ TEAM_NAME_MAP = {
     "Ghana": "Gana",
 }
 
+TEAM_DISPLAY = {
+    "Algeria": "Argélia", "Argentina": "Argentina", "Australia": "Austrália",
+    "Austria": "Áustria", "Belgium": "Bélgica",
+    "Bosnia and Herzegovina": "Bósnia e Herzegovina", "Brazil": "Brasil",
+    "Canada": "Canadá", "Cape Verde": "Cabo Verde", "Colombia": "Colômbia",
+    "Croatia": "Croácia", "Curaçao": "Curaçao",
+    "Czech Republic": "República Tcheca", "DR Congo": "RD Congo",
+    "Ecuador": "Equador", "Egypt": "Egito", "England": "Inglaterra",
+    "France": "França", "Germany": "Alemanha", "Ghana": "Gana",
+    "Haiti": "Haiti", "Iran": "Irã", "Iraq": "Iraque",
+    "Ivory Coast": "Costa do Marfim", "Japan": "Japão", "Jordan": "Jordânia",
+    "Mexico": "México", "Morocco": "Marrocos", "Netherlands": "Holanda",
+    "New Zealand": "Nova Zelândia", "Norway": "Noruega", "Panama": "Panamá",
+    "Paraguay": "Paraguai", "Portugal": "Portugal", "Qatar": "Catar",
+    "Saudi Arabia": "Arábia Saudita", "Scotland": "Escócia",
+    "Senegal": "Senegal", "South Africa": "África do Sul",
+    "South Korea": "Coreia do Sul", "Spain": "Espanha", "Sweden": "Suécia",
+    "Switzerland": "Suíça", "Tunisia": "Tunísia", "Turkey": "Turquia",
+    "United States": "Estados Unidos", "Uruguay": "Uruguai",
+    "Uzbekistan": "Uzbequistão",
+}
+
+OFFICIAL_GROUPS = {
+    "A": ["Mexico", "South Africa", "South Korea", "Czech Republic"],
+    "B": ["Canada", "Bosnia and Herzegovina", "Qatar", "Switzerland"],
+    "C": ["Brazil", "Morocco", "Haiti", "Scotland"],
+    "D": ["United States", "Paraguay", "Australia", "Turkey"],
+    "E": ["Germany", "Curaçao", "Ivory Coast", "Ecuador"],
+    "F": ["Netherlands", "Japan", "Sweden", "Tunisia"],
+    "G": ["Belgium", "Egypt", "Iran", "New Zealand"],
+    "H": ["Spain", "Cape Verde", "Saudi Arabia", "Uruguay"],
+    "I": ["France", "Senegal", "Iraq", "Norway"],
+    "J": ["Argentina", "Algeria", "Austria", "Jordan"],
+    "K": ["Portugal", "DR Congo", "Uzbekistan", "Colombia"],
+    "L": ["England", "Croatia", "Ghana", "Panama"],
+}
+
 
 @dataclass(frozen=True)
 class FinishedGame:
@@ -258,6 +295,170 @@ def prediction_pair(prediction: dict[str, Any]) -> tuple[str, str]:
     return canonical_team(prediction.get("home_team")), canonical_team(prediction.get("away_team"))
 
 
+def display_team(team: str) -> str:
+    return TEAM_DISPLAY.get(team, team)
+
+
+def is_group_round(prediction: dict[str, Any]) -> bool:
+    return "fase de grupos" in str(prediction.get("round", "")).casefold()
+
+
+def group_for_team(team: str) -> str | None:
+    canonical = canonical_team(team)
+    for group, teams in OFFICIAL_GROUPS.items():
+        if any(canonical_team(candidate) == canonical for candidate in teams):
+            return group
+    return None
+
+
+def rank_group(
+    group: str,
+    predictions: list[dict[str, Any]],
+    results_by_id: dict[str, dict[str, Any]],
+) -> list[dict[str, Any]] | None:
+    teams = OFFICIAL_GROUPS[group]
+    canonical_group = {canonical_team(team) for team in teams}
+    table = {
+        team: {"team": team, "points": 0, "gf": 0, "ga": 0, "wins": 0}
+        for team in teams
+    }
+    played = 0
+
+    for prediction in predictions:
+        if not is_group_round(prediction):
+            continue
+        home = str(prediction["home_team"])
+        away = str(prediction["away_team"])
+        if canonical_team(home) not in canonical_group or canonical_team(away) not in canonical_group:
+            continue
+        result = results_by_id.get(str(prediction["match_id"]))
+        if not result:
+            continue
+
+        home_goals = int(result["actual_home_goals"])
+        away_goals = int(result["actual_away_goals"])
+        home_key = next(team for team in teams if canonical_team(team) == canonical_team(home))
+        away_key = next(team for team in teams if canonical_team(team) == canonical_team(away))
+        table[home_key]["gf"] += home_goals
+        table[home_key]["ga"] += away_goals
+        table[away_key]["gf"] += away_goals
+        table[away_key]["ga"] += home_goals
+        if home_goals > away_goals:
+            table[home_key]["points"] += 3
+            table[home_key]["wins"] += 1
+        elif away_goals > home_goals:
+            table[away_key]["points"] += 3
+            table[away_key]["wins"] += 1
+        else:
+            table[home_key]["points"] += 1
+            table[away_key]["points"] += 1
+        played += 1
+
+    if played < 6:
+        return None
+
+    return sorted(
+        table.values(),
+        key=lambda row: (
+            row["points"],
+            row["gf"] - row["ga"],
+            row["gf"],
+            row["wins"],
+            row["team"],
+        ),
+        reverse=True,
+    )
+
+
+def infer_eliminated_teams(
+    predictions: list[dict[str, Any]],
+    results: list[dict[str, Any]],
+) -> set[str]:
+    """Marca automaticamente seleções eliminadas por grupos completos e mata-mata."""
+    results_by_id = {str(row["match_id"]): row for row in results}
+    eliminated: set[str] = set()
+    completed_rankings: dict[str, list[dict[str, Any]]] = {}
+
+    for group in OFFICIAL_GROUPS:
+        ranking = rank_group(group, predictions, results_by_id)
+        if not ranking:
+            continue
+        completed_rankings[group] = ranking
+        # O quarto colocado de grupo fechado está eliminado imediatamente.
+        eliminated.add(display_team(str(ranking[3]["team"])))
+
+    # Quando todos os grupos fecharem, os 4 piores terceiros também estão eliminados.
+    if len(completed_rankings) == len(OFFICIAL_GROUPS):
+        thirds = [
+            {**ranking[2], "group": group}
+            for group, ranking in completed_rankings.items()
+        ]
+        best_thirds = sorted(
+            thirds,
+            key=lambda row: (
+                row["points"],
+                row["gf"] - row["ga"],
+                row["gf"],
+                row["wins"],
+                row["team"],
+            ),
+            reverse=True,
+        )[:8]
+        qualified_third_keys = {canonical_team(str(row["team"])) for row in best_thirds}
+        for row in thirds:
+            if canonical_team(str(row["team"])) not in qualified_third_keys:
+                eliminated.add(display_team(str(row["team"])))
+
+    # Em mata-mata, o perdedor de jogos decididos no tempo normal/prorrogação é eliminado.
+    for prediction in predictions:
+        if is_group_round(prediction):
+            continue
+        result = results_by_id.get(str(prediction["match_id"]))
+        if not result:
+            continue
+        home_goals = int(result["actual_home_goals"])
+        away_goals = int(result["actual_away_goals"])
+        if home_goals > away_goals:
+            eliminated.add(display_team(str(prediction["away_team"])))
+        elif away_goals > home_goals:
+            eliminated.add(display_team(str(prediction["home_team"])))
+
+    return eliminated
+
+
+def sync_eliminated_teams(client: Client, eliminated: set[str]) -> None:
+    if not eliminated:
+        print("[ELIMINADOS] Nenhuma seleção nova inferida.")
+        return
+
+    response = client.table("championship_odds").select("team,eliminated").execute()
+    existing = {
+        canonical_team(str(row["team"])): {
+            "team": str(row["team"]),
+            "eliminated": bool(row.get("eliminated")),
+        }
+        for row in (response.data or [])
+    }
+    matched = []
+    for team in sorted(eliminated):
+        row = existing.get(canonical_team(team))
+        if row and not row["eliminated"]:
+            matched.append(row["team"])
+
+    if not matched:
+        print("[ELIMINADOS] Nenhuma atualização necessária.")
+        return
+
+    client.table("championship_odds").update(
+        {
+            "eliminated": True,
+            "champion_prob": 0,
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+        }
+    ).in_("team", matched).execute()
+    print(f"[ELIMINADOS] {len(matched)} seleção(ões) marcada(s): {', '.join(matched)}")
+
+
 def choose_prediction(
     game: FinishedGame | ApiGame,
     candidates: list[dict[str, Any]],
@@ -344,12 +545,17 @@ def run_once(client: Client) -> None:
 
     predictions_response = (
         client.table("predictions")
-        .select("match_id,home_team,away_team,match_date")
+        .select("match_id,home_team,away_team,round,match_date")
         .execute()
     )
-    results_response = client.table("results").select("match_id").execute()
+    results_response = (
+        client.table("results")
+        .select("match_id,actual_home_goals,actual_away_goals,match_date")
+        .execute()
+    )
     predictions = predictions_response.data or []
-    existing_results = {row["match_id"] for row in (results_response.data or [])}
+    synced_results = results_response.data or []
+    existing_results = {row["match_id"] for row in synced_results}
 
     predictions_by_pair: dict[tuple[str, str], list[dict[str, Any]]] = {}
     for prediction in predictions:
@@ -393,6 +599,8 @@ def run_once(client: Client) -> None:
 
     if pending:
         client.table("results").upsert(pending, on_conflict="match_id").execute()
+        synced_results.extend(pending)
+    sync_eliminated_teams(client, infer_eliminated_teams(predictions, synced_results))
     print(f"[FIM] {len(pending)} resultado(s) inserido(s).")
 
 

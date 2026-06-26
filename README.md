@@ -170,6 +170,8 @@ O script normaliza nomes em português e inglês, procura a previsão pelo par c
 
 - insere resultados novos;
 - atualiza a tabela `live_matches` com placares quase ao vivo quando a API informar jogo em andamento;
+- marca automaticamente em `championship_odds` as seleções eliminadas por grupos fechados
+  ou derrotas no mata-mata;
 - informa os resultados que já estavam no banco;
 - avisa sobre jogos finalizados sem previsão correspondente;
 - nunca interrompe toda a sincronização apenas por encontrar um nome desconhecido.
