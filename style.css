@@ -233,7 +233,8 @@ h1 strong { color: transparent; font: inherit; background: linear-gradient(115de
 .bracket-section { overflow: hidden; border-color: rgba(255,196,0,.24); }
 .bracket-status { display: flex; flex-wrap: wrap; gap: 9px; margin: -4px 0 17px; }
 .bracket-status span { padding: 6px 10px; color: var(--silver); border: 1px solid rgba(142,224,0,.24); background: rgba(1,8,18,.52); font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
-.bracket-board { display: grid; grid-template-columns: 1.5fr .88fr .76fr .66fr .7fr .66fr .76fr .88fr 1.5fr; gap: 7px; overflow: visible; padding: 2px 2px 4px; }
+.bracket-viewport { --bracket-scale: 1; position: relative; width: 100%; overflow: visible; }
+.bracket-board { display: grid; width: max(1180px, 100%); grid-template-columns: 1.5fr .88fr .76fr .66fr .7fr .66fr .76fr .88fr 1.5fr; gap: 7px; overflow: visible; padding: 2px 2px 4px; transform: scale(var(--bracket-scale)); transform-origin: left top; }
 .bracket-column { min-width: 0; }
 .bracket-column h3 { margin: 0 0 7px; color: var(--muted); font-size: 10px; font-weight: 800; letter-spacing: .14em; text-align: center; text-transform: uppercase; }
 .bracket-column-items { display: grid; align-content: stretch; gap: 7px; height: 100%; }
@@ -435,7 +436,7 @@ tbody tr:hover { background: rgba(142,224,0,.035); }
   .upcoming-grid { grid-template-columns: 1fr; }
   .brazil-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
   .brazil-scorelines-card { grid-column: 1 / -1; }
-  .bracket-board { grid-template-columns: repeat(9, minmax(126px, 1fr)); }
+  .bracket-board { grid-template-columns: 1.5fr .88fr .76fr .66fr .7fr .66fr .76fr .88fr 1.5fr; }
   .favorites-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
   .update-box { align-self: flex-end; }
 }

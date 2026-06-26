@@ -160,6 +160,7 @@ const elements = {
   probabilityMap: document.querySelector("#probability-map"),
   mapTooltip: document.querySelector("#map-tooltip"),
   bracketSection: document.querySelector("#bracket-section"),
+  bracketViewport: document.querySelector("#bracket-viewport"),
   bracketBoard: document.querySelector("#bracket-board"),
   bracketStatus: document.querySelector("#bracket-status"),
   liveUpdateIndicator: document.querySelector("#live-update-indicator"),
@@ -679,6 +680,20 @@ function futureBracketNode(label, size = "normal") {
     </article>`;
 }
 
+function fitBracketBoard() {
+  if (!elements.bracketViewport || !elements.bracketBoard || elements.bracketSection.hidden) return;
+  requestAnimationFrame(() => {
+    const viewportWidth = elements.bracketViewport.clientWidth;
+    const boardWidth = elements.bracketBoard.scrollWidth;
+    const boardHeight = elements.bracketBoard.scrollHeight;
+    if (!viewportWidth || !boardWidth || !boardHeight) return;
+
+    const scale = Math.min(1, viewportWidth / boardWidth);
+    elements.bracketViewport.style.setProperty("--bracket-scale", String(scale));
+    elements.bracketViewport.style.height = `${Math.ceil(boardHeight * scale)}px`;
+  });
+}
+
 function renderBracket(predictions, results) {
   if (!elements.bracketSection || !predictions.length) return;
   const { standings, completedGroups } = buildGroupTables(predictions, results);
@@ -717,6 +732,7 @@ function renderBracket(predictions, results) {
     </div>
   `).join("");
   elements.bracketSection.hidden = false;
+  fitBracketBoard();
 }
 
 async function loadBracket() {
@@ -1210,6 +1226,7 @@ async function pollingTick() {
 }
 
 async function initializeDashboard() {
+  window.addEventListener("resize", fitBracketBoard);
   await Promise.all([loadDashboard(), loadUpcomingGames(), loadBracket()]);
   await loadChampionshipFeatures();
   setInterval(pollingTick, LIVE_CHECK_INTERVAL_MS);
