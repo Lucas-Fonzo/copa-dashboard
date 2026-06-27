@@ -1,0 +1,43 @@
+name: Recalcular chances de título
+
+on:
+  schedule:
+    # 06:30 UTC = 03:30 no horário de Brasília.
+    # Roda depois da janela principal de jogos para usar os resultados do dia.
+    - cron: '30 6 * * *'
+  # Permite recalcular manualmente pela aba Actions quando houver rodada decisiva.
+  workflow_dispatch:
+
+concurrency:
+  group: simulate-champion
+  cancel-in-progress: false
+
+jobs:
+  simulate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Baixar o repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Instalar dependências
+        run: pip install supabase python-dotenv requests
+
+      - name: Sincronizar resultados antes da simulação
+        run: python sync_results.py
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+
+      - name: Rodar Monte Carlo diário
+        run: python simulate_champion.py --simulations 10000
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}

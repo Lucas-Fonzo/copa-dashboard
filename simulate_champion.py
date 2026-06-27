@@ -8,6 +8,7 @@ parciais durante a competição.
 from __future__ import annotations
 
 import argparse
+import math
 import os
 import random
 import time
@@ -22,6 +23,10 @@ from supabase import Client, create_client
 
 DEFAULT_SIMULATIONS = 10_000
 GROUP_MARKER = "fase de grupos"
+EXTRA_TIME_INTENSITY = 0.95
+EXTRA_TIME_SHARE_OF_MATCH = 30 / 90
+MIN_90_MINUTE_GOAL_EXPECTATION = 0.20
+PENALTY_STRONGER_PROBABILITY = 0.60
 
 TEAM_DISPLAY = {
     "Algeria": "Argélia", "Argentina": "Argentina", "Australia": "Austrália",
@@ -147,6 +152,66 @@ def probability_triplet(prediction: dict[str, Any]) -> tuple[float, float, float
     return tuple(value / total for value in values)  # type: ignore[return-value]
 
 
+def poisson_sample(lam: float, rng: random.Random) -> int:
+    """Sorteia gols por Poisson sem depender de numpy no GitHub Actions."""
+    if lam <= 0:
+        return 0
+    limit = math.exp(-lam)
+    value = 0
+    probability = 1.0
+    while probability > limit:
+        value += 1
+        probability *= rng.random()
+    return value - 1
+
+
+def expected_goals_for_extra_time(
+    prediction: dict[str, Any], reversed_pair: bool
+) -> tuple[float, float]:
+    """Aproxima os lambdas da prorrogação a partir do palpite de 90 minutos.
+
+    A prorrogação usa 30/90 do volume esperado e um fator de intensidade de 0.95:
+    Copa do Mundo, mata-mata, perna pesada mas coração quente.
+    """
+    home_goals_90 = max(
+        float(prediction.get("predicted_home_goals") or 0),
+        MIN_90_MINUTE_GOAL_EXPECTATION,
+    )
+    away_goals_90 = max(
+        float(prediction.get("predicted_away_goals") or 0),
+        MIN_90_MINUTE_GOAL_EXPECTATION,
+    )
+    if reversed_pair:
+        home_goals_90, away_goals_90 = away_goals_90, home_goals_90
+    return (
+        home_goals_90 * EXTRA_TIME_SHARE_OF_MATCH * EXTRA_TIME_INTENSITY,
+        away_goals_90 * EXTRA_TIME_SHARE_OF_MATCH * EXTRA_TIME_INTENSITY,
+    )
+
+
+def penalty_winner(
+    home: str,
+    away: str,
+    stronger: str | None,
+    rng: random.Random,
+) -> str:
+    """Decide pênaltis: 60% para o lado mais forte quando houver sinal claro."""
+    weaker_probability = 1 - PENALTY_STRONGER_PROBABILITY
+    if stronger == home:
+        return rng.choices(
+            [home, away],
+            weights=[PENALTY_STRONGER_PROBABILITY, weaker_probability],
+            k=1,
+        )[0]
+    if stronger == away:
+        return rng.choices(
+            [home, away],
+            weights=[weaker_probability, PENALTY_STRONGER_PROBABILITY],
+            k=1,
+        )[0]
+    return rng.choice([home, away])
+
+
 def approximate_score(outcome: str, rng: random.Random) -> tuple[int, int]:
     """Gera um placar simples apenas para pontos, gols e saldo do grupo."""
     if outcome == "draw":
@@ -225,20 +290,35 @@ def knockout_winner(
         home_prob, draw_prob, away_prob = probability_triplet(prediction)
         if reversed_pair:
             home_prob, away_prob = away_prob, home_prob
+        stronger = home if home_prob > away_prob else away if away_prob > home_prob else None
         outcome = rng.choices(
             ["home", "draw", "away"],
             weights=[home_prob, draw_prob, away_prob],
             k=1,
         )[0]
         if outcome == "draw":
-            return rng.choice([home, away])
+            extra_home_lambda, extra_away_lambda = expected_goals_for_extra_time(
+                prediction,
+                reversed_pair,
+            )
+            extra_home_goals = poisson_sample(extra_home_lambda, rng)
+            extra_away_goals = poisson_sample(extra_away_lambda, rng)
+            if extra_home_goals > extra_away_goals:
+                return home
+            if extra_away_goals > extra_home_goals:
+                return away
+            return penalty_winner(home, away, stronger, rng)
         return home if outcome == "home" else away
 
     if wins[home] == wins[away]:
         return rng.choice([home, away])
     stronger = home if wins[home] > wins[away] else away
     weaker = away if stronger == home else home
-    return rng.choices([stronger, weaker], weights=[0.60, 0.40], k=1)[0]
+    return rng.choices(
+        [stronger, weaker],
+        weights=[PENALTY_STRONGER_PROBABILITY, 1 - PENALTY_STRONGER_PROBABILITY],
+        k=1,
+    )[0]
 
 
 def build_round_of_32(
@@ -273,6 +353,7 @@ def build_round_of_32(
 
 def simulate_once(
     group_predictions: list[dict[str, Any]],
+    results_by_id: dict[str, dict[str, Any]],
     groups: list[list[str]],
     knockout_predictions: dict[tuple[str, str], dict[str, Any]],
     rng: random.Random,
@@ -285,7 +366,12 @@ def simulate_once(
         away = str(prediction["away_team"])
         if home not in table or away not in table:
             continue
-        home_goals, away_goals = sample_group_game(prediction, rng)
+        result = results_by_id.get(str(prediction["match_id"]))
+        if result:
+            home_goals = int(result["actual_home_goals"])
+            away_goals = int(result["actual_away_goals"])
+        else:
+            home_goals, away_goals = sample_group_game(prediction, rng)
         register_group_result(table, home, away, home_goals, away_goals)
         if home_goals > away_goals:
             wins[home] += 1
@@ -324,10 +410,12 @@ def simulate_once(
 
 def run_simulations(
     predictions: list[dict[str, Any]],
+    results: list[dict[str, Any]],
     simulations: int,
     seed: int | None = None,
 ) -> tuple[Counter[str], list[list[str]]]:
     group_predictions = [prediction for prediction in predictions if is_group_prediction(prediction)]
+    results_by_id = {str(result["match_id"]): result for result in results}
     knockout_predictions = {
         (str(prediction["home_team"]), str(prediction["away_team"])): prediction
         for prediction in predictions
@@ -338,18 +426,26 @@ def run_simulations(
     rng = random.Random(seed)
     champions: Counter[str] = Counter()
     for _ in range(simulations):
-        champions[simulate_once(group_predictions, groups, knockout_predictions, rng)] += 1
+        champions[simulate_once(group_predictions, results_by_id, groups, knockout_predictions, rng)] += 1
     return champions, groups
 
 
 def load_predictions(client: Client) -> list[dict[str, Any]]:
     response = client.table("predictions").select(
-        "match_id,home_team,away_team,home_win_prob,draw_prob,away_win_prob,round,match_date"
+        "match_id,home_team,away_team,predicted_home_goals,predicted_away_goals,"
+        "home_win_prob,draw_prob,away_win_prob,round,match_date"
     ).execute()
     predictions = response.data or []
     if not predictions:
         raise RuntimeError("A tabela predictions está vazia.")
     return predictions
+
+
+def load_results(client: Client) -> list[dict[str, Any]]:
+    response = client.table("results").select(
+        "match_id,actual_home_goals,actual_away_goals,match_date"
+    ).execute()
+    return response.data or []
 
 
 def load_eliminated(client: Client) -> set[str]:
@@ -403,7 +499,8 @@ def main() -> None:
     started = time.perf_counter()
     client = supabase_client()
     predictions = load_predictions(client)
-    champions, groups = run_simulations(predictions, args.simulations, args.seed)
+    results = load_results(client)
+    champions, groups = run_simulations(predictions, results, args.simulations, args.seed)
     teams = {team for group in groups for team in group}
     eliminated = load_eliminated(client)
     payload = build_payload(champions, teams, eliminated, args.simulations)
@@ -413,6 +510,7 @@ def main() -> None:
     elapsed = time.perf_counter() - started
     print(f"[OK] {args.simulations:,} simulações concluídas em {elapsed:.2f}s.")
     print(f"[OK] {len(teams)} times incluídos em {len(groups)} grupos inferidos.")
+    print(f"[OK] {len(results)} resultado(s) real(is) fixado(s) antes de simular o restante.")
     print("Top 5:")
     for position, row in enumerate(top_five, start=1):
         print(f"  {position}. {row['team']}: {row['champion_prob'] * 100:.2f}%")

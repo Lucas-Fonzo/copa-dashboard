@@ -206,6 +206,8 @@ O projeto inclui dois workflows:
 - `.github/workflows/sync-results.yml`: execução automática a cada 10 minutos, das 10h até 2h
   no horário de Brasília;
 - `.github/workflows/sync-manual.yml`: execução sob demanda pelo botão **Run workflow**.
+- `.github/workflows/simulate-champion-daily.yml`: recálculo diário das chances de título,
+  depois de sincronizar os resultados mais recentes.
 
 ### Ativação
 
@@ -244,6 +246,24 @@ mas o passo usa `continue-on-error` para evitar alertas desnecessários de workf
 Na aba **Actions**, escolha **Sincronizar resultados manualmente**, clique em **Run workflow**
 e confirme a branch. Os mesmos secrets são usados automaticamente.
 
+### Recálculo diário das chances de campeão
+
+O workflow **Recalcular chances de título** roda diariamente às 03:30 no horário de Brasília
+e executa duas etapas:
+
+1. `python sync_results.py`, para trazer resultados finais, placares ao vivo e eliminações;
+2. `python simulate_champion.py --simulations 10000`, para recalcular o Monte Carlo com os
+   resultados reais disponíveis até aquele momento.
+
+O simulador lê a tabela `results` antes de rodar. Jogos que já têm resultado real entram como
+placar fixo na simulação; os jogos restantes continuam sendo sorteados pelas probabilidades da
+tabela `predictions`. Assim, a chance de título vai mudando diariamente sem apagar o histórico
+do modelo.
+
+Se você quiser recalcular fora do horário automático, abra **Actions → Recalcular chances de
+título → Run workflow**. Não precisa rodar comando manual local, desde que os secrets
+`SUPABASE_URL` e `SUPABASE_SERVICE_KEY` estejam configurados no GitHub.
+
 ## Definição das métricas
 
 - **Resultado correto:** a previsão acertou vitória da casa, empate ou vitória do visitante,
@@ -266,10 +286,23 @@ python simulate_champion.py
 ```
 
 O comando lê as previsões do Supabase, infere os grupos pelos confrontos disponíveis,
-executa 10.000 simulações Monte Carlo e atualiza `championship_odds`. Ele funciona com
-previsões parciais: partidas ausentes não entram na tabela simulada. Como a tabela
-`predictions` não contém o chaveamento oficial do mata-mata, a primeira rodada eliminatória
-é aproximada evitando, quando possível, reencontros do mesmo grupo.
+fixa os resultados reais já registrados em `results`, executa 10.000 simulações Monte Carlo
+para o restante do torneio e atualiza `championship_odds`. Ele funciona com previsões parciais:
+partidas ausentes não entram na tabela simulada. Como a tabela `predictions` não contém o
+chaveamento oficial completo do mata-mata, a primeira rodada eliminatória é aproximada
+evitando, quando possível, reencontros do mesmo grupo.
+
+Nos jogos de mata-mata, o simulador decide em três etapas:
+
+1. sorteia o resultado dos 90 minutos usando `home_win_prob`, `draw_prob` e `away_win_prob`;
+2. se os 90 minutos terminarem empatados, simula uma prorrogação única de 30 minutos por
+   Poisson, usando o placar previsto como aproximação de força ofensiva;
+3. se a prorrogação também terminar empatada, decide nos pênaltis com 60% para o lado mais
+   forte pelo modelo.
+
+A prorrogação usa `30/90` da expectativa de gols dos 90 minutos e fator de intensidade `0.95`.
+Esse fator reduz pouco o volume esperado, assumindo que em Copa do Mundo há cansaço, mas também
+há mais urgência e garra do que em um jogo comum.
 
 Para uma execução menor de diagnóstico ou uma simulação reproduzível:
 
