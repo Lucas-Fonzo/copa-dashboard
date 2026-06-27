@@ -4,6 +4,9 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const SUPABASE_URL = "https://tmkzvfxpdyoetdfrysfn.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_j_qmH14lt88_rdosFL8A_w_PnSOzeVU";
 
+const EXTRA_TIME_INTENSITY = 0.95;
+const EXTRA_TIME_SHARE_OF_MATCH = 30 / 90;
+
 const TEAM_NAME_MAP = {
   Brazil: "Brasil", Germany: "Alemanha", France: "França", England: "Inglaterra",
   Spain: "Espanha", Netherlands: "Holanda", Croatia: "Croácia", Morocco: "Marrocos",
@@ -500,6 +503,7 @@ function flagToken(team) {
     Austrália: "flag-australia",
     Bélgica: "flag-belgium",
     Brasil: "flag-brazil",
+    "Cabo Verde": "flag-cape-verde",
     Canadá: "flag-canada",
     Colômbia: "flag-colombia",
     "Costa do Marfim": "flag-ivory-coast",
@@ -845,23 +849,56 @@ function estimatePoissonLambdas(match) {
   return best;
 }
 
+function isKnockoutMatch(match) {
+  return !String(match.round ?? "").toLocaleLowerCase("pt-BR").includes("fase de grupos");
+}
+
+function addScoreline(scorelineMap, homeGoals, awayGoals, probability) {
+  const key = `${homeGoals}-${awayGoals}`;
+  const current = scorelineMap.get(key) ?? { homeGoals, awayGoals, probability: 0 };
+  current.probability += probability;
+  scorelineMap.set(key, current);
+}
+
 function mostLikelyBrazilScores(match, brazilIsHome) {
   const { homeLambda, awayLambda } = estimatePoissonLambdas(match);
   const homeDistribution = poissonDistribution(homeLambda, 7);
   const awayDistribution = poissonDistribution(awayLambda, 7);
-  const scorelines = [];
+  const scorelineMap = new Map();
+  const shouldApplyExtraTime = isKnockoutMatch(match);
+  const extraHomeDistribution = shouldApplyExtraTime
+    ? poissonDistribution(homeLambda * EXTRA_TIME_SHARE_OF_MATCH * EXTRA_TIME_INTENSITY, 5)
+    : [];
+  const extraAwayDistribution = shouldApplyExtraTime
+    ? poissonDistribution(awayLambda * EXTRA_TIME_SHARE_OF_MATCH * EXTRA_TIME_INTENSITY, 5)
+    : [];
 
   for (let homeGoals = 0; homeGoals < homeDistribution.length; homeGoals += 1) {
     for (let awayGoals = 0; awayGoals < awayDistribution.length; awayGoals += 1) {
-      scorelines.push({
-        brazilGoals: brazilIsHome ? homeGoals : awayGoals,
-        opponentGoals: brazilIsHome ? awayGoals : homeGoals,
-        probability: homeDistribution[homeGoals] * awayDistribution[awayGoals],
-      });
+      const probability90 = homeDistribution[homeGoals] * awayDistribution[awayGoals];
+      if (shouldApplyExtraTime && homeGoals === awayGoals) {
+        for (let extraHomeGoals = 0; extraHomeGoals < extraHomeDistribution.length; extraHomeGoals += 1) {
+          for (let extraAwayGoals = 0; extraAwayGoals < extraAwayDistribution.length; extraAwayGoals += 1) {
+            addScoreline(
+              scorelineMap,
+              homeGoals + extraHomeGoals,
+              awayGoals + extraAwayGoals,
+              probability90 * extraHomeDistribution[extraHomeGoals] * extraAwayDistribution[extraAwayGoals],
+            );
+          }
+        }
+      } else {
+        addScoreline(scorelineMap, homeGoals, awayGoals, probability90);
+      }
     }
   }
 
-  return scorelines
+  return [...scorelineMap.values()]
+    .map((scoreline) => ({
+      brazilGoals: brazilIsHome ? scoreline.homeGoals : scoreline.awayGoals,
+      opponentGoals: brazilIsHome ? scoreline.awayGoals : scoreline.homeGoals,
+      probability: scoreline.probability,
+    }))
     .sort((a, b) => b.probability - a.probability)
     .slice(0, 3);
 }
@@ -948,9 +985,13 @@ function renderBrazilSection(odds, predictions, liveMatches = cachedLiveMatches)
     } else {
       const brazilIsHome = displayTeam(nextGame.home_team) === "Brasil";
       const opponent = displayTeam(brazilIsHome ? nextGame.away_team : nextGame.home_team);
-      const brazilGoals = brazilIsHome ? nextGame.predicted_home_goals : nextGame.predicted_away_goals;
-      const opponentGoals = brazilIsHome ? nextGame.predicted_away_goals : nextGame.predicted_home_goals;
       const scorelines = mostLikelyBrazilScores(nextGame, brazilIsHome);
+      const isKnockout = isKnockoutMatch(nextGame);
+      const fallbackBrazilGoals = brazilIsHome ? nextGame.predicted_home_goals : nextGame.predicted_away_goals;
+      const fallbackOpponentGoals = brazilIsHome ? nextGame.predicted_away_goals : nextGame.predicted_home_goals;
+      const mainScoreline = isKnockout && scorelines[0]
+        ? scorelines[0]
+        : { brazilGoals: fallbackBrazilGoals, opponentGoals: fallbackOpponentGoals };
       elements.brazilNextGame.innerHTML = `
         <span class="brazil-game-kicker">${isBrazilLive ? "Brasil em campo agora" : "Próximo jogo do Brasil"}</span>
         ${isBrazilLive ? `
@@ -959,12 +1000,12 @@ function renderBrazilSection(odds, predictions, liveMatches = cachedLiveMatches)
         ` : ""}
         <strong class="brazil-matchup">Brasil <small>×</small> ${escapeHtml(opponent)}</strong>
         <span class="brazil-game-date">${formatBrasilia(nextGame.match_date)} · Brasília</span>
-        <span class="prediction-label brazil-prediction-label">Palpite principal</span>
-        <strong class="brazil-main-score">${brazilGoals} <small>×</small> ${opponentGoals}</strong>
+        <span class="prediction-label brazil-prediction-label">${isKnockout ? "Palpite final mais provável" : "Palpite principal"}</span>
+        <strong class="brazil-main-score">${mainScoreline.brazilGoals} <small>×</small> ${mainScoreline.opponentGoals}</strong>
         ${brazilResultProbability(nextGame, brazilIsHome, opponent)}
         ${liveScoreBlock(nextGame, liveMatch)}`;
       elements.brazilScorelines.innerHTML = `
-        <span class="brazil-card-kicker">Placares mais prováveis</span>
+        <span class="brazil-card-kicker">${isKnockout ? "Placares finais mais prováveis" : "Placares mais prováveis"}</span>
         <strong class="scorelines-match">Brasil × ${escapeHtml(opponent)}</strong>
         <div class="scoreline-ranking">
           ${scorelines.map((scoreline, index) => `

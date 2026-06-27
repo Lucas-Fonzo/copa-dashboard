@@ -31,6 +31,51 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def normalize_championship_odds(client: Client) -> None:
+    """Redistribui proporcionalmente as chances entre as seleções ainda vivas."""
+    response = (
+        client.table("championship_odds")
+        .select("team,champion_prob,eliminated,simulations_run")
+        .execute()
+    )
+    rows = response.data or []
+    active = [row for row in rows if not row.get("eliminated")]
+    active_total = sum(float(row.get("champion_prob") or 0) for row in active)
+    if not active or active_total <= 0:
+        print("[AVISO] Sem seleções ativas com probabilidade positiva para redistribuir.")
+        return
+
+    updated_at = datetime.now(timezone.utc).isoformat()
+    payload = []
+    remaining = 1.0
+    for index, row in enumerate(active):
+        if index == len(active) - 1:
+            probability = max(0.0, remaining)
+        else:
+            probability = round(float(row.get("champion_prob") or 0) / active_total, 8)
+            remaining -= probability
+        payload.append({
+            "team": row["team"],
+            "champion_prob": probability,
+            "eliminated": False,
+            "simulations_run": int(row.get("simulations_run") or 1),
+            "updated_at": updated_at,
+        })
+
+    for row in rows:
+        if row.get("eliminated"):
+            payload.append({
+                "team": row["team"],
+                "champion_prob": 0,
+                "eliminated": True,
+                "simulations_run": int(row.get("simulations_run") or 1),
+                "updated_at": updated_at,
+            })
+
+    client.table("championship_odds").upsert(payload, on_conflict="team").execute()
+    print("[OK] Probabilidades redistribuídas entre as seleções ainda vivas.")
+
+
 def main() -> None:
     args = parse_args()
     client = supabase_client()
@@ -50,6 +95,7 @@ def main() -> None:
         ).in_("team", matched).execute()
         for team in matched:
             print(f"[OK] {team}: marcado como eliminado.")
+        normalize_championship_odds(client)
     for team in missing:
         print(f"[AVISO] {team}: não encontrado em championship_odds.")
     if not matched:

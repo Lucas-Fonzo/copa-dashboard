@@ -288,9 +288,9 @@ python simulate_champion.py
 O comando lê as previsões do Supabase, infere os grupos pelos confrontos disponíveis,
 fixa os resultados reais já registrados em `results`, executa 10.000 simulações Monte Carlo
 para o restante do torneio e atualiza `championship_odds`. Ele funciona com previsões parciais:
-partidas ausentes não entram na tabela simulada. Como a tabela `predictions` não contém o
-chaveamento oficial completo do mata-mata, a primeira rodada eliminatória é aproximada
-evitando, quando possível, reencontros do mesmo grupo.
+partidas ausentes não entram na tabela simulada. A fase de 32 usa o chaveamento oficial por
+slots, com campeões, segundos colocados e melhores terceiros compatíveis com cada vaga — a mesma
+estrutura exibida no dashboard.
 
 Nos jogos de mata-mata, o simulador decide em três etapas:
 
@@ -303,6 +303,11 @@ Nos jogos de mata-mata, o simulador decide em três etapas:
 A prorrogação usa `30/90` da expectativa de gols dos 90 minutos e fator de intensidade `0.95`.
 Esse fator reduz pouco o volume esperado, assumindo que em Copa do Mundo há cansaço, mas também
 há mais urgência e garra do que em um jogo comum.
+
+Quando o chaveamento gerar um confronto de mata-mata que ainda não existe em `predictions`, o
+simulador usa um fallback de força baseado nos pontos esperados médios do próprio modelo nas
+partidas previstas. Isso evita que vitórias acumuladas durante a simulação virem uma bola de neve
+e supervalorizem seleções que vieram de grupos mais favoráveis.
 
 Para uma execução menor de diagnóstico ou uma simulação reproduzível:
 

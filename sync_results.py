@@ -426,6 +426,55 @@ def infer_eliminated_teams(
     return eliminated
 
 
+def normalize_championship_odds(client: Client) -> None:
+    """Redistribui a probabilidade dos eliminados entre as seleções ainda vivas."""
+    response = (
+        client.table("championship_odds")
+        .select("team,champion_prob,eliminated,simulations_run")
+        .execute()
+    )
+    rows = response.data or []
+    if not rows:
+        print("[ODDS] Nenhuma probabilidade cadastrada para normalizar.")
+        return
+
+    active = [row for row in rows if not row.get("eliminated")]
+    active_total = sum(float(row.get("champion_prob") or 0) for row in active)
+    if not active or active_total <= 0:
+        print("[ODDS] Sem seleções ativas com probabilidade positiva para redistribuir.")
+        return
+
+    updated_at = datetime.now(timezone.utc).isoformat()
+    payload: list[dict[str, Any]] = []
+    remaining = 1.0
+    for index, row in enumerate(active):
+        if index == len(active) - 1:
+            probability = max(0.0, remaining)
+        else:
+            probability = round(float(row.get("champion_prob") or 0) / active_total, 8)
+            remaining -= probability
+        payload.append({
+            "team": row["team"],
+            "champion_prob": probability,
+            "eliminated": False,
+            "simulations_run": int(row.get("simulations_run") or 1),
+            "updated_at": updated_at,
+        })
+
+    for row in rows:
+        if row.get("eliminated"):
+            payload.append({
+                "team": row["team"],
+                "champion_prob": 0,
+                "eliminated": True,
+                "simulations_run": int(row.get("simulations_run") or 1),
+                "updated_at": updated_at,
+            })
+
+    client.table("championship_odds").upsert(payload, on_conflict="team").execute()
+    print(f"[ODDS] Probabilidades redistribuídas; {len(active)} seleção(ões) ainda vivas somam 100%.")
+
+
 def sync_eliminated_teams(client: Client, eliminated: set[str]) -> None:
     if not eliminated:
         print("[ELIMINADOS] Nenhuma seleção nova inferida.")
@@ -447,6 +496,7 @@ def sync_eliminated_teams(client: Client, eliminated: set[str]) -> None:
 
     if not matched:
         print("[ELIMINADOS] Nenhuma atualização necessária.")
+        normalize_championship_odds(client)
         return
 
     client.table("championship_odds").update(
@@ -457,6 +507,7 @@ def sync_eliminated_teams(client: Client, eliminated: set[str]) -> None:
         }
     ).in_("team", matched).execute()
     print(f"[ELIMINADOS] {len(matched)} seleção(ões) marcada(s): {', '.join(matched)}")
+    normalize_championship_odds(client)
 
 
 def choose_prediction(

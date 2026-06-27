@@ -27,6 +27,7 @@ EXTRA_TIME_INTENSITY = 0.95
 EXTRA_TIME_SHARE_OF_MATCH = 30 / 90
 MIN_90_MINUTE_GOAL_EXPECTATION = 0.20
 PENALTY_STRONGER_PROBABILITY = 0.60
+GROUP_LETTERS = list("ABCDEFGHIJKL")
 
 TEAM_DISPLAY = {
     "Algeria": "Argélia", "Argentina": "Argentina", "Australia": "Austrália",
@@ -63,6 +64,25 @@ OFFICIAL_GROUPS = [
     ["Argentina", "Algeria", "Austria", "Jordan"],
     ["Portugal", "DR Congo", "Uzbekistan", "Colombia"],
     ["England", "Croatia", "Ghana", "Panama"],
+]
+
+ROUND_OF_32_SLOTS = [
+    ("Winner Group E", "Best 3rd (Groups A/B/C/D/F)"),
+    ("Winner Group I", "Best 3rd (Groups C/D/F/G/H)"),
+    ("Runner-up Group A", "Runner-up Group B"),
+    ("Winner Group F", "Runner-up Group C"),
+    ("Runner-up Group K", "Runner-up Group L"),
+    ("Winner Group H", "Runner-up Group J"),
+    ("Winner Group D", "Best 3rd (Groups B/E/F/I/J)"),
+    ("Winner Group G", "Best 3rd (Groups A/E/H/I/J)"),
+    ("Winner Group C", "Runner-up Group F"),
+    ("Runner-up Group E", "Runner-up Group I"),
+    ("Winner Group A", "Best 3rd (Groups C/E/F/H/I)"),
+    ("Winner Group L", "Best 3rd (Groups E/H/I/J/K)"),
+    ("Winner Group J", "Runner-up Group H"),
+    ("Runner-up Group D", "Runner-up Group G"),
+    ("Winner Group B", "Best 3rd (Groups E/F/G/I/J)"),
+    ("Winner Group K", "Best 3rd (Groups D/E/I/J/L)"),
 ]
 
 
@@ -266,6 +286,28 @@ def rank_group(teams: list[str], table: dict[str, Standing], rng: random.Random)
     )
 
 
+def build_team_strength_scores(predictions: Iterable[dict[str, Any]]) -> dict[str, float]:
+    """Resume a força pré-jogo do modelo como pontos esperados médios.
+
+    Esse score é usado apenas quando o mata-mata gera um confronto que ainda não
+    existe em `predictions`. Ele evita usar vitórias acumuladas na própria
+    simulação, que criavam um efeito bola de neve para seleções de grupos mais
+    favoráveis.
+    """
+    expected_points: dict[str, list[float]] = defaultdict(list)
+    for prediction in predictions:
+        home = str(prediction["home_team"])
+        away = str(prediction["away_team"])
+        home_prob, draw_prob, away_prob = probability_triplet(prediction)
+        expected_points[home].append((3 * home_prob) + draw_prob)
+        expected_points[away].append((3 * away_prob) + draw_prob)
+    return {
+        team: sum(values) / len(values)
+        for team, values in expected_points.items()
+        if values
+    }
+
+
 def prediction_for_pair(
     home: str,
     away: str,
@@ -281,7 +323,7 @@ def prediction_for_pair(
 def knockout_winner(
     home: str,
     away: str,
-    wins: Counter[str],
+    team_strength: dict[str, float],
     knockout_predictions: dict[tuple[str, str], dict[str, Any]],
     rng: random.Random,
 ) -> str:
@@ -310,9 +352,11 @@ def knockout_winner(
             return penalty_winner(home, away, stronger, rng)
         return home if outcome == "home" else away
 
-    if wins[home] == wins[away]:
+    home_strength = team_strength.get(home, 0.0)
+    away_strength = team_strength.get(away, 0.0)
+    if home_strength == away_strength:
         return rng.choice([home, away])
-    stronger = home if wins[home] > wins[away] else away
+    stronger = home if home_strength > away_strength else away
     weaker = away if stronger == home else home
     return rng.choices(
         [stronger, weaker],
@@ -321,34 +365,98 @@ def knockout_winner(
     )[0]
 
 
+def allowed_third_groups(slot: str) -> list[str]:
+    marker = "Best 3rd (Groups "
+    if not slot.startswith(marker) or not slot.endswith(")"):
+        return []
+    return slot.removeprefix(marker).removesuffix(")").split("/")
+
+
+def assign_third_places(third_by_group: dict[str, str]) -> dict[str, str]:
+    """Atribui os oito melhores terceiros aos slots oficiais compatíveis."""
+    third_slots = sorted(
+        [slot for match in ROUND_OF_32_SLOTS for slot in match if slot.startswith("Best 3rd")],
+        key=lambda slot: sum(1 for group in allowed_third_groups(slot) if group in third_by_group),
+    )
+
+    def backtrack(
+        index: int = 0,
+        used: set[str] | None = None,
+        assigned: dict[str, str] | None = None,
+    ) -> dict[str, str] | None:
+        used = used or set()
+        assigned = assigned or {}
+        if index == len(third_slots):
+            return dict(assigned)
+        slot = third_slots[index]
+        for group in allowed_third_groups(slot):
+            if group not in third_by_group or group in used:
+                continue
+            used.add(group)
+            assigned[slot] = third_by_group[group]
+            solved = backtrack(index + 1, used, assigned)
+            if solved:
+                return solved
+            used.remove(group)
+            assigned.pop(slot, None)
+        return None
+
+    return backtrack() or {}
+
+
+def resolve_bracket_slot(
+    slot: str,
+    standings_by_group: dict[str, list[str]],
+    third_assignment: dict[str, str],
+) -> str | None:
+    if slot.startswith("Winner Group "):
+        group = slot.removeprefix("Winner Group ")
+        return standings_by_group.get(group, [None])[0]
+    if slot.startswith("Runner-up Group "):
+        group = slot.removeprefix("Runner-up Group ")
+        ranking = standings_by_group.get(group, [])
+        return ranking[1] if len(ranking) > 1 else None
+    if slot.startswith("Best 3rd"):
+        return third_assignment.get(slot)
+    return None
+
+
 def build_round_of_32(
-    winners: list[tuple[str, int]],
-    runners_and_thirds: list[tuple[str, int]],
+    ranked_groups: list[list[str]],
+    table: dict[str, Standing],
     rng: random.Random,
 ) -> list[str]:
-    """Cria 16 confrontos aproximados evitando reencontros do mesmo grupo."""
-    opponents = runners_and_thirds[:]
-    rng.shuffle(opponents)
-    pairings: list[tuple[str, str]] = []
+    """Monta a fase de 32 com o mesmo chaveamento oficial usado no dashboard."""
+    standings_by_group = {
+        GROUP_LETTERS[index]: ranking
+        for index, ranking in enumerate(ranked_groups)
+        if index < len(GROUP_LETTERS)
+    }
+    third_groups = [
+        (GROUP_LETTERS[index], ranking[2])
+        for index, ranking in enumerate(ranked_groups)
+        if index < len(GROUP_LETTERS) and len(ranking) > 2
+    ]
+    third_groups.sort(
+        key=lambda item: (
+            table[item[1]].points,
+            table[item[1]].goal_difference,
+            table[item[1]].goals_for,
+            table[item[1]].wins,
+            rng.random(),
+        ),
+        reverse=True,
+    )
+    third_by_group = {group: team for group, team in third_groups[:8]}
+    third_assignment = assign_third_places(third_by_group)
 
-    for winner, group_id in winners:
-        if not opponents:
-            break
-        valid = [item for item in opponents if item[1] != group_id]
-        opponent = rng.choice(valid or opponents)
-        opponents.remove(opponent)
-        pairings.append((winner, opponent[0]))
-
-    rng.shuffle(opponents)
-    while len(opponents) >= 2:
-        first = opponents.pop()
-        valid_indexes = [i for i, item in enumerate(opponents) if item[1] != first[1]]
-        index = rng.choice(valid_indexes) if valid_indexes else len(opponents) - 1
-        second = opponents.pop(index)
-        pairings.append((first[0], second[0]))
-
-    rng.shuffle(pairings)
-    return [team for pairing in pairings for team in pairing]
+    bracket: list[str] = []
+    for home_slot, away_slot in ROUND_OF_32_SLOTS:
+        home = resolve_bracket_slot(home_slot, standings_by_group, third_assignment)
+        away = resolve_bracket_slot(away_slot, standings_by_group, third_assignment)
+        if home and away:
+            bracket.extend([home, away])
+    return bracket
 
 
 def simulate_once(
@@ -356,10 +464,10 @@ def simulate_once(
     results_by_id: dict[str, dict[str, Any]],
     groups: list[list[str]],
     knockout_predictions: dict[tuple[str, str], dict[str, Any]],
+    team_strength: dict[str, float],
     rng: random.Random,
 ) -> str:
     table = {team: Standing() for group in groups for team in group}
-    wins: Counter[str] = Counter()
 
     for prediction in group_predictions:
         home = str(prediction["home_team"])
@@ -373,25 +481,9 @@ def simulate_once(
         else:
             home_goals, away_goals = sample_group_game(prediction, rng)
         register_group_result(table, home, away, home_goals, away_goals)
-        if home_goals > away_goals:
-            wins[home] += 1
-        elif away_goals > home_goals:
-            wins[away] += 1
 
     ranked_groups = [rank_group(group, table, rng) for group in groups]
-    winners = [(ranking[0], group_id) for group_id, ranking in enumerate(ranked_groups) if ranking]
-    runners = [(ranking[1], group_id) for group_id, ranking in enumerate(ranked_groups) if len(ranking) > 1]
-    thirds = [(ranking[2], group_id) for group_id, ranking in enumerate(ranked_groups) if len(ranking) > 2]
-    thirds.sort(
-        key=lambda item: (
-            table[item[0]].points,
-            table[item[0]].goal_difference,
-            table[item[0]].goals_for,
-            rng.random(),
-        ),
-        reverse=True,
-    )
-    bracket = build_round_of_32(winners, runners + thirds[:8], rng)
+    bracket = build_round_of_32(ranked_groups, table, rng)
     if len(bracket) < 2:
         raise ValueError("Não há classificados suficientes para montar o mata-mata.")
 
@@ -401,8 +493,7 @@ def simulate_once(
             next_round.append(bracket.pop())
         for index in range(0, len(bracket), 2):
             home, away = bracket[index], bracket[index + 1]
-            winner = knockout_winner(home, away, wins, knockout_predictions, rng)
-            wins[winner] += 1
+            winner = knockout_winner(home, away, team_strength, knockout_predictions, rng)
             next_round.append(winner)
         bracket = next_round
     return bracket[0]
@@ -416,6 +507,7 @@ def run_simulations(
 ) -> tuple[Counter[str], list[list[str]]]:
     group_predictions = [prediction for prediction in predictions if is_group_prediction(prediction)]
     results_by_id = {str(result["match_id"]): result for result in results}
+    team_strength = build_team_strength_scores(predictions)
     knockout_predictions = {
         (str(prediction["home_team"]), str(prediction["away_team"])): prediction
         for prediction in predictions
@@ -426,7 +518,16 @@ def run_simulations(
     rng = random.Random(seed)
     champions: Counter[str] = Counter()
     for _ in range(simulations):
-        champions[simulate_once(group_predictions, results_by_id, groups, knockout_predictions, rng)] += 1
+        champions[
+            simulate_once(
+                group_predictions,
+                results_by_id,
+                groups,
+                knockout_predictions,
+                team_strength,
+                rng,
+            )
+        ] += 1
     return champions, groups
 
 
