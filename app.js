@@ -15,7 +15,7 @@ const TEAM_NAME_MAP = {
   "Saudi Arabia": "Arábia Saudita", "New Zealand": "Nova Zelândia",
   "Ivory Coast": "Costa do Marfim", "Côte d'Ivoire": "Costa do Marfim",
   "Cape Verde": "Cabo Verde", Switzerland: "Suíça", Belgium: "Bélgica",
-  Austria: "Áustria", "Czech Republic": "República Tcheca",
+  Australia: "Austrália", Austria: "Áustria", "Czech Republic": "República Tcheca",
   "Bosnia and Herzegovina": "Bósnia e Herzegovina", "DR Congo": "RD Congo",
   "Democratic Republic of the Congo": "RD Congo", "Congo DR": "RD Congo",
   Türkiye: "Turquia", Turkey: "Turquia", Japan: "Japão", Egypt: "Egito",
@@ -226,8 +226,21 @@ function formatDate(value, includeTime = false) {
   return new Intl.DateTimeFormat("pt-BR", options).format(new Date(value));
 }
 
+function normalizeLookup(value) {
+  return String(value ?? "")
+    .trim()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLocaleLowerCase("pt-BR");
+}
+
 function displayTeam(name) {
-  return TEAM_NAME_MAP[String(name ?? "").trim()] ?? String(name ?? "");
+  const rawName = String(name ?? "").trim();
+  if (TEAM_NAME_MAP[rawName]) return TEAM_NAME_MAP[rawName];
+  const normalizedName = normalizeLookup(rawName);
+  const matchedEntry = Object.entries(TEAM_NAME_MAP)
+    .find(([source]) => normalizeLookup(source) === normalizedName);
+  return matchedEntry?.[1] ?? rawName;
 }
 
 function formatBrasilia(value) {
@@ -554,7 +567,8 @@ function allowedThirdGroups(slot) {
 
 function flagToken(team) {
   if (!team) return '<span class="flag-token flag-empty" aria-hidden="true"></span>';
-  const colors = FLAG_STYLES[team] ?? ["#0d2637", "#8ee000", "#ffc400"];
+  const normalizedTeam = displayTeam(team);
+  const colors = FLAG_STYLES[normalizedTeam] ?? ["#0d2637", "#8ee000", "#ffc400"];
   const specialClass = {
     "África do Sul": "flag-south-africa",
     Alemanha: "flag-germany",
@@ -585,7 +599,7 @@ function flagToken(team) {
     Suíça: "flag-switzerland",
     Turquia: "flag-turkey",
     Uruguai: "flag-uruguay",
-  }[team] ?? "";
+  }[normalizedTeam] ?? "";
   return `
     <span class="flag-token ${specialClass}" aria-hidden="true"
       style="--flag-a:${colors[0]};--flag-b:${colors[1]};--flag-c:${colors[2]}">
@@ -716,11 +730,12 @@ function resolveBracketSlot(slot, standings, completedGroups, thirdAssignment) {
 }
 
 function bracketSlot(slot, team) {
+  const normalizedTeam = team ? displayTeam(team) : null;
   return `
-    <div class="bracket-slot ${team ? "is-filled" : ""}" title="${escapeHtml(slot)}">
+    <div class="bracket-slot ${normalizedTeam ? "is-filled" : ""}" title="${escapeHtml(slot)}">
       <span class="slot-seed">${escapeHtml(slotShortLabel(slot))}</span>
-      ${flagToken(team)}
-      <strong>${team ? escapeHtml(team) : "A definir"}</strong>
+      ${flagToken(normalizedTeam)}
+      <strong>${normalizedTeam ? escapeHtml(normalizedTeam) : "A definir"}</strong>
     </div>`;
 }
 
