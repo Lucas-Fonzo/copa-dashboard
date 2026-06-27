@@ -302,7 +302,7 @@ async function fetchPredictionsForUpcoming() {
   if (!isConfigured()) return [];
   try {
     const response = await supabase.from("predictions").select(
-      "match_id,home_team,away_team,predicted_home_goals,predicted_away_goals,home_win_prob,draw_prob,away_win_prob,match_date",
+      "match_id,home_team,away_team,predicted_home_goals,predicted_away_goals,home_win_prob,draw_prob,away_win_prob,round,match_date",
     );
     if (response.error) throw response.error;
     return response.data ?? [];
@@ -464,6 +464,8 @@ function positionBrazilSection(isBrazilLive) {
 }
 
 function probabilityCell(match) {
+  if (isKnockoutMatch(match)) return advancementProbabilityCell(match);
+
   const home = Number(match.home_win_prob) * 100;
   const draw = Number(match.draw_prob) * 100;
   const away = Number(match.away_win_prob) * 100;
@@ -474,6 +476,63 @@ function probabilityCell(match) {
         <span class="prob-home" style="width:${home}%"></span>
         <span class="prob-draw" style="width:${draw}%"></span>
         <span class="prob-away" style="width:${away}%"></span>
+      </div>
+    </div>`;
+}
+
+function advancementProbabilities(match) {
+  const homeWin90 = Number(match.home_win_prob);
+  const draw90 = Number(match.draw_prob);
+  const awayWin90 = Number(match.away_win_prob);
+  const { homeLambda, awayLambda } = estimatePoissonLambdas(match);
+  const extraHomeDistribution = poissonDistribution(
+    homeLambda * EXTRA_TIME_SHARE_OF_MATCH * EXTRA_TIME_INTENSITY,
+    8,
+  );
+  const extraAwayDistribution = poissonDistribution(
+    awayLambda * EXTRA_TIME_SHARE_OF_MATCH * EXTRA_TIME_INTENSITY,
+    8,
+  );
+
+  let homeExtraWin = 0;
+  let extraDraw = 0;
+  let awayExtraWin = 0;
+  for (let homeGoals = 0; homeGoals < extraHomeDistribution.length; homeGoals += 1) {
+    for (let awayGoals = 0; awayGoals < extraAwayDistribution.length; awayGoals += 1) {
+      const probability = extraHomeDistribution[homeGoals] * extraAwayDistribution[awayGoals];
+      if (homeGoals > awayGoals) homeExtraWin += probability;
+      else if (homeGoals === awayGoals) extraDraw += probability;
+      else awayExtraWin += probability;
+    }
+  }
+
+  const strongerIsHome = homeWin90 >= awayWin90;
+  const homePenaltyShare = strongerIsHome ? 0.60 : 0.40;
+  const awayPenaltyShare = 1 - homePenaltyShare;
+  const homeAdvance = homeWin90 + (draw90 * (homeExtraWin + (extraDraw * homePenaltyShare)));
+  const awayAdvance = awayWin90 + (draw90 * (awayExtraWin + (extraDraw * awayPenaltyShare)));
+  const total = homeAdvance + awayAdvance;
+  if (total <= 0) return { homeAdvance: 0.5, awayAdvance: 0.5 };
+  return {
+    homeAdvance: homeAdvance / total,
+    awayAdvance: awayAdvance / total,
+  };
+}
+
+function advancementProbabilityCell(match, homeLabel = "Casa", awayLabel = "Fora") {
+  const { homeAdvance, awayAdvance } = advancementProbabilities(match);
+  const homePct = Math.round(homeAdvance * 100);
+  const awayPct = Math.max(0, 100 - homePct);
+  return `
+    <div class="probability advancement-probability"
+         aria-label="${escapeHtml(homeLabel)} avança ${homePct}%, ${escapeHtml(awayLabel)} avança ${awayPct}%">
+      <div class="probability-labels">
+        <span>${escapeHtml(homeLabel)} avança ${homePct}%</span>
+        <span>${escapeHtml(awayLabel)} avança ${awayPct}%</span>
+      </div>
+      <div class="probability-bar">
+        <span class="prob-home" style="width:${clampPercent(homePct)}%"></span>
+        <span class="prob-away" style="width:${clampPercent(awayPct)}%"></span>
       </div>
     </div>`;
 }
@@ -767,6 +826,14 @@ function clampPercent(value) {
 }
 
 function brazilResultProbability(match, brazilIsHome, opponent) {
+  if (isKnockoutMatch(match)) {
+    return advancementProbabilityCell(
+      match,
+      brazilIsHome ? "Brasil" : opponent,
+      brazilIsHome ? opponent : "Brasil",
+    );
+  }
+
   const brazilWin = Number(brazilIsHome ? match.home_win_prob : match.away_win_prob);
   const opponentWin = Number(brazilIsHome ? match.away_win_prob : match.home_win_prob);
   const brazilPct = Math.round(brazilWin * 100);
