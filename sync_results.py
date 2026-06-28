@@ -672,6 +672,18 @@ def run_once(client: Client) -> None:
         client.table("results").upsert(pending, on_conflict="match_id").execute()
         synced_results.extend(pending)
     sync_eliminated_teams(client, infer_eliminated_teams(predictions, synced_results))
+    try:
+        from sync_defined_knockout_predictions import sync_defined_knockout_predictions
+
+        sync_defined_knockout_predictions(
+            client=client,
+            source="supabase",
+            upload=True,
+            overwrite=True,
+            update_local=False,
+        )
+    except Exception as error:  # noqa: BLE001 - o sync de resultados não deve falhar por previsão pendente.
+        print(f"[MATA-MATA][AVISO] Não foi possível calcular confrontos definidos: {error}")
     print(f"[FIM] {len(pending)} resultado(s) inserido(s).")
 
 

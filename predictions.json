@@ -9,7 +9,7 @@
     "draw_prob": 0.206131,
     "away_win_prob": 0.140166,
     "round": "Fase de Grupos - Rodada 1",
-    "match_date": "2026-06-11T19:00:00Z"
+    "match_date": "2026-06-11T19:00:00+00:00"
   },
   {
     "match_id": "WC2026_002",
@@ -21,7 +21,7 @@
     "draw_prob": 0.198226,
     "away_win_prob": 0.128352,
     "round": "Fase de Grupos - Rodada 1",
-    "match_date": "2026-06-12T02:00:00Z"
+    "match_date": "2026-06-12T02:00:00+00:00"
   },
   {
     "match_id": "WC2026_003",
@@ -33,7 +33,7 @@
     "draw_prob": 0.145185,
     "away_win_prob": 0.070066,
     "round": "Fase de Grupos - Rodada 1",
-    "match_date": "2026-06-12T19:00:00Z"
+    "match_date": "2026-06-12T19:00:00+00:00"
   },
   {
     "match_id": "WC2026_004",
@@ -45,7 +45,7 @@
     "draw_prob": 0.245816,
     "away_win_prob": 0.228884,
     "round": "Fase de Grupos - Rodada 1",
-    "match_date": "2026-06-13T01:00:00Z"
+    "match_date": "2026-06-13T01:00:00+00:00"
   },
   {
     "match_id": "WC2026_005",
@@ -57,7 +57,7 @@
     "draw_prob": 0.259993,
     "away_win_prob": 0.303628,
     "round": "Fase de Grupos - Rodada 1",
-    "match_date": "2026-06-13T04:00:00Z"
+    "match_date": "2026-06-13T04:00:00+00:00"
   },
   {
     "match_id": "WC2026_006",
@@ -69,7 +69,7 @@
     "draw_prob": 0.151794,
     "away_win_prob": 0.755965,
     "round": "Fase de Grupos - Rodada 1",
-    "match_date": "2026-06-13T19:00:00Z"
+    "match_date": "2026-06-13T19:00:00+00:00"
   },
   {
     "match_id": "WC2026_007",
@@ -81,7 +81,7 @@
     "draw_prob": 0.248036,
     "away_win_prob": 0.486706,
     "round": "Fase de Grupos - Rodada 1",
-    "match_date": "2026-06-13T22:00:00Z"
+    "match_date": "2026-06-13T22:00:00+00:00"
   },
   {
     "match_id": "WC2026_008",
@@ -93,7 +93,7 @@
     "draw_prob": 0.258959,
     "away_win_prob": 0.294241,
     "round": "Fase de Grupos - Rodada 1",
-    "match_date": "2026-06-14T01:00:00Z"
+    "match_date": "2026-06-14T01:00:00+00:00"
   },
   {
     "match_id": "WC2026_009",
@@ -105,7 +105,7 @@
     "draw_prob": 0.140501,
     "away_win_prob": 0.066143,
     "round": "Fase de Grupos - Rodada 1",
-    "match_date": "2026-06-14T17:00:00Z"
+    "match_date": "2026-06-14T17:00:00+00:00"
   },
   {
     "match_id": "WC2026_010",
@@ -117,7 +117,7 @@
     "draw_prob": 0.254552,
     "away_win_prob": 0.4506,
     "round": "Fase de Grupos - Rodada 1",
-    "match_date": "2026-06-14T20:00:00Z"
+    "match_date": "2026-06-14T20:00:00+00:00"
   },
   {
     "match_id": "WC2026_011",
@@ -129,7 +129,7 @@
     "draw_prob": 0.2612,
     "away_win_prob": 0.317896,
     "round": "Fase de Grupos - Rodada 1",
-    "match_date": "2026-06-14T23:00:00Z"
+    "match_date": "2026-06-14T23:00:00+00:00"
   },
   {
     "match_id": "WC2026_012",
@@ -141,7 +141,7 @@
     "draw_prob": 0.235397,
     "away_win_prob": 0.539758,
     "round": "Fase de Grupos - Rodada 1",
-    "match_date": "2026-06-15T02:00:00Z"
+    "match_date": "2026-06-15T02:00:00+00:00"
   },
   {
     "match_id": "WC2026_013",
@@ -153,7 +153,7 @@
     "draw_prob": 0.04616,
     "away_win_prob": 0.012198,
     "round": "Fase de Grupos - Rodada 1",
-    "match_date": "2026-06-15T16:00:00Z"
+    "match_date": "2026-06-15T16:00:00+00:00"
   },
   {
     "match_id": "WC2026_014",
@@ -165,7 +165,7 @@
     "draw_prob": 0.260094,
     "away_win_prob": 0.304655,
     "round": "Fase de Grupos - Rodada 1",
-    "match_date": "2026-06-15T19:00:00Z"
+    "match_date": "2026-06-15T19:00:00+00:00"
   },
   {
     "match_id": "WC2026_015",
@@ -177,7 +177,7 @@
     "draw_prob": 0.236022,
     "away_win_prob": 0.537437,
     "round": "Fase de Grupos - Rodada 1",
-    "match_date": "2026-06-15T22:00:00Z"
+    "match_date": "2026-06-15T22:00:00+00:00"
   },
   {
     "match_id": "WC2026_016",
@@ -189,7 +189,7 @@
     "draw_prob": 0.157143,
     "away_win_prob": 0.080815,
     "round": "Fase de Grupos - Rodada 1",
-    "match_date": "2026-06-16T01:00:00Z"
+    "match_date": "2026-06-16T01:00:00+00:00"
   },
   {
     "match_id": "WC2026_017",
@@ -201,7 +201,7 @@
     "draw_prob": 0.261923,
     "away_win_prob": 0.330687,
     "round": "Fase de Grupos - Rodada 1",
-    "match_date": "2026-06-16T04:00:00Z"
+    "match_date": "2026-06-16T04:00:00+00:00"
   },
   {
     "match_id": "WC2026_018",
@@ -213,7 +213,7 @@
     "draw_prob": 0.249893,
     "away_win_prob": 0.244132,
     "round": "Fase de Grupos - Rodada 1",
-    "match_date": "2026-06-16T19:00:00Z"
+    "match_date": "2026-06-16T19:00:00+00:00"
   },
   {
     "match_id": "WC2026_019",
@@ -225,7 +225,7 @@
     "draw_prob": 0.254195,
     "away_win_prob": 0.45287,
     "round": "Fase de Grupos - Rodada 1",
-    "match_date": "2026-06-16T22:00:00Z"
+    "match_date": "2026-06-16T22:00:00+00:00"
   },
   {
     "match_id": "WC2026_020",
@@ -237,7 +237,7 @@
     "draw_prob": 0.237248,
     "away_win_prob": 0.20294,
     "round": "Fase de Grupos - Rodada 1",
-    "match_date": "2026-06-17T01:00:00Z"
+    "match_date": "2026-06-17T01:00:00+00:00"
   },
   {
     "match_id": "WC2026_021",
@@ -249,7 +249,7 @@
     "draw_prob": 0.194788,
     "away_win_prob": 0.123554,
     "round": "Fase de Grupos - Rodada 1",
-    "match_date": "2026-06-17T17:00:00Z"
+    "match_date": "2026-06-17T17:00:00+00:00"
   },
   {
     "match_id": "WC2026_022",
@@ -261,7 +261,7 @@
     "draw_prob": 0.231977,
     "away_win_prob": 0.189633,
     "round": "Fase de Grupos - Rodada 1",
-    "match_date": "2026-06-17T20:00:00Z"
+    "match_date": "2026-06-17T20:00:00+00:00"
   },
   {
     "match_id": "WC2026_023",
@@ -273,7 +273,7 @@
     "draw_prob": 0.213026,
     "away_win_prob": 0.611555,
     "round": "Fase de Grupos - Rodada 1",
-    "match_date": "2026-06-17T23:00:00Z"
+    "match_date": "2026-06-17T23:00:00+00:00"
   },
   {
     "match_id": "WC2026_024",
@@ -285,7 +285,7 @@
     "draw_prob": 0.248729,
     "away_win_prob": 0.483282,
     "round": "Fase de Grupos - Rodada 1",
-    "match_date": "2026-06-18T02:00:00Z"
+    "match_date": "2026-06-18T02:00:00+00:00"
   },
   {
     "match_id": "WC2026_025",
@@ -297,7 +297,7 @@
     "draw_prob": 0.260921,
     "away_win_prob": 0.394499,
     "round": "Fase de Grupos - Rodada 2",
-    "match_date": "2026-06-18T16:00:00Z"
+    "match_date": "2026-06-18T16:00:00+00:00"
   },
   {
     "match_id": "WC2026_026",
@@ -309,7 +309,7 @@
     "draw_prob": 0.150053,
     "away_win_prob": 0.074323,
     "round": "Fase de Grupos - Rodada 2",
-    "match_date": "2026-06-18T19:00:00Z"
+    "match_date": "2026-06-18T19:00:00+00:00"
   },
   {
     "match_id": "WC2026_027",
@@ -321,7 +321,7 @@
     "draw_prob": 0.202404,
     "away_win_prob": 0.134487,
     "round": "Fase de Grupos - Rodada 2",
-    "match_date": "2026-06-18T22:00:00Z"
+    "match_date": "2026-06-18T22:00:00+00:00"
   },
   {
     "match_id": "WC2026_028",
@@ -333,7 +333,7 @@
     "draw_prob": 0.26238,
     "away_win_prob": 0.350572,
     "round": "Fase de Grupos - Rodada 2",
-    "match_date": "2026-06-19T01:00:00Z"
+    "match_date": "2026-06-19T01:00:00+00:00"
   },
   {
     "match_id": "WC2026_029",
@@ -345,7 +345,7 @@
     "draw_prob": 0.211417,
     "away_win_prob": 0.148795,
     "round": "Fase de Grupos - Rodada 2",
-    "match_date": "2026-06-19T04:00:00Z"
+    "match_date": "2026-06-19T04:00:00+00:00"
   },
   {
     "match_id": "WC2026_030",
@@ -357,7 +357,7 @@
     "draw_prob": 0.227682,
     "away_win_prob": 0.566613,
     "round": "Fase de Grupos - Rodada 2",
-    "match_date": "2026-06-19T19:00:00Z"
+    "match_date": "2026-06-19T19:00:00+00:00"
   },
   {
     "match_id": "WC2026_031",
@@ -369,7 +369,7 @@
     "draw_prob": 0.117747,
     "away_win_prob": 0.820807,
     "round": "Fase de Grupos - Rodada 2",
-    "match_date": "2026-06-19T22:00:00Z"
+    "match_date": "2026-06-19T22:00:00+00:00"
   },
   {
     "match_id": "WC2026_032",
@@ -381,7 +381,7 @@
     "draw_prob": 0.165745,
     "away_win_prob": 0.089288,
     "round": "Fase de Grupos - Rodada 2",
-    "match_date": "2026-06-20T01:00:00Z"
+    "match_date": "2026-06-20T01:00:00+00:00"
   },
   {
     "match_id": "WC2026_033",
@@ -393,7 +393,7 @@
     "draw_prob": 0.138095,
     "away_win_prob": 0.78296,
     "round": "Fase de Grupos - Rodada 2",
-    "match_date": "2026-06-20T04:00:00Z"
+    "match_date": "2026-06-20T04:00:00+00:00"
   },
   {
     "match_id": "WC2026_034",
@@ -405,7 +405,7 @@
     "draw_prob": 0.194861,
     "away_win_prob": 0.123683,
     "round": "Fase de Grupos - Rodada 2",
-    "match_date": "2026-06-20T17:00:00Z"
+    "match_date": "2026-06-20T17:00:00+00:00"
   },
   {
     "match_id": "WC2026_035",
@@ -417,7 +417,7 @@
     "draw_prob": 0.254679,
     "away_win_prob": 0.266453,
     "round": "Fase de Grupos - Rodada 2",
-    "match_date": "2026-06-20T20:00:00Z"
+    "match_date": "2026-06-20T20:00:00+00:00"
   },
   {
     "match_id": "WC2026_036",
@@ -429,7 +429,7 @@
     "draw_prob": 0.203081,
     "away_win_prob": 0.135505,
     "round": "Fase de Grupos - Rodada 2",
-    "match_date": "2026-06-21T00:00:00Z"
+    "match_date": "2026-06-21T00:00:00+00:00"
   },
   {
     "match_id": "WC2026_037",
@@ -441,7 +441,7 @@
     "draw_prob": 0.081287,
     "away_win_prob": 0.027514,
     "round": "Fase de Grupos - Rodada 2",
-    "match_date": "2026-06-21T16:00:00Z"
+    "match_date": "2026-06-21T16:00:00+00:00"
   },
   {
     "match_id": "WC2026_038",
@@ -453,7 +453,7 @@
     "draw_prob": 0.258498,
     "away_win_prob": 0.420967,
     "round": "Fase de Grupos - Rodada 2",
-    "match_date": "2026-06-21T19:00:00Z"
+    "match_date": "2026-06-21T19:00:00+00:00"
   },
   {
     "match_id": "WC2026_039",
@@ -465,7 +465,7 @@
     "draw_prob": 0.231109,
     "away_win_prob": 0.18765,
     "round": "Fase de Grupos - Rodada 2",
-    "match_date": "2026-06-21T22:00:00Z"
+    "match_date": "2026-06-21T22:00:00+00:00"
   },
   {
     "match_id": "WC2026_040",
@@ -477,7 +477,7 @@
     "draw_prob": 0.207651,
     "away_win_prob": 0.626469,
     "round": "Fase de Grupos - Rodada 2",
-    "match_date": "2026-06-22T01:00:00Z"
+    "match_date": "2026-06-22T01:00:00+00:00"
   },
   {
     "match_id": "WC2026_041",
@@ -489,7 +489,7 @@
     "draw_prob": 0.148876,
     "away_win_prob": 0.073281,
     "round": "Fase de Grupos - Rodada 2",
-    "match_date": "2026-06-22T17:00:00Z"
+    "match_date": "2026-06-22T17:00:00+00:00"
   },
   {
     "match_id": "WC2026_042",
@@ -501,7 +501,7 @@
     "draw_prob": 0.120142,
     "away_win_prob": 0.050748,
     "round": "Fase de Grupos - Rodada 2",
-    "match_date": "2026-06-22T21:00:00Z"
+    "match_date": "2026-06-22T21:00:00+00:00"
   },
   {
     "match_id": "WC2026_043",
@@ -513,7 +513,7 @@
     "draw_prob": 0.259371,
     "away_win_prob": 0.412716,
     "round": "Fase de Grupos - Rodada 2",
-    "match_date": "2026-06-23T00:00:00Z"
+    "match_date": "2026-06-23T00:00:00+00:00"
   },
   {
     "match_id": "WC2026_044",
@@ -525,7 +525,7 @@
     "draw_prob": 0.192981,
     "away_win_prob": 0.66445,
     "round": "Fase de Grupos - Rodada 2",
-    "match_date": "2026-06-23T03:00:00Z"
+    "match_date": "2026-06-23T03:00:00+00:00"
   },
   {
     "match_id": "WC2026_045",
@@ -537,7 +537,7 @@
     "draw_prob": 0.214717,
     "away_win_prob": 0.154489,
     "round": "Fase de Grupos - Rodada 2",
-    "match_date": "2026-06-23T17:00:00Z"
+    "match_date": "2026-06-23T17:00:00+00:00"
   },
   {
     "match_id": "WC2026_046",
@@ -549,7 +549,7 @@
     "draw_prob": 0.10247,
     "away_win_prob": 0.039274,
     "round": "Fase de Grupos - Rodada 2",
-    "match_date": "2026-06-23T20:00:00Z"
+    "match_date": "2026-06-23T20:00:00+00:00"
   },
   {
     "match_id": "WC2026_047",
@@ -561,7 +561,7 @@
     "draw_prob": 0.245997,
     "away_win_prob": 0.496242,
     "round": "Fase de Grupos - Rodada 2",
-    "match_date": "2026-06-23T23:00:00Z"
+    "match_date": "2026-06-23T23:00:00+00:00"
   },
   {
     "match_id": "WC2026_048",
@@ -573,7 +573,7 @@
     "draw_prob": 0.215564,
     "away_win_prob": 0.155993,
     "round": "Fase de Grupos - Rodada 2",
-    "match_date": "2026-06-24T02:00:00Z"
+    "match_date": "2026-06-24T02:00:00+00:00"
   },
   {
     "match_id": "WC2026_049",
@@ -585,7 +585,7 @@
     "draw_prob": 0.262126,
     "away_win_prob": 0.336416,
     "round": "Fase de Grupos - Rodada 3",
-    "match_date": "2026-06-24T19:00:00Z"
+    "match_date": "2026-06-24T19:00:00+00:00"
   },
   {
     "match_id": "WC2026_050",
@@ -597,7 +597,7 @@
     "draw_prob": 0.256263,
     "away_win_prob": 0.438876,
     "round": "Fase de Grupos - Rodada 3",
-    "match_date": "2026-06-24T19:00:00Z"
+    "match_date": "2026-06-24T19:00:00+00:00"
   },
   {
     "match_id": "WC2026_051",
@@ -609,7 +609,7 @@
     "draw_prob": 0.135592,
     "away_win_prob": 0.787788,
     "round": "Fase de Grupos - Rodada 3",
-    "match_date": "2026-06-24T22:00:00Z"
+    "match_date": "2026-06-24T22:00:00+00:00"
   },
   {
     "match_id": "WC2026_052",
@@ -621,7 +621,7 @@
     "draw_prob": 0.097765,
     "away_win_prob": 0.036461,
     "round": "Fase de Grupos - Rodada 3",
-    "match_date": "2026-06-24T22:00:00Z"
+    "match_date": "2026-06-24T22:00:00+00:00"
   },
   {
     "match_id": "WC2026_053",
@@ -633,7 +633,7 @@
     "draw_prob": 0.126329,
     "away_win_prob": 0.805187,
     "round": "Fase de Grupos - Rodada 3",
-    "match_date": "2026-06-25T01:00:00Z"
+    "match_date": "2026-06-25T01:00:00+00:00"
   },
   {
     "match_id": "WC2026_054",
@@ -645,7 +645,7 @@
     "draw_prob": 0.189,
     "away_win_prob": 0.674184,
     "round": "Fase de Grupos - Rodada 3",
-    "match_date": "2026-06-25T01:00:00Z"
+    "match_date": "2026-06-25T01:00:00+00:00"
   },
   {
     "match_id": "WC2026_055",
@@ -657,7 +657,7 @@
     "draw_prob": 0.15656,
     "away_win_prob": 0.74623,
     "round": "Fase de Grupos - Rodada 3",
-    "match_date": "2026-06-25T20:00:00Z"
+    "match_date": "2026-06-25T20:00:00+00:00"
   },
   {
     "match_id": "WC2026_056",
@@ -669,7 +669,7 @@
     "draw_prob": 0.185665,
     "away_win_prob": 0.682142,
     "round": "Fase de Grupos - Rodada 3",
-    "match_date": "2026-06-25T20:00:00Z"
+    "match_date": "2026-06-25T20:00:00+00:00"
   },
   {
     "match_id": "WC2026_057",
@@ -681,7 +681,7 @@
     "draw_prob": 0.125093,
     "away_win_prob": 0.054242,
     "round": "Fase de Grupos - Rodada 3",
-    "match_date": "2026-06-25T23:00:00Z"
+    "match_date": "2026-06-25T23:00:00+00:00"
   },
   {
     "match_id": "WC2026_058",
@@ -693,7 +693,7 @@
     "draw_prob": 0.128753,
     "away_win_prob": 0.800685,
     "round": "Fase de Grupos - Rodada 3",
-    "match_date": "2026-06-25T23:00:00Z"
+    "match_date": "2026-06-25T23:00:00+00:00"
   },
   {
     "match_id": "WC2026_059",
@@ -705,7 +705,7 @@
     "draw_prob": 0.250331,
     "away_win_prob": 0.245988,
     "round": "Fase de Grupos - Rodada 3",
-    "match_date": "2026-06-26T02:00:00Z"
+    "match_date": "2026-06-26T02:00:00+00:00"
   },
   {
     "match_id": "WC2026_060",
@@ -717,7 +717,7 @@
     "draw_prob": 0.182336,
     "away_win_prob": 0.68994,
     "round": "Fase de Grupos - Rodada 3",
-    "match_date": "2026-06-26T02:00:00Z"
+    "match_date": "2026-06-26T02:00:00+00:00"
   },
   {
     "match_id": "WC2026_061",
@@ -729,7 +729,7 @@
     "draw_prob": 0.202066,
     "away_win_prob": 0.641418,
     "round": "Fase de Grupos - Rodada 3",
-    "match_date": "2026-06-26T19:00:00Z"
+    "match_date": "2026-06-26T19:00:00+00:00"
   },
   {
     "match_id": "WC2026_062",
@@ -741,7 +741,7 @@
     "draw_prob": 0.217536,
     "away_win_prob": 0.15954,
     "round": "Fase de Grupos - Rodada 3",
-    "match_date": "2026-06-26T19:00:00Z"
+    "match_date": "2026-06-26T19:00:00+00:00"
   },
   {
     "match_id": "WC2026_063",
@@ -753,7 +753,7 @@
     "draw_prob": 0.262059,
     "away_win_prob": 0.373259,
     "round": "Fase de Grupos - Rodada 3",
-    "match_date": "2026-06-27T00:00:00Z"
+    "match_date": "2026-06-27T00:00:00+00:00"
   },
   {
     "match_id": "WC2026_064",
@@ -765,7 +765,7 @@
     "draw_prob": 0.097243,
     "away_win_prob": 0.85663,
     "round": "Fase de Grupos - Rodada 3",
-    "match_date": "2026-06-27T00:00:00Z"
+    "match_date": "2026-06-27T00:00:00+00:00"
   },
   {
     "match_id": "WC2026_065",
@@ -777,7 +777,7 @@
     "draw_prob": 0.257825,
     "away_win_prob": 0.426858,
     "round": "Fase de Grupos - Rodada 3",
-    "match_date": "2026-06-27T03:00:00Z"
+    "match_date": "2026-06-27T03:00:00+00:00"
   },
   {
     "match_id": "WC2026_066",
@@ -789,7 +789,7 @@
     "draw_prob": 0.16515,
     "away_win_prob": 0.728194,
     "round": "Fase de Grupos - Rodada 3",
-    "match_date": "2026-06-27T03:00:00Z"
+    "match_date": "2026-06-27T03:00:00+00:00"
   },
   {
     "match_id": "WC2026_067",
@@ -801,7 +801,7 @@
     "draw_prob": 0.118909,
     "away_win_prob": 0.818748,
     "round": "Fase de Grupos - Rodada 3",
-    "match_date": "2026-06-27T21:00:00Z"
+    "match_date": "2026-06-27T21:00:00+00:00"
   },
   {
     "match_id": "WC2026_068",
@@ -813,7 +813,7 @@
     "draw_prob": 0.215367,
     "away_win_prob": 0.155611,
     "round": "Fase de Grupos - Rodada 3",
-    "match_date": "2026-06-27T21:00:00Z"
+    "match_date": "2026-06-27T21:00:00+00:00"
   },
   {
     "match_id": "WC2026_069",
@@ -825,7 +825,7 @@
     "draw_prob": 0.258915,
     "away_win_prob": 0.417276,
     "round": "Fase de Grupos - Rodada 3",
-    "match_date": "2026-06-27T23:30:00Z"
+    "match_date": "2026-06-27T23:30:00+00:00"
   },
   {
     "match_id": "WC2026_070",
@@ -837,7 +837,7 @@
     "draw_prob": 0.262136,
     "away_win_prob": 0.370913,
     "round": "Fase de Grupos - Rodada 3",
-    "match_date": "2026-06-27T23:30:00Z"
+    "match_date": "2026-06-27T23:30:00+00:00"
   },
   {
     "match_id": "WC2026_071",
@@ -849,7 +849,7 @@
     "draw_prob": 0.230541,
     "away_win_prob": 0.186288,
     "round": "Fase de Grupos - Rodada 3",
-    "match_date": "2026-06-28T02:00:00Z"
+    "match_date": "2026-06-28T02:00:00+00:00"
   },
   {
     "match_id": "WC2026_072",
@@ -861,18 +861,78 @@
     "draw_prob": 0.048214,
     "away_win_prob": 0.934271,
     "round": "Fase de Grupos - Rodada 3",
-    "match_date": "2026-06-28T02:00:00Z"
+    "match_date": "2026-06-28T02:00:00+00:00"
+  },
+  {
+    "match_id": "WC2026_073",
+    "home_team": "South Africa",
+    "away_team": "Canada",
+    "predicted_home_goals": 1,
+    "predicted_away_goals": 2,
+    "home_win_prob": 0.363765,
+    "draw_prob": 0.0,
+    "away_win_prob": 0.636235,
+    "round": "Mata-mata - Fase de 32",
+    "match_date": "2026-06-28T19:00:00Z"
   },
   {
     "match_id": "WC2026_074",
     "home_team": "Brazil",
     "away_team": "Japan",
     "predicted_home_goals": 1,
-    "predicted_away_goals": 1,
-    "home_win_prob": 0.390253,
-    "draw_prob": 0.262372,
-    "away_win_prob": 0.347375,
+    "predicted_away_goals": 0,
+    "home_win_prob": 0.537598,
+    "draw_prob": 0.0,
+    "away_win_prob": 0.462402,
     "round": "Mata-mata - Fase de 32",
     "match_date": "2026-06-29T17:00:00Z"
+  },
+  {
+    "match_id": "WC2026_076",
+    "home_team": "Netherlands",
+    "away_team": "Morocco",
+    "predicted_home_goals": 1,
+    "predicted_away_goals": 2,
+    "home_win_prob": 0.381746,
+    "draw_prob": 0.0,
+    "away_win_prob": 0.618254,
+    "round": "Mata-mata - Fase de 32",
+    "match_date": "2026-06-30T01:00:00Z"
+  },
+  {
+    "match_id": "WC2026_077",
+    "home_team": "Ivory Coast",
+    "away_team": "Norway",
+    "predicted_home_goals": 1,
+    "predicted_away_goals": 0,
+    "home_win_prob": 0.535097,
+    "draw_prob": 0.0,
+    "away_win_prob": 0.464903,
+    "round": "Mata-mata - Fase de 32",
+    "match_date": "2026-06-30T17:00:00Z"
+  },
+  {
+    "match_id": "WC2026_083",
+    "home_team": "Portugal",
+    "away_team": "Croatia",
+    "predicted_home_goals": 1,
+    "predicted_away_goals": 0,
+    "home_win_prob": 0.69353,
+    "draw_prob": 0.0,
+    "away_win_prob": 0.30647,
+    "round": "Mata-mata - Fase de 32",
+    "match_date": "2026-07-02T19:00:00Z"
+  },
+  {
+    "match_id": "WC2026_086",
+    "home_team": "Australia",
+    "away_team": "Egypt",
+    "predicted_home_goals": 0,
+    "predicted_away_goals": 1,
+    "home_win_prob": 0.47416,
+    "draw_prob": 0.0,
+    "away_win_prob": 0.52584,
+    "round": "Mata-mata - Fase de 32",
+    "match_date": "2026-07-03T18:00:00Z"
   }
 ]
