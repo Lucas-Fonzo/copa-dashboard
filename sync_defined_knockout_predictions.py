@@ -34,6 +34,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DASHBOARD_DIR = Path(__file__).resolve().parent
 PREDICTIONS_PATH = DASHBOARD_DIR / "predictions.json"
 RESULTS_PATH = DASHBOARD_DIR / "results.json"
+SCORELINE_ODDS_PATH = DASHBOARD_DIR / "scoreline_odds.json"
 GROUP_FIXTURES_PATH = ROOT / "data" / "group_fixtures.csv"
 KNOCKOUT_SLOTS_PATH = ROOT / "data" / "knockout_slots.csv"
 
@@ -67,6 +68,7 @@ class KnockoutPrediction:
     match_date: str
     winner: str
     loser: str
+    scorelines: list[dict[str, Any]]
 
     def as_record(self) -> dict[str, Any]:
         return {
@@ -81,6 +83,18 @@ class KnockoutPrediction:
             "round": self.round,
             "match_date": self.match_date,
         }
+
+    def scoreline_records(self) -> list[dict[str, Any]]:
+        return [
+            {
+                "match_id": self.match_id,
+                "rank": index + 1,
+                "home_goals": int(scoreline["home_goals"]),
+                "away_goals": int(scoreline["away_goals"]),
+                "probability": round(float(scoreline["probability"]), 8),
+            }
+            for index, scoreline in enumerate(self.scorelines[:5])
+        ]
 
 
 def supabase_client() -> Client:
@@ -134,6 +148,26 @@ def save_local_predictions(predictions: list[dict[str, Any]]) -> None:
     predictions = sorted(predictions, key=lambda row: match_num(row["match_id"]))
     PREDICTIONS_PATH.write_text(
         json.dumps(predictions, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+
+def save_local_scoreline_odds(generated: list[KnockoutPrediction]) -> None:
+    current = []
+    if SCORELINE_ODDS_PATH.exists():
+        current = json.loads(SCORELINE_ODDS_PATH.read_text(encoding="utf-8"))
+    by_match = {str(row["match_id"]): [] for row in current}
+    for row in current:
+        by_match.setdefault(str(row["match_id"]), []).append(row)
+    for prediction in generated:
+        by_match[prediction.match_id] = prediction.scoreline_records()
+    rows = [
+        row
+        for match_id in sorted(by_match, key=match_num)
+        for row in sorted(by_match[match_id], key=lambda item: int(item["rank"]))
+    ]
+    SCORELINE_ODDS_PATH.write_text(
+        json.dumps(rows, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
     )
 
@@ -321,7 +355,7 @@ def final_knockout_distribution(
     away: str,
     ratings: dict[str, float],
     trained_models,
-) -> tuple[int, int, float, float, str, str]:
+) -> tuple[int, int, float, float, str, str, list[dict[str, Any]]]:
     home_lambda, away_lambda = model.lambdas(home, away, ratings, trained_models)
     goals_90 = np.arange(MAX_GOALS_90 + 1)
     matrix_90 = np.outer(poisson.pmf(goals_90, home_lambda), poisson.pmf(goals_90, away_lambda))
@@ -384,6 +418,19 @@ def final_knockout_distribution(
 
     winner = home if home_advance >= away_advance else away
     loser = away if winner == home else home
+    top_scorelines = [
+        {
+            "home_goals": score[0],
+            "away_goals": score[1],
+            "probability": probability,
+        }
+        for score, probability in sorted(
+            score_prob.items(),
+            key=lambda item: item[1],
+            reverse=True,
+        )
+        if score[0] != score[1]
+    ][:5]
     return (
         int(predicted_home_goals),
         int(predicted_away_goals),
@@ -391,6 +438,7 @@ def final_knockout_distribution(
         round(away_advance, 8),
         winner,
         loser,
+        top_scorelines,
     )
 
 
@@ -403,7 +451,7 @@ def predict_match(
     ratings: dict[str, float],
     trained_models,
 ) -> KnockoutPrediction:
-    home_goals, away_goals, home_adv, away_adv, winner, loser = final_knockout_distribution(
+    home_goals, away_goals, home_adv, away_adv, winner, loser, scorelines = final_knockout_distribution(
         home,
         away,
         ratings,
@@ -422,6 +470,7 @@ def predict_match(
         match_date=match_date,
         winner=winner,
         loser=loser,
+        scorelines=scorelines,
     )
 
 
@@ -559,12 +608,29 @@ def sync_defined_knockout_predictions(
 
     if update_local:
         save_local_predictions(merge_predictions(predictions, generated))
+        save_local_scoreline_odds(generated)
 
     records = [prediction.as_record() for prediction in generated]
     if upload:
         if client is None:
             client = supabase_client()
         client.table("predictions").upsert(records, on_conflict="match_id").execute()
+        scoreline_records = [
+            row
+            for prediction in generated
+            for row in prediction.scoreline_records()
+        ]
+        try:
+            client.table("prediction_scorelines").upsert(
+                scoreline_records,
+                on_conflict="match_id,rank",
+            ).execute()
+        except Exception as error:
+            print(
+                "[MATA-MATA][AVISO] prediction_scorelines não foi atualizada. "
+                "Rode o trecho novo do supabase_schema.sql se quiser persistir "
+                f"os placares finais no Supabase. Detalhe: {error}"
+            )
 
     print(f"[MATA-MATA] {len(generated)} previsão(ões) calculada(s).")
     for prediction in generated:

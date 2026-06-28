@@ -175,6 +175,43 @@ with check (true);
 grant select on public.live_matches to anon;
 grant all on public.live_matches to service_role;
 
+-- Top placares finais projetados para jogos de mata-mata.
+-- Mantemos isso separado de predictions porque home_win_prob/away_win_prob no
+-- mata-mata representam chance de avançar, não distribuição direta de gols.
+create table if not exists public.prediction_scorelines (
+    id uuid primary key default gen_random_uuid(),
+    match_id text not null references public.predictions(match_id) on delete cascade,
+    rank integer not null check (rank > 0),
+    home_goals integer not null check (home_goals >= 0),
+    away_goals integer not null check (away_goals >= 0),
+    probability numeric not null check (probability between 0 and 1),
+    created_at timestamptz not null default now(),
+    unique (match_id, rank)
+);
+
+create index if not exists prediction_scorelines_match_idx
+    on public.prediction_scorelines (match_id, rank);
+
+alter table public.prediction_scorelines enable row level security;
+
+drop policy if exists "Leitura pública dos placares projetados"
+    on public.prediction_scorelines;
+create policy "Leitura pública dos placares projetados"
+on public.prediction_scorelines for select
+to anon
+using (true);
+
+drop policy if exists "Service role gerencia placares projetados"
+    on public.prediction_scorelines;
+create policy "Service role gerencia placares projetados"
+on public.prediction_scorelines for all
+to service_role
+using (true)
+with check (true);
+
+grant select on public.prediction_scorelines to anon;
+grant all on public.prediction_scorelines to service_role;
+
 -- Probabilidades de título calculadas pelo simulador Monte Carlo independente.
 create table if not exists public.championship_odds (
     id uuid primary key default gen_random_uuid(),
