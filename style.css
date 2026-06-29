@@ -212,6 +212,13 @@ h1 strong { color: transparent; font: inherit; background: linear-gradient(115de
 .brazil-matchup { margin: 7px 0 1px; color: var(--white); font: italic 900 clamp(27px,3.2vw,44px) var(--display); line-height: 1; text-align: center; text-transform: uppercase; }
 .brazil-matchup small { color: var(--yellow); font-size: .55em; }
 .brazil-game-date { color: var(--muted); font-size: 12px; }
+.brazil-countdown { display: flex; align-items: center; justify-content: center; gap: 10px; width: fit-content; max-width: 100%; margin: 11px auto 0; padding: 8px 13px; border: 1px solid rgba(255,196,0,.34); background: linear-gradient(90deg,rgba(255,196,0,.08),rgba(2,13,24,.44)); box-shadow: inset 0 0 18px rgba(255,196,0,.035), 0 0 18px rgba(255,196,0,.045); white-space: nowrap; }
+.brazil-countdown-label { color: var(--yellow); font-size: 9px; font-weight: 900; letter-spacing: .15em; text-transform: uppercase; }
+.brazil-countdown-value { color: var(--white); font: italic 900 clamp(22px,2vw,31px) var(--display); line-height: .9; text-shadow: 0 0 12px rgba(255,255,255,.08); text-transform: uppercase; }
+.brazil-countdown.is-live { border-color: rgba(255,86,86,.55); background: linear-gradient(90deg,rgba(255,86,86,.13),rgba(2,13,24,.45)); box-shadow: inset 0 0 18px rgba(255,86,86,.04), 0 0 18px rgba(255,86,86,.07); }
+.brazil-countdown.is-live .brazil-countdown-label { color: var(--red); }
+.brazil-countdown.is-started { border-color: rgba(142,224,0,.5); background: linear-gradient(90deg,rgba(142,224,0,.11),rgba(2,13,24,.45)); }
+.brazil-countdown.is-started .brazil-countdown-label { color: var(--lime-bright); }
 .brazil-prediction-label { display: block; margin-top: 15px; text-align: center; }
 .brazil-main-score { display: block; margin: 0 0 13px; color: var(--white); font: italic 900 clamp(58px,6vw,82px) var(--display); line-height: .9; text-align: center; text-shadow: 0 0 22px rgba(255,255,255,.08); }
 .brazil-main-score small { color: var(--yellow); font-size: .55em; }
@@ -237,15 +244,37 @@ h1 strong { color: transparent; font: inherit; background: linear-gradient(115de
 .bracket-board { display: grid; width: max(1180px, 100%); grid-template-columns: 1.5fr .88fr .76fr .66fr .7fr .66fr .76fr .88fr 1.5fr; gap: 7px; overflow: visible; padding: 2px 2px 4px; transform: scale(var(--bracket-scale)); transform-origin: left top; }
 .bracket-column { min-width: 0; }
 .bracket-column h3 { margin: 0 0 7px; color: var(--muted); font-size: 10px; font-weight: 800; letter-spacing: .14em; text-align: center; text-transform: uppercase; }
-.bracket-column-items { display: grid; align-content: stretch; gap: 7px; height: 100%; }
+.bracket-column-items { display: grid; grid-template-rows: repeat(8,minmax(74px,1fr)); align-content: stretch; gap: 7px; height: 100%; }
 .bracket-column:not(:first-child):not(:last-child) .bracket-column-items { justify-content: center; }
 .bracket-match { position: relative; display: grid; gap: 4px; padding: 6px; border: 1px solid rgba(159,189,200,.13); background: rgba(1,8,18,.38); clip-path: polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px); }
+.bracket-span-2 { grid-row: span 2; }
+.bracket-span-4 { grid-row: span 4; }
+.bracket-span-8 { grid-row: span 8; }
+.bracket-future-match { grid-template-rows: repeat(2,minmax(0,1fr)); align-content: stretch; }
+.bracket-future-match .bracket-slot { grid-template-columns: 1fr; justify-items: center; width: 100%; min-width: 88px; height: 100%; min-height: 0; }
+.bracket-future-match .slot-seed,
+.bracket-future-match .bracket-slot strong { display: none; }
+.bracket-future-match .flag-token { width: 52px; height: 52px; }
+.bracket-decision-match { grid-template-rows: auto repeat(2,minmax(0,1fr)); border-color: rgba(255,196,0,.55); background: linear-gradient(145deg, rgba(63,47,2,.28), rgba(2,13,24,.88)); box-shadow: inset 0 0 28px rgba(255,196,0,.045); }
+.bracket-decision-third { border-color: rgba(8,169,184,.36); background: linear-gradient(145deg, rgba(8,169,184,.12), rgba(2,13,24,.88)); }
+.bracket-match.bracket-decision-match.has-team { border-color: rgba(255,196,0,.55); box-shadow: inset 0 0 28px rgba(255,196,0,.045); }
+.bracket-match.bracket-decision-third.has-team { border-color: rgba(8,169,184,.36); box-shadow: inset 0 0 24px rgba(8,169,184,.04); }
+.bracket-decision-title { color: var(--yellow); font: italic 900 15px var(--display); letter-spacing: .08em; text-align: center; text-transform: uppercase; }
+.bracket-decision-third .bracket-decision-title { color: var(--cyan); }
 .bracket-match.has-team { border-color: rgba(142,224,0,.24); box-shadow: inset 0 0 20px rgba(142,224,0,.025); }
 .bracket-slot { display: grid; grid-template-columns: 20px 28px minmax(0,1fr); align-items: center; gap: 5px; min-height: 34px; padding: 4px 5px; border-left: 2px solid rgba(121,144,156,.35); background: rgba(10,34,48,.46); }
+.bracket-decision-match .bracket-slot { grid-template-columns: 1fr; grid-template-areas: "flag" "badge"; align-content: center; justify-items: center; min-width: 96px; row-gap: 9px; }
 .bracket-slot.is-filled { border-left-color: var(--lime); background: rgba(142,224,0,.055); }
+.bracket-slot.is-confirmed { border-left-color: var(--green); background: linear-gradient(90deg, rgba(0,255,136,.16), rgba(10,34,48,.52)); box-shadow: inset 0 0 18px rgba(0,255,136,.06); }
+.bracket-slot.is-projected { border-left-color: var(--yellow); background: linear-gradient(90deg, rgba(255,196,0,.16), rgba(10,34,48,.52)); box-shadow: inset 0 0 18px rgba(255,196,0,.06); }
 .slot-seed { color: var(--muted); font: 800 10px var(--body); text-transform: uppercase; }
 .bracket-slot strong { overflow: hidden; color: var(--silver); font: 800 13px var(--display); line-height: 1; text-overflow: ellipsis; text-transform: uppercase; white-space: nowrap; }
+.bracket-decision-match .flag-token { grid-area: flag; }
+.bracket-decision-match .flag-token { width: 58px; height: 58px; }
 .bracket-slot.is-filled strong { color: var(--white); }
+.bracket-slot.is-projected strong { color: #ffe477; }
+.slot-result-badge { grid-area: badge; justify-self: center; padding: 3px 7px; color: #07101a; border: 1px solid rgba(255,196,0,.55); background: var(--yellow); font: italic 900 10px var(--display); letter-spacing: .08em; line-height: 1; text-transform: uppercase; box-shadow: 0 0 10px rgba(255,196,0,.2); }
+.bracket-decision-third .slot-result-badge { border-color: rgba(8,169,184,.5); background: var(--cyan); }
 .flag-token { position: relative; overflow: hidden; width: 28px; height: 28px; border: 1px solid rgba(255,255,255,.24); border-radius: 50%; background: linear-gradient(90deg,var(--flag-a) 0 33.3%,var(--flag-b) 33.3% 66.6%,var(--flag-c) 66.6% 100%); box-shadow: 0 0 12px rgba(142,224,0,.14); }
 .flag-token::after { content: ""; position: absolute; inset: 6px; border-radius: 50%; border: 1px solid rgba(255,255,255,.25); background: radial-gradient(circle at 50% 50%, rgba(255,255,255,.24), transparent 32%); mix-blend-mode: screen; }
 .flag-germany { background: linear-gradient(#000 0 33.3%,#dd0000 33.3% 66.6%,#ffce00 66.6%); }
@@ -286,9 +315,8 @@ h1 strong { color: transparent; font: inherit; background: linear-gradient(115de
 .flag-ecuador::after { display: none; }
 .flag-england { background: linear-gradient(90deg,transparent 0 42%,#ce1124 42% 58%,transparent 58%), linear-gradient(transparent 0 42%,#ce1124 42% 58%,transparent 58%), #fff; }
 .flag-england::after { display: none; }
-.flag-spain { background: linear-gradient(#aa151b 0 25%,#f1bf00 25% 75%,#aa151b 75%); }
-.flag-spain::before { content: ""; position: absolute; left: 35%; top: 51%; width: 5px; height: 7px; border-radius: 1px; background: #aa151b; transform: translate(-50%,-50%); }
-.flag-spain::after { display: none; }
+.flag-spain { background: center / cover no-repeat url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2090%2060%27%3E%3Crect%20width%3D%2790%27%20height%3D%2760%27%20fill%3D%27%23aa151b%27%2F%3E%3Crect%20y%3D%2715%27%20width%3D%2790%27%20height%3D%2730%27%20fill%3D%27%23f1bf00%27%2F%3E%3Cg%20transform%3D%27translate%2826%2030%29%27%3E%3Crect%20x%3D%27-7%27%20y%3D%27-10%27%20width%3D%2714%27%20height%3D%2718%27%20rx%3D%272%27%20fill%3D%27%23c60b1e%27%20stroke%3D%27%23f7d116%27%20stroke-width%3D%271.5%27%2F%3E%3Crect%20x%3D%27-4.8%27%20y%3D%27-7.8%27%20width%3D%274.8%27%20height%3D%275.6%27%20fill%3D%27%23f7d116%27%2F%3E%3Crect%20x%3D%270%27%20y%3D%27-7.8%27%20width%3D%274.8%27%20height%3D%275.6%27%20fill%3D%27%23fff%27%2F%3E%3Crect%20x%3D%27-4.8%27%20y%3D%27-1.4%27%20width%3D%274.8%27%20height%3D%275.6%27%20fill%3D%27%23fff%27%2F%3E%3Crect%20x%3D%270%27%20y%3D%27-1.4%27%20width%3D%274.8%27%20height%3D%275.6%27%20fill%3D%27%23f7d116%27%2F%3E%3Cpath%20d%3D%27M-6%208h12l-6%205z%27%20fill%3D%27%23f7d116%27%2F%3E%3Crect%20x%3D%27-12%27%20y%3D%27-6%27%20width%3D%273%27%20height%3D%2715%27%20fill%3D%27%23f7d116%27%2F%3E%3Crect%20x%3D%279%27%20y%3D%27-6%27%20width%3D%273%27%20height%3D%2715%27%20fill%3D%27%23f7d116%27%2F%3E%3Ccircle%20cy%3D%27-12%27%20r%3D%273.2%27%20fill%3D%27%23f7d116%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E"); }
+.flag-spain::before, .flag-spain::after { display: none; }
 .flag-usa { background: repeating-linear-gradient(#b22234 0 2.15px,#fff 2.15px 4.3px); }
 .flag-usa::before { content: ""; position: absolute; left: 0; top: 0; width: 15px; height: 15px; background: radial-gradient(circle at 27% 28%,#fff 0 1px,transparent 1.2px), radial-gradient(circle at 55% 45%,#fff 0 1px,transparent 1.2px), radial-gradient(circle at 78% 27%,#fff 0 1px,transparent 1.2px), #3c3b6e; }
 .flag-usa::after { display: none; }
@@ -333,9 +361,8 @@ h1 strong { color: transparent; font: inherit; background: linear-gradient(115de
 .flag-south-africa { background: center / cover no-repeat url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2090%2060%27%3E%3Cdefs%3E%3CclipPath%20id%3D%27a%27%3E%3Cpath%20d%3D%27M0%200h90v60H0z%27%2F%3E%3C%2FclipPath%3E%3CclipPath%20id%3D%27b%27%3E%3Cpath%20d%3D%27m0%200%2045%2030L0%2060z%27%2F%3E%3C%2FclipPath%3E%3C%2Fdefs%3E%3Cpath%20fill%3D%27%23E03C31%27%20d%3D%27M0%200h90v30H45z%27%2F%3E%3Cpath%20fill%3D%27%23001489%27%20d%3D%27M0%2060h90V30H45z%27%2F%3E%3Cg%20clip-path%3D%27url%28%23a%29%27%20fill%3D%27none%27%3E%3Cpath%20stroke%3D%27%23fff%27%20stroke-width%3D%2720%27%20d%3D%27M90%2030H45L0%200v60l45-30%27%2F%3E%3Cpath%20fill%3D%27%23000%27%20stroke%3D%27%23FFB81C%27%20stroke-width%3D%2720%27%20clip-path%3D%27url%28%23b%29%27%20d%3D%27m0%200%2045%2030L0%2060%27%2F%3E%3Cpath%20stroke%3D%27%23007749%27%20stroke-width%3D%2712%27%20d%3D%27m0%200%2045%2030h45M0%2060l45-30%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E"); }
 .flag-south-africa::before { display: none; }
 .flag-south-africa::after { display: none; }
-.flag-brazil { background: #009440; }
-.flag-brazil::before { content: ""; position: absolute; left: 50%; top: 50%; width: 20px; height: 20px; background: #ffcb00; transform: translate(-50%,-50%) rotate(45deg) scaleX(1.18); }
-.flag-brazil::after { content: ""; position: absolute; left: 50%; top: 50%; width: 12px; height: 12px; border: 0; border-radius: 50%; background: linear-gradient(165deg, transparent 0 39%, #fff 40% 50%, transparent 51%), #302681; transform: translate(-50%,-50%) rotate(-10deg); mix-blend-mode: normal; }
+.flag-brazil { background: center / cover no-repeat url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2090%2060%27%3E%3Crect%20width%3D%2790%27%20height%3D%2760%27%20fill%3D%27%23009246%27%2F%3E%3Cpath%20d%3D%27M45%206%2080%2030%2045%2054%2010%2030z%27%20fill%3D%27%23ffdf00%27%2F%3E%3Ccircle%20cx%3D%2745%27%20cy%3D%2730%27%20r%3D%2713.5%27%20fill%3D%27%23002776%27%2F%3E%3CclipPath%20id%3D%27b%27%3E%3Ccircle%20cx%3D%2745%27%20cy%3D%2730%27%20r%3D%2713.5%27%2F%3E%3C%2FclipPath%3E%3Cg%20clip-path%3D%27url%28%23b%29%27%3E%3Cpath%20d%3D%27M25%2034c12-8%2028-8%2042%202%27%20fill%3D%27none%27%20stroke%3D%27%23fff%27%20stroke-width%3D%274.2%27%2F%3E%3Ccircle%20cx%3D%2738%27%20cy%3D%2724%27%20r%3D%271.1%27%20fill%3D%27%23fff%27%2F%3E%3Ccircle%20cx%3D%2748%27%20cy%3D%2722%27%20r%3D%271.1%27%20fill%3D%27%23fff%27%2F%3E%3Ccircle%20cx%3D%2753%27%20cy%3D%2731%27%20r%3D%271%27%20fill%3D%27%23fff%27%2F%3E%3Ccircle%20cx%3D%2741%27%20cy%3D%2737%27%20r%3D%27.9%27%20fill%3D%27%23fff%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E"); }
+.flag-brazil::before, .flag-brazil::after { display: none; }
 .flag-morocco { background: #b7312c; }
 .flag-morocco::before { content: ""; position: absolute; left: 50%; top: 50%; width: 17px; height: 17px; background: #006341; clip-path: polygon(50% 0,61% 36%,98% 36%,68% 57%,79% 92%,50% 70%,21% 92%,32% 57%,2% 36%,39% 36%); transform: translate(-50%,-50%); }
 .flag-morocco::after { display: none; }
@@ -347,6 +374,7 @@ h1 strong { color: transparent; font: inherit; background: linear-gradient(115de
 .flag-empty::after { display: none; }
 .bracket-future { display: grid; justify-items: center; align-content: center; gap: 6px; min-height: 68px; padding: 7px; border: 1px dashed rgba(159,189,200,.22); background: rgba(1,8,18,.28); text-align: center; }
 .bracket-future.has-team { border-style: solid; border-color: rgba(142,224,0,.42); background: linear-gradient(145deg, rgba(11,42,34,.62), rgba(2,13,24,.88)); box-shadow: inset 3px 0 0 var(--green), 0 0 16px rgba(142,224,0,.08); }
+.bracket-future.has-team.is-projected { border-color: rgba(255,196,0,.48); background: linear-gradient(145deg, rgba(63,47,2,.42), rgba(2,13,24,.88)); box-shadow: inset 3px 0 0 var(--yellow), 0 0 16px rgba(255,196,0,.08); }
 .bracket-future-large { min-height: 120px; }
 .bracket-future-trophy { min-height: 128px; border-color: rgba(255,196,0,.55); box-shadow: inset 0 0 35px rgba(255,196,0,.04), 0 0 20px rgba(255,196,0,.06); }
 .bracket-future-trophy .flag-token { width: 48px; height: 48px; border-color: rgba(255,196,0,.6); }
@@ -355,6 +383,10 @@ h1 strong { color: transparent; font: inherit; background: linear-gradient(115de
 .bracket-future-trophy strong { color: var(--yellow); font-size: 18px; }
 .bracket-future strong { color: var(--muted); font: italic 800 14px var(--display); text-transform: uppercase; }
 .bracket-future.has-team strong { color: var(--text); }
+.bracket-future.has-team.is-projected strong { color: #ffe477; }
+.legend-dot { display: inline-block; width: 8px; height: 8px; margin: 0 4px 0 8px; border-radius: 50%; vertical-align: middle; }
+.legend-confirmed { background: var(--green); box-shadow: 0 0 8px rgba(0,255,136,.45); }
+.legend-projected { background: var(--yellow); box-shadow: 0 0 8px rgba(255,196,0,.45); }
 
 .favorites-grid { display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); gap: 12px; }
 .favorite-card { position: relative; overflow: hidden; min-height: 190px; padding: 20px; border: 1px solid rgba(142,224,0,.22); background: linear-gradient(155deg, rgba(11,36,50,.78), rgba(2,13,24,.96)); clip-path: polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px); }

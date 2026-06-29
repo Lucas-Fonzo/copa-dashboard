@@ -125,6 +125,32 @@ const BRACKET_LAYOUT = {
   centerThird: 103,
 };
 
+const FUTURE_KNOCKOUT_MATCHES = {
+  89: [74, 77],
+  90: [73, 75],
+  91: [76, 78],
+  92: [79, 80],
+  93: [83, 84],
+  94: [81, 82],
+  95: [86, 88],
+  96: [85, 87],
+  97: [89, 90],
+  98: [93, 94],
+  99: [91, 92],
+  100: [95, 96],
+  101: [97, 98],
+  102: [99, 100],
+  104: [101, 102],
+};
+
+const PROJECTABLE_ROUNDS = [
+  Object.keys(KNOCKOUT_MATCHES).map(Number).sort((a, b) => a - b),
+  [89, 90, 91, 92, 93, 94, 95, 96],
+  [97, 98, 99, 100],
+  [101, 102],
+  [104],
+];
+
 const FLAG_STYLES = {
   "África do Sul": ["#007749", "#ffb81c", "#de3831"],
   Alemanha: ["#000000", "#dd0000", "#ffce00"],
@@ -217,6 +243,8 @@ const elements = {
 let cachedPredictions = [];
 let cachedLiveMatches = [];
 let cachedScorelineOdds = [];
+let brazilCountdownInterval = null;
+let brazilCountdownTarget = null;
 let dashboardRefreshInFlight = false;
 let lastDashboardRefresh = 0;
 let lastIdleRefresh = 0;
@@ -328,6 +356,86 @@ function shouldShowScheduleMatch(matchDate, liveMatch, now = new Date()) {
   if (isMatchConfirmedLive(liveMatch)) return true;
   if (isMatchConfirmedFinished(liveMatch) && start <= now.getTime()) return false;
   return start > now.getTime() || isLiveMatch(matchDate, now);
+}
+
+function formatCountdownTime(milliseconds) {
+  const safeMs = Math.max(0, milliseconds);
+  const totalSeconds = Math.floor(safeMs / 1000);
+  const days = Math.floor(totalSeconds / 86_400);
+  const hours = Math.floor((totalSeconds % 86_400) / 3_600);
+  const minutes = Math.floor((totalSeconds % 3_600) / 60);
+  const seconds = totalSeconds % 60;
+  const pad = (value) => String(value).padStart(2, "0");
+
+  if (days > 0) return `${days}d ${pad(hours)}h ${pad(minutes)}m`;
+  return `${pad(hours)}h ${pad(minutes)}m ${pad(seconds)}s`;
+}
+
+function updateBrazilCountdown() {
+  const countdown = document.querySelector(".brazil-countdown[data-countdown-to]");
+  if (!countdown) return;
+
+  const target = new Date(countdown.dataset.countdownTo).getTime();
+  const remaining = target - Date.now();
+  const label = countdown.querySelector(".brazil-countdown-label");
+  const value = countdown.querySelector(".brazil-countdown-value");
+  if (!label || !value || !Number.isFinite(target)) return;
+
+  if (remaining <= 0) {
+    countdown.classList.add("is-started");
+    label.textContent = "Jogo come\u00e7ando";
+    value.textContent = "agora";
+    return;
+  }
+
+  countdown.classList.remove("is-started");
+  label.textContent = "Come\u00e7a em";
+  value.textContent = formatCountdownTime(remaining);
+}
+
+function clearBrazilCountdown() {
+  if (brazilCountdownInterval) {
+    clearInterval(brazilCountdownInterval);
+    brazilCountdownInterval = null;
+  }
+  brazilCountdownTarget = null;
+}
+
+function armBrazilCountdown(matchDate, isLive = false) {
+  const target = new Date(matchDate).getTime();
+  if (isLive || !Number.isFinite(target) || target <= Date.now()) {
+    clearBrazilCountdown();
+    return;
+  }
+
+  if (brazilCountdownTarget === target && brazilCountdownInterval) {
+    updateBrazilCountdown();
+    return;
+  }
+
+  clearBrazilCountdown();
+  brazilCountdownTarget = target;
+  updateBrazilCountdown();
+  brazilCountdownInterval = setInterval(updateBrazilCountdown, 1000);
+}
+
+function brazilCountdownMarkup(matchDate, isLive = false) {
+  if (isLive) {
+    return `
+      <div class="brazil-countdown is-live" aria-label="Brasil em campo agora">
+        <span class="brazil-countdown-label">Ao vivo</span>
+        <strong class="brazil-countdown-value">bola rolando</strong>
+      </div>`;
+  }
+
+  const target = new Date(matchDate);
+  if (!Number.isFinite(target.getTime()) || target.getTime() <= Date.now()) return "";
+
+  return `
+    <div class="brazil-countdown" data-countdown-to="${target.toISOString()}" aria-live="polite">
+      <span class="brazil-countdown-label">Come\u00e7a em</span>
+      <strong class="brazil-countdown-value">${formatCountdownTime(target.getTime() - Date.now())}</strong>
+    </div>`;
 }
 
 function countdownBadge(value, liveMatch = null) {
@@ -767,13 +875,15 @@ function resolveBracketSlot(slot, standings, completedGroups, thirdAssignment) {
   return null;
 }
 
-function bracketSlot(slot, team, fallbackLabel = "A definir") {
+function bracketSlot(slot, team, fallbackLabel = "A definir", state = "", badge = "") {
   const normalizedTeam = team ? displayTeam(team) : null;
+  const stateClass = state ? ` is-${state}` : "";
   return `
-    <div class="bracket-slot ${normalizedTeam ? "is-filled" : ""}" title="${escapeHtml(slot)}">
+    <div class="bracket-slot ${normalizedTeam ? "is-filled" : ""}${stateClass}" title="${escapeHtml(slot)}">
       <span class="slot-seed">${escapeHtml(slotShortLabel(slot))}</span>
       ${flagToken(normalizedTeam)}
       <strong>${normalizedTeam ? escapeHtml(normalizedTeam) : escapeHtml(fallbackLabel)}</strong>
+      ${badge ? `<span class="slot-result-badge">${escapeHtml(badge)}</span>` : ""}
     </div>`;
 }
 
@@ -821,22 +931,169 @@ function actualKnockoutOutcomes(predictions, results) {
   return { winners, losers };
 }
 
-function futureBracketNode(label, size = "normal", team = null) {
+function sameTeam(left, right) {
+  return normalizeLookup(displayTeam(left)) === normalizeLookup(displayTeam(right));
+}
+
+function sameTeamSet(leftTeams, rightTeams) {
+  const left = leftTeams.map(displayTeam).map(normalizeLookup).sort().join("|");
+  const right = rightTeams.map(displayTeam).map(normalizeLookup).sort().join("|");
+  return left === right;
+}
+
+function projectedWinnerFromPrediction(prediction, expectedTeams) {
+  if (!prediction || expectedTeams.length !== 2 || expectedTeams.some((team) => !team)) return null;
+  const predictionTeams = [prediction.home_team, prediction.away_team].map(displayTeam);
+  if (!sameTeamSet(predictionTeams, expectedTeams)) return null;
+
+  const homeGoals = Number(prediction.predicted_home_goals);
+  const awayGoals = Number(prediction.predicted_away_goals);
+  const homeAdvanceProb = Number(prediction.home_win_prob);
+  const awayAdvanceProb = Number(prediction.away_win_prob);
+
+  if (homeGoals > awayGoals) return displayTeam(prediction.home_team);
+  if (awayGoals > homeGoals) return displayTeam(prediction.away_team);
+  if (Number.isFinite(homeAdvanceProb) && Number.isFinite(awayAdvanceProb)) {
+    return homeAdvanceProb >= awayAdvanceProb
+      ? displayTeam(prediction.home_team)
+      : displayTeam(prediction.away_team);
+  }
+  return null;
+}
+
+function championshipOddsMap(odds) {
+  return new Map((odds ?? []).map((row) => [
+    normalizeLookup(displayTeam(row.team)),
+    row.eliminated ? Number.NEGATIVE_INFINITY : Number(row.champion_prob ?? 0),
+  ]));
+}
+
+function projectedWinnerByOdds(teams, oddsByTeam) {
+  const candidates = teams.map(displayTeam).filter(Boolean);
+  if (candidates.length !== 2) return null;
+
+  const ranked = candidates
+    .map((team) => ({
+      team,
+      score: oddsByTeam.get(normalizeLookup(team)),
+    }))
+    .filter((candidate) => Number.isFinite(candidate.score))
+    .sort((a, b) => b.score - a.score || a.team.localeCompare(b.team, "pt-BR"));
+
+  return ranked[0]?.team ?? null;
+}
+
+function projectedKnockoutOutcomes(predictions, confirmedWinners, confirmedLosers, standings, completedGroups, thirdAssignment, odds = []) {
+  const projectedWinners = new Map();
+  const projectedLosers = new Map();
+  const predictionByNumber = new Map();
+  const oddsByTeam = championshipOddsMap(odds);
+
+  for (const prediction of predictions) {
+    const matchId = normalizedMatchId(prediction.match_id);
+    const numericId = Number(matchId.replace("WC2026_", ""));
+    if (Number.isFinite(numericId) && numericId >= 73) {
+      predictionByNumber.set(numericId, prediction);
+    }
+  }
+
+  const winnerOf = (matchId) => confirmedWinners.get(matchId) ?? projectedWinners.get(matchId) ?? null;
+  const loserOf = (matchId) => confirmedLosers.get(matchId) ?? projectedLosers.get(matchId) ?? null;
+
+  function setProjectedMatch(matchId, teams) {
+    if (confirmedWinners.has(matchId)) return;
+    const normalizedTeams = teams.map((team) => (team ? displayTeam(team) : null));
+    if (normalizedTeams.length !== 2 || normalizedTeams.some((team) => !team)) return;
+
+    const winner = projectedWinnerFromPrediction(predictionByNumber.get(matchId), normalizedTeams)
+      ?? projectedWinnerByOdds(normalizedTeams, oddsByTeam);
+    if (!winner) return;
+
+    const loser = normalizedTeams.find((team) => !sameTeam(team, winner)) ?? null;
+    projectedWinners.set(matchId, winner);
+    if (loser) projectedLosers.set(matchId, loser);
+  }
+
+  for (const round of PROJECTABLE_ROUNDS) {
+    for (const matchId of round) {
+      if (KNOCKOUT_MATCHES[matchId]) {
+        setProjectedMatch(
+          matchId,
+          KNOCKOUT_MATCHES[matchId].map((slot) => (
+            resolveBracketSlot(slot, standings, completedGroups, thirdAssignment)
+          )),
+        );
+        continue;
+      }
+
+      setProjectedMatch(matchId, (FUTURE_KNOCKOUT_MATCHES[matchId] ?? []).map(winnerOf));
+    }
+  }
+
+  setProjectedMatch(BRACKET_LAYOUT.centerThird, [
+    loserOf(101),
+    loserOf(102),
+  ]);
+
+  return { winners: projectedWinners, losers: projectedLosers };
+}
+
+function bracketOutcome(matchId, confirmedWinners, projectedWinners) {
+  if (confirmedWinners.has(matchId)) {
+    return { team: confirmedWinners.get(matchId), state: "confirmed" };
+  }
+  if (projectedWinners.has(matchId)) {
+    return { team: projectedWinners.get(matchId), state: "projected" };
+  }
+  return { team: null, state: "" };
+}
+
+function futureBracketNode(label, size = "normal", team = null, state = "", span = 1) {
   const normalizedTeam = team ? displayTeam(team) : null;
+  const stateClass = state ? ` is-${state}` : "";
   return `
-    <article class="bracket-future bracket-future-${size} ${normalizedTeam ? "has-team" : ""}"
+    <article class="bracket-future bracket-future-${size} bracket-span-${span} ${normalizedTeam ? "has-team" : ""}${stateClass}"
              title="${escapeHtml(label)}">
       ${flagToken(normalizedTeam)}
       <strong>${normalizedTeam ? escapeHtml(normalizedTeam) : escapeHtml(label)}</strong>
     </article>`;
 }
 
-function futureBracketMatch(label, sources, winners, size = "normal") {
+function futureBracketMatch(label, sources, confirmedWinners, projectedWinners, size = "normal", span = 1) {
+  const outcomes = sources.map((source) => ({
+    source,
+    ...bracketOutcome(source, confirmedWinners, projectedWinners),
+  }));
   return `
-    <article class="bracket-match bracket-future-match bracket-future-match-${size}
-                    ${sources.some((source) => winners.has(source)) ? "has-team" : ""}"
+    <article class="bracket-match bracket-future-match bracket-future-match-${size} bracket-span-${span}
+                    ${outcomes.some((outcome) => outcome.team) ? "has-team" : ""}"
              title="${escapeHtml(label)}">
-      ${sources.map((source) => bracketSlot(`Vencedor ${source}`, winners.get(source), `Vencedor ${source}`)).join("")}
+      ${outcomes.map((outcome) => (
+        bracketSlot(
+          `Vencedor ${outcome.source}`,
+          outcome.team,
+          `Vencedor ${outcome.source}`,
+          outcome.state,
+        )
+      )).join("")}
+    </article>`;
+}
+
+function decisionBracketMatch(label, outcomes, size = "normal", span = 4) {
+  return `
+    <article class="bracket-match bracket-future-match bracket-decision-match bracket-decision-${size} bracket-span-${span}
+                    ${outcomes.some((outcome) => outcome.team) ? "has-team" : ""}"
+             title="${escapeHtml(label)}">
+      <span class="bracket-decision-title">${escapeHtml(label)}</span>
+      ${outcomes.map((outcome) => (
+        bracketSlot(
+          outcome.slot,
+          outcome.team,
+          outcome.fallback,
+          outcome.state,
+          outcome.badge ?? "",
+        )
+      )).join("")}
     </article>`;
 }
 
@@ -854,38 +1111,92 @@ function fitBracketBoard() {
   });
 }
 
-function renderBracket(predictions, results) {
+function renderBracket(predictions, results, odds = []) {
   if (!elements.bracketSection || !predictions.length) return;
   const { standings, completedGroups } = buildGroupTables(predictions, results);
   const thirdAssignment = assignThirdPlaces(standings, completedGroups);
-  const { winners } = actualKnockoutOutcomes(predictions, results);
+  const { winners, losers } = actualKnockoutOutcomes(predictions, results);
+  const projectedOutcomes = projectedKnockoutOutcomes(
+    predictions,
+    winners,
+    losers,
+    standings,
+    completedGroups,
+    thirdAssignment,
+    odds,
+  );
+  const projectedWinners = projectedOutcomes.winners;
+  const projectedLosers = projectedOutcomes.losers;
   const filledRound32 = Object.values(KNOCKOUT_MATCHES).flat()
     .map((slot) => resolveBracketSlot(slot, standings, completedGroups, thirdAssignment))
     .filter(Boolean).length;
 
+  const finalWinner = winners.get(104) ?? projectedWinners.get(104);
+  const thirdPlaceWinner = winners.get(103) ?? projectedWinners.get(103);
+  const finalParticipants = [
+    { slot: "Finalista 1", fallback: "Finalista 1", ...bracketOutcome(101, winners, projectedWinners) },
+    { slot: "Finalista 2", fallback: "Finalista 2", ...bracketOutcome(102, winners, projectedWinners) },
+  ].map((participant) => ({
+    ...participant,
+    badge: participant.team && finalWinner
+      ? (sameTeam(participant.team, finalWinner) ? "Campe\u00e3o" : "2\u00ba")
+      : "",
+  }));
+  const thirdPlaceParticipants = [
+    { slot: "Semi 1", fallback: "Perdedor semi 1", ...bracketOutcome(101, losers, projectedLosers) },
+    { slot: "Semi 2", fallback: "Perdedor semi 2", ...bracketOutcome(102, losers, projectedLosers) },
+  ].map((participant) => ({
+    ...participant,
+    badge: participant.team && thirdPlaceWinner
+      ? (sameTeam(participant.team, thirdPlaceWinner) ? "3\u00ba" : "4\u00ba")
+      : "",
+  }));
+
   const columns = [
     { title: "Fase de 32", side: "left", items: BRACKET_LAYOUT.left32.map((matchId) => bracketMatch(KNOCKOUT_MATCHES[matchId], standings, completedGroups, thirdAssignment)) },
-    { title: "Oitavas", side: "left", items: BRACKET_LAYOUT.left16.map((match) => futureBracketMatch(match.label, match.sources, winners)) },
-    { title: "Quartas", side: "left", items: BRACKET_LAYOUT.leftQuarter.map((match) => futureBracketMatch(match.label, match.sources, winners)) },
-    { title: "Semi", side: "left", items: [futureBracketMatch(BRACKET_LAYOUT.leftSemi.label, BRACKET_LAYOUT.leftSemi.sources, winners, "large")] },
+    { title: "Oitavas", side: "left", items: BRACKET_LAYOUT.left16.map((match) => futureBracketMatch(match.label, match.sources, winners, projectedWinners, "normal", 2)) },
+    { title: "Quartas", side: "left", items: BRACKET_LAYOUT.leftQuarter.map((match) => futureBracketMatch(match.label, match.sources, winners, projectedWinners, "normal", 4)) },
+    { title: "Semi", side: "left", items: [futureBracketMatch(BRACKET_LAYOUT.leftSemi.label, BRACKET_LAYOUT.leftSemi.sources, winners, projectedWinners, "large", 8)] },
     {
       title: "Campeão",
       side: "center",
       items: [
-        futureBracketNode("Campeão", "trophy", winners.get(BRACKET_LAYOUT.centerChampion)),
-        futureBracketNode("3º lugar", "third", winners.get(BRACKET_LAYOUT.centerThird)),
+        futureBracketNode(
+          "Campeão",
+          "trophy",
+          winners.get(BRACKET_LAYOUT.centerChampion) ?? projectedWinners.get(BRACKET_LAYOUT.centerChampion),
+          winners.has(BRACKET_LAYOUT.centerChampion) ? "confirmed" : projectedWinners.has(BRACKET_LAYOUT.centerChampion) ? "projected" : "",
+          4,
+        ),
+        futureBracketNode(
+          "3º lugar",
+          "third",
+          winners.get(BRACKET_LAYOUT.centerThird) ?? projectedWinners.get(BRACKET_LAYOUT.centerThird),
+          winners.has(BRACKET_LAYOUT.centerThird) ? "confirmed" : projectedWinners.has(BRACKET_LAYOUT.centerThird) ? "projected" : "",
+          4,
+        ),
       ],
     },
-    { title: "Semi", side: "right", items: [futureBracketMatch(BRACKET_LAYOUT.rightSemi.label, BRACKET_LAYOUT.rightSemi.sources, winners, "large")] },
-    { title: "Quartas", side: "right", items: BRACKET_LAYOUT.rightQuarter.map((match) => futureBracketMatch(match.label, match.sources, winners)) },
-    { title: "Oitavas", side: "right", items: BRACKET_LAYOUT.right16.map((match) => futureBracketMatch(match.label, match.sources, winners)) },
+    { title: "Semi", side: "right", items: [futureBracketMatch(BRACKET_LAYOUT.rightSemi.label, BRACKET_LAYOUT.rightSemi.sources, winners, projectedWinners, "large", 8)] },
+    { title: "Quartas", side: "right", items: BRACKET_LAYOUT.rightQuarter.map((match) => futureBracketMatch(match.label, match.sources, winners, projectedWinners, "normal", 4)) },
+    { title: "Oitavas", side: "right", items: BRACKET_LAYOUT.right16.map((match) => futureBracketMatch(match.label, match.sources, winners, projectedWinners, "normal", 2)) },
     { title: "Fase de 32", side: "right", items: BRACKET_LAYOUT.right32.map((matchId) => bracketMatch(KNOCKOUT_MATCHES[matchId], standings, completedGroups, thirdAssignment)) },
   ];
+
+  const centerColumn = columns.find((column) => column.side === "center");
+  if (centerColumn) {
+    centerColumn.title = "Decis\u00e3o";
+    centerColumn.items = [
+      decisionBracketMatch("Final", finalParticipants, "trophy", 4),
+      decisionBracketMatch("3\u00ba lugar", thirdPlaceParticipants, "third", 4),
+    ];
+  }
 
   elements.bracketStatus.innerHTML = `
     <span>${completedGroups.size}/12 grupos completos</span>
     <span>${filledRound32}/32 vagas preenchidas</span>
-    <span>${Object.keys(thirdAssignment).length ? "Melhores terceiros definidos" : "Melhores terceiros aguardando fechamento dos grupos"}</span>`;
+    <span>${Object.keys(thirdAssignment).length ? "Melhores terceiros definidos" : "Melhores terceiros aguardando fechamento dos grupos"}</span>
+    <span><i class="legend-dot legend-confirmed"></i> confirmado <i class="legend-dot legend-projected"></i> projetado</span>`;
   elements.bracketBoard.innerHTML = columns.map((column) => `
     <div class="bracket-column bracket-${column.side}">
       <h3>${escapeHtml(column.title)}</h3>
@@ -899,13 +1210,18 @@ function renderBracket(predictions, results) {
 async function loadBracket() {
   if (!elements.bracketSection || !isConfigured()) return;
   try {
-    const [predictionsResponse, resultsResponse] = await Promise.all([
-      supabase.from("predictions").select("match_id,home_team,away_team,round").order("match_id"),
+    const [predictionsResponse, resultsResponse, oddsResponse] = await Promise.all([
+      supabase
+        .from("predictions")
+        .select("match_id,home_team,away_team,predicted_home_goals,predicted_away_goals,home_win_prob,away_win_prob,round")
+        .order("match_id"),
       supabase.from("results").select("match_id,actual_home_goals,actual_away_goals"),
+      supabase.from("championship_odds").select("team,champion_prob,eliminated"),
     ]);
     if (predictionsResponse.error) throw predictionsResponse.error;
     if (resultsResponse.error) throw resultsResponse.error;
-    renderBracket(predictionsResponse.data ?? [], resultsResponse.data ?? []);
+    if (oddsResponse.error) console.warn("Odds indisponÃ­veis para projeÃ§Ã£o da chave.", oddsResponse.error);
+    renderBracket(predictionsResponse.data ?? [], resultsResponse.data ?? [], oddsResponse.data ?? []);
   } catch (error) {
     console.warn("Chaveamento indisponível.", error);
     elements.bracketSection.hidden = true;
@@ -1116,6 +1432,7 @@ function scorelinesForMatch(scorelineOdds, match, brazilIsHome) {
 function renderBrazilSection(odds, predictions, liveMatches = cachedLiveMatches, scorelineOdds = cachedScorelineOdds) {
   const brazil = odds.find((row) => row.team === "Brasil");
   if (!brazil) {
+    clearBrazilCountdown();
     elements.brazilSection.hidden = true;
     return;
   }
@@ -1140,6 +1457,7 @@ function renderBrazilSection(odds, predictions, liveMatches = cachedLiveMatches,
   }
 
   if (brazil.eliminated) {
+    clearBrazilCountdown();
     elements.brazilNextGame.hidden = true;
     elements.brazilScorelines.hidden = true;
     positionBrazilSection(false);
@@ -1177,6 +1495,7 @@ function renderBrazilSection(odds, predictions, liveMatches = cachedLiveMatches,
     elements.brazilNextGame.hidden = false;
     elements.brazilScorelines.hidden = false;
     if (!nextGame) {
+      clearBrazilCountdown();
       elements.brazilNextGame.innerHTML = `
         <span class="brazil-game-kicker">Próximo jogo do Brasil</span>
         <strong class="brazil-matchup">Nenhum jogo previsto</strong>`;
@@ -1211,6 +1530,7 @@ function renderBrazilSection(odds, predictions, liveMatches = cachedLiveMatches,
           ...scorelines.filter((scoreline) => !scorelineMatchesModel(scoreline)),
         ].slice(0, 3)
         : scorelines;
+      armBrazilCountdown(nextGame.match_date, isBrazilLive);
       elements.brazilNextGame.innerHTML = `
         <span class="brazil-game-kicker">${isBrazilLive ? "Brasil em campo agora" : "Próximo jogo do Brasil"}</span>
         ${isBrazilLive ? `
@@ -1219,6 +1539,7 @@ function renderBrazilSection(odds, predictions, liveMatches = cachedLiveMatches,
         ` : ""}
         <strong class="brazil-matchup">Brasil <small>×</small> ${escapeHtml(opponent)}</strong>
         <span class="brazil-game-date">${formatBrasilia(nextGame.match_date)} · Brasília</span>
+        ${brazilCountdownMarkup(nextGame.match_date, isBrazilLive)}
         <span class="prediction-label brazil-prediction-label">${isKnockout ? "Palpite final mais provável" : "Palpite principal"}</span>
         <strong class="brazil-main-score">${mainScoreline.brazilGoals} <small>×</small> ${mainScoreline.opponentGoals}</strong>
         ${brazilResultProbability(nextGame, brazilIsHome, opponent)}
