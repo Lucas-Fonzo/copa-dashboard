@@ -77,24 +77,53 @@ const OFFICIAL_GROUPS = {
   L: ["England", "Croatia", "Ghana", "Panama"],
 };
 
-const ROUND_OF_32 = [
-  ["Winner Group E", "Best 3rd (Groups A/B/C/D/F)"],
-  ["Winner Group I", "Best 3rd (Groups C/D/F/G/H)"],
-  ["Runner-up Group A", "Runner-up Group B"],
-  ["Winner Group F", "Runner-up Group C"],
-  ["Runner-up Group K", "Runner-up Group L"],
-  ["Winner Group H", "Runner-up Group J"],
-  ["Winner Group D", "Best 3rd (Groups B/E/F/I/J)"],
-  ["Winner Group G", "Best 3rd (Groups A/E/H/I/J)"],
-  ["Winner Group C", "Runner-up Group F"],
-  ["Runner-up Group E", "Runner-up Group I"],
-  ["Winner Group A", "Best 3rd (Groups C/E/F/H/I)"],
-  ["Winner Group L", "Best 3rd (Groups E/H/I/J/K)"],
-  ["Winner Group J", "Runner-up Group H"],
-  ["Runner-up Group D", "Runner-up Group G"],
-  ["Winner Group B", "Best 3rd (Groups E/F/G/I/J)"],
-  ["Winner Group K", "Best 3rd (Groups D/E/I/J/L)"],
-];
+const KNOCKOUT_MATCHES = {
+  73: ["Runner-up Group A", "Runner-up Group B"],
+  74: ["Winner Group E", "Best 3rd (Groups A/B/C/D/F)"],
+  75: ["Winner Group F", "Runner-up Group C"],
+  76: ["Winner Group C", "Runner-up Group F"],
+  77: ["Winner Group I", "Best 3rd (Groups C/D/F/G/H)"],
+  78: ["Runner-up Group E", "Runner-up Group I"],
+  79: ["Winner Group A", "Best 3rd (Groups C/E/F/H/I)"],
+  80: ["Winner Group L", "Best 3rd (Groups E/H/I/J/K)"],
+  81: ["Winner Group D", "Best 3rd (Groups B/E/F/I/J)"],
+  82: ["Winner Group G", "Best 3rd (Groups A/E/H/I/J)"],
+  83: ["Runner-up Group K", "Runner-up Group L"],
+  84: ["Winner Group H", "Runner-up Group J"],
+  85: ["Winner Group B", "Best 3rd (Groups E/F/G/I/J)"],
+  86: ["Winner Group J", "Runner-up Group H"],
+  87: ["Winner Group K", "Best 3rd (Groups D/E/I/J/L)"],
+  88: ["Runner-up Group D", "Runner-up Group G"],
+};
+
+const BRACKET_LAYOUT = {
+  left32: [74, 77, 73, 75, 83, 84, 81, 82],
+  right32: [76, 78, 79, 80, 86, 88, 85, 87],
+  left16: [
+    { label: "Oitavas 1", sources: [74, 77] },
+    { label: "Oitavas 2", sources: [73, 75] },
+    { label: "Oitavas 5", sources: [83, 84] },
+    { label: "Oitavas 6", sources: [81, 82] },
+  ],
+  right16: [
+    { label: "Oitavas 3", sources: [76, 78] },
+    { label: "Oitavas 4", sources: [79, 80] },
+    { label: "Oitavas 7", sources: [86, 88] },
+    { label: "Oitavas 8", sources: [85, 87] },
+  ],
+  leftQuarter: [
+    { label: "Quartas 1", sources: [89, 90] },
+    { label: "Quartas 2", sources: [93, 94] },
+  ],
+  rightQuarter: [
+    { label: "Quartas 3", sources: [91, 92] },
+    { label: "Quartas 4", sources: [95, 96] },
+  ],
+  leftSemi: { label: "Semifinal 1", sources: [97, 98] },
+  rightSemi: { label: "Semifinal 2", sources: [99, 100] },
+  centerChampion: 104,
+  centerThird: 103,
+};
 
 const FLAG_STYLES = {
   "África do Sul": ["#007749", "#ffb81c", "#de3831"],
@@ -558,6 +587,8 @@ function slotShortLabel(slot) {
   if (runner) return `2${runner[1]}`;
   const third = slot.match(/^Best 3rd/);
   if (third) return "3º";
+  const matchWinner = slot.match(/^Vencedor (\d+)$/);
+  if (matchWinner) return `V${matchWinner[1]}`;
   return "—";
 }
 
@@ -573,9 +604,12 @@ function flagToken(team) {
   const specialClass = {
     "África do Sul": "flag-south-africa",
     Alemanha: "flag-germany",
+    Argélia: "flag-algeria",
     Argentina: "flag-argentina",
     Austrália: "flag-australia",
+    Áustria: "flag-austria",
     Bélgica: "flag-belgium",
+    "Bósnia e Herzegovina": "flag-bosnia",
     Brasil: "flag-brazil",
     "Cabo Verde": "flag-cape-verde",
     Canadá: "flag-canada",
@@ -583,6 +617,7 @@ function flagToken(team) {
     "Costa do Marfim": "flag-ivory-coast",
     Croácia: "flag-croatia",
     Egito: "flag-egypt",
+    Equador: "flag-ecuador",
     Espanha: "flag-spain",
     "Estados Unidos": "flag-usa",
     França: "flag-france",
@@ -596,7 +631,9 @@ function flagToken(team) {
     Noruega: "flag-norway",
     Paraguai: "flag-paraguay",
     Portugal: "flag-portugal",
+    "RD Congo": "flag-rd-congo",
     Senegal: "flag-senegal",
+    Suécia: "flag-sweden",
     Suíça: "flag-switzerland",
     Turquia: "flag-turkey",
     Uruguai: "flag-uruguay",
@@ -695,7 +732,7 @@ function assignThirdPlaces(standings, completedGroups) {
       .map((row) => [row.group, row.team]),
   );
 
-  const thirdSlots = ROUND_OF_32
+  const thirdSlots = Object.values(KNOCKOUT_MATCHES)
     .flat()
     .filter((slot) => slot.startsWith("Best 3rd"))
     .sort((a, b) => (
@@ -730,13 +767,13 @@ function resolveBracketSlot(slot, standings, completedGroups, thirdAssignment) {
   return null;
 }
 
-function bracketSlot(slot, team) {
+function bracketSlot(slot, team, fallbackLabel = "A definir") {
   const normalizedTeam = team ? displayTeam(team) : null;
   return `
     <div class="bracket-slot ${normalizedTeam ? "is-filled" : ""}" title="${escapeHtml(slot)}">
       <span class="slot-seed">${escapeHtml(slotShortLabel(slot))}</span>
       ${flagToken(normalizedTeam)}
-      <strong>${normalizedTeam ? escapeHtml(normalizedTeam) : "A definir"}</strong>
+      <strong>${normalizedTeam ? escapeHtml(normalizedTeam) : escapeHtml(fallbackLabel)}</strong>
     </div>`;
 }
 
@@ -751,11 +788,55 @@ function bracketMatch(match, standings, completedGroups, thirdAssignment) {
     </article>`;
 }
 
-function futureBracketNode(label, size = "normal") {
+function normalizedMatchId(matchId) {
+  const numericId = Number(String(matchId).replace("WC2026_", ""));
+  if (!Number.isFinite(numericId)) return String(matchId);
+  return `WC2026_${String(numericId).padStart(3, "0")}`;
+}
+
+function actualKnockoutOutcomes(predictions, results) {
+  const predictionById = new Map(predictions.map((prediction) => [normalizedMatchId(prediction.match_id), prediction]));
+  const winners = new Map();
+  const losers = new Map();
+
+  for (const result of results) {
+    const matchId = normalizedMatchId(result.match_id);
+    const numericId = Number(matchId.replace("WC2026_", ""));
+    if (!Number.isFinite(numericId) || numericId < 73) continue;
+
+    const prediction = predictionById.get(matchId);
+    if (!prediction) continue;
+
+    const homeGoals = Number(result.actual_home_goals);
+    const awayGoals = Number(result.actual_away_goals);
+    if (homeGoals > awayGoals) {
+      winners.set(numericId, prediction.home_team);
+      losers.set(numericId, prediction.away_team);
+    } else if (awayGoals > homeGoals) {
+      winners.set(numericId, prediction.away_team);
+      losers.set(numericId, prediction.home_team);
+    }
+  }
+
+  return { winners, losers };
+}
+
+function futureBracketNode(label, size = "normal", team = null) {
+  const normalizedTeam = team ? displayTeam(team) : null;
   return `
-    <article class="bracket-future bracket-future-${size}">
-      <span class="flag-token flag-empty" aria-hidden="true"></span>
-      <strong>${escapeHtml(label)}</strong>
+    <article class="bracket-future bracket-future-${size} ${normalizedTeam ? "has-team" : ""}"
+             title="${escapeHtml(label)}">
+      ${flagToken(normalizedTeam)}
+      <strong>${normalizedTeam ? escapeHtml(normalizedTeam) : escapeHtml(label)}</strong>
+    </article>`;
+}
+
+function futureBracketMatch(label, sources, winners, size = "normal") {
+  return `
+    <article class="bracket-match bracket-future-match bracket-future-match-${size}
+                    ${sources.some((source) => winners.has(source)) ? "has-team" : ""}"
+             title="${escapeHtml(label)}">
+      ${sources.map((source) => bracketSlot(`Vencedor ${source}`, winners.get(source), `Vencedor ${source}`)).join("")}
     </article>`;
 }
 
@@ -777,27 +858,28 @@ function renderBracket(predictions, results) {
   if (!elements.bracketSection || !predictions.length) return;
   const { standings, completedGroups } = buildGroupTables(predictions, results);
   const thirdAssignment = assignThirdPlaces(standings, completedGroups);
-  const filledRound32 = ROUND_OF_32.flat()
+  const { winners } = actualKnockoutOutcomes(predictions, results);
+  const filledRound32 = Object.values(KNOCKOUT_MATCHES).flat()
     .map((slot) => resolveBracketSlot(slot, standings, completedGroups, thirdAssignment))
     .filter(Boolean).length;
 
   const columns = [
-    { title: "Fase de 32", side: "left", items: ROUND_OF_32.slice(0, 8).map((match) => bracketMatch(match, standings, completedGroups, thirdAssignment)) },
-    { title: "Oitavas", side: "left", items: Array.from({ length: 4 }, (_, index) => futureBracketNode(`Vencedor ${73 + index * 2}`)) },
-    { title: "Quartas", side: "left", items: Array.from({ length: 2 }, (_, index) => futureBracketNode(`Quartas ${index + 1}`)) },
-    { title: "Semi", side: "left", items: [futureBracketNode("Semifinal 1", "large")] },
+    { title: "Fase de 32", side: "left", items: BRACKET_LAYOUT.left32.map((matchId) => bracketMatch(KNOCKOUT_MATCHES[matchId], standings, completedGroups, thirdAssignment)) },
+    { title: "Oitavas", side: "left", items: BRACKET_LAYOUT.left16.map((match) => futureBracketMatch(match.label, match.sources, winners)) },
+    { title: "Quartas", side: "left", items: BRACKET_LAYOUT.leftQuarter.map((match) => futureBracketMatch(match.label, match.sources, winners)) },
+    { title: "Semi", side: "left", items: [futureBracketMatch(BRACKET_LAYOUT.leftSemi.label, BRACKET_LAYOUT.leftSemi.sources, winners, "large")] },
     {
       title: "Campeão",
       side: "center",
       items: [
-        futureBracketNode("Campeão", "trophy"),
-        futureBracketNode("3º lugar", "third"),
+        futureBracketNode("Campeão", "trophy", winners.get(BRACKET_LAYOUT.centerChampion)),
+        futureBracketNode("3º lugar", "third", winners.get(BRACKET_LAYOUT.centerThird)),
       ],
     },
-    { title: "Semi", side: "right", items: [futureBracketNode("Semifinal 2", "large")] },
-    { title: "Quartas", side: "right", items: Array.from({ length: 2 }, (_, index) => futureBracketNode(`Quartas ${index + 3}`)) },
-    { title: "Oitavas", side: "right", items: Array.from({ length: 4 }, (_, index) => futureBracketNode(`Vencedor ${81 + index * 2}`)) },
-    { title: "Fase de 32", side: "right", items: ROUND_OF_32.slice(8).map((match) => bracketMatch(match, standings, completedGroups, thirdAssignment)) },
+    { title: "Semi", side: "right", items: [futureBracketMatch(BRACKET_LAYOUT.rightSemi.label, BRACKET_LAYOUT.rightSemi.sources, winners, "large")] },
+    { title: "Quartas", side: "right", items: BRACKET_LAYOUT.rightQuarter.map((match) => futureBracketMatch(match.label, match.sources, winners)) },
+    { title: "Oitavas", side: "right", items: BRACKET_LAYOUT.right16.map((match) => futureBracketMatch(match.label, match.sources, winners)) },
+    { title: "Fase de 32", side: "right", items: BRACKET_LAYOUT.right32.map((matchId) => bracketMatch(KNOCKOUT_MATCHES[matchId], standings, completedGroups, thirdAssignment)) },
   ];
 
   elements.bracketStatus.innerHTML = `

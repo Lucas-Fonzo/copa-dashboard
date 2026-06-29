@@ -152,12 +152,18 @@ def save_local_predictions(predictions: list[dict[str, Any]]) -> None:
     )
 
 
-def save_local_scoreline_odds(generated: list[KnockoutPrediction]) -> None:
+def save_local_scoreline_odds(generated: list[KnockoutPrediction], replace_knockout: bool = False) -> None:
     current = []
     if SCORELINE_ODDS_PATH.exists():
         current = json.loads(SCORELINE_ODDS_PATH.read_text(encoding="utf-8"))
-    by_match = {str(row["match_id"]): [] for row in current}
+    by_match = {
+        str(row["match_id"]): []
+        for row in current
+        if not replace_knockout or match_num(row["match_id"]) < 73
+    }
     for row in current:
+        if replace_knockout and match_num(row["match_id"]) >= 73:
+            continue
         by_match.setdefault(str(row["match_id"]), []).append(row)
     for prediction in generated:
         by_match[prediction.match_id] = prediction.scoreline_records()
@@ -580,8 +586,13 @@ def generate_defined_knockout_predictions(
 def merge_predictions(
     current: list[dict[str, Any]],
     generated: list[KnockoutPrediction],
+    replace_knockout: bool = False,
 ) -> list[dict[str, Any]]:
-    by_id = {str(row["match_id"]): row for row in current}
+    by_id = {
+        str(row["match_id"]): row
+        for row in current
+        if not replace_knockout or match_num(row["match_id"]) < 73
+    }
     for prediction in generated:
         by_id[prediction.match_id] = prediction.as_record()
     return sorted(by_id.values(), key=lambda row: match_num(row["match_id"]))
@@ -607,13 +618,15 @@ def sync_defined_knockout_predictions(
         return []
 
     if update_local:
-        save_local_predictions(merge_predictions(predictions, generated))
-        save_local_scoreline_odds(generated)
+        save_local_predictions(merge_predictions(predictions, generated, replace_knockout=overwrite))
+        save_local_scoreline_odds(generated, replace_knockout=overwrite)
 
     records = [prediction.as_record() for prediction in generated]
     if upload:
         if client is None:
             client = supabase_client()
+        if overwrite:
+            client.table("predictions").delete().gte("match_id", "WC2026_073").lte("match_id", "WC2026_104").execute()
         client.table("predictions").upsert(records, on_conflict="match_id").execute()
         scoreline_records = [
             row
