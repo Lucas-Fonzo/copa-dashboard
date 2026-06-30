@@ -267,6 +267,7 @@ let cachedPredictions = [];
 let cachedLiveMatches = [];
 let cachedResults = [];
 let cachedScorelineOdds = [];
+let cachedBrazilPathPredictions = [];
 let brazilCountdownInterval = null;
 let brazilCountdownTarget = null;
 let dashboardRefreshInFlight = false;
@@ -1495,6 +1496,18 @@ async function fetchPredictionScorelines() {
   }
 }
 
+async function fetchBrazilPathPredictions() {
+  try {
+    const response = await fetch("brazil_path_predictions.json", { cache: "no-store" });
+    if (!response.ok) return [];
+    const payload = await response.json();
+    return Array.isArray(payload) ? payload : payload.predictions ?? [];
+  } catch (error) {
+    console.warn("Cenários do caminho do Brasil indisponíveis.", error);
+    return [];
+  }
+}
+
 function scorelinesForMatch(scorelineOdds, match, brazilIsHome) {
   return scorelineOdds
     .filter((row) => row.match_id === match.match_id)
@@ -1507,12 +1520,77 @@ function scorelinesForMatch(scorelineOdds, match, brazilIsHome) {
     }));
 }
 
+function scorelinesForBrazilPath(match, brazilIsHome) {
+  return (match.scorelines ?? [])
+    .sort((a, b) => Number(a.rank) - Number(b.rank))
+    .slice(0, 3)
+    .map((row) => ({
+      brazilGoals: brazilIsHome ? Number(row.home_goals) : Number(row.away_goals),
+      opponentGoals: brazilIsHome ? Number(row.away_goals) : Number(row.home_goals),
+      probability: Number(row.probability),
+    }));
+}
+
+function projectedBrazilPathGame(pathPredictions, predictions, results) {
+  if (!pathPredictions?.length) return null;
+
+  const { winners } = actualKnockoutOutcomes(predictions, results);
+  const resultMatchIds = new Set(results.map((result) => normalizedMatchId(result.match_id)));
+  const winnerName = (matchId) => {
+    const key = Number(normalizedMatchId(matchId).replace("WC2026_", ""));
+    const winner = winners.get(key);
+    return winner ? displayTeam(winner) : null;
+  };
+
+  const groupedByStage = [...pathPredictions]
+    .sort((a, b) => Number(a.stage_order) - Number(b.stage_order))
+    .reduce((groups, prediction) => {
+      const stage = Number(prediction.stage_order);
+      if (!groups.has(stage)) groups.set(stage, []);
+      groups.get(stage).push(prediction);
+      return groups;
+    }, new Map());
+
+  for (const candidates of groupedByStage.values()) {
+    const officialMatchId = normalizedMatchId(candidates[0]?.official_match_id ?? candidates[0]?.match_id);
+    if (resultMatchIds.has(officialMatchId)) continue;
+
+    const previousMatchId = candidates[0]?.brazil_previous_match_id;
+    const brazilPreviousWinner = previousMatchId ? winnerName(previousMatchId) : "Brasil";
+    if (brazilPreviousWinner !== "Brasil") continue;
+
+    const opponentWinner = winnerName(candidates[0]?.opponent_decider_match_id);
+    let selected = null;
+    let opponentConfirmed = false;
+
+    if (opponentWinner) {
+      selected = candidates.find((candidate) => displayTeam(candidate.opponent) === opponentWinner);
+      opponentConfirmed = Boolean(selected);
+    }
+
+    if (!selected) {
+      selected = candidates.find((candidate) => candidate.projected_opponent) ?? candidates[0];
+    }
+
+    if (!selected) continue;
+    return {
+      ...selected,
+      is_path_projection: true,
+      opponent_confirmed: opponentConfirmed,
+      match_id: selected.official_match_id ?? selected.match_id,
+    };
+  }
+
+  return null;
+}
+
 function renderBrazilSection(
   odds,
   predictions,
   liveMatches = cachedLiveMatches,
   scorelineOdds = cachedScorelineOdds,
   results = cachedResults,
+  brazilPathPredictions = cachedBrazilPathPredictions,
 ) {
   const brazil = odds.find((row) => row.team === "Brasil");
   if (!brazil) {
@@ -1575,7 +1653,14 @@ function renderBrazilSection(
         if (a.is_live !== b.is_live) return a.is_live ? -1 : 1;
         return a.starts_at - b.starts_at;
       });
-    const nextGame = brazilGames[0];
+    let nextGame = brazilGames[0];
+    if (!nextGame) {
+      nextGame = projectedBrazilPathGame(
+        brazilPathPredictions,
+        predictions,
+        results,
+      );
+    }
     const isBrazilLive = Boolean(nextGame?.is_live);
     const liveMatch = nextGame?.liveMatch ?? null;
     positionBrazilSection(isBrazilLive);
@@ -1594,10 +1679,19 @@ function renderBrazilSection(
       const brazilIsHome = displayTeam(nextGame.home_team) === "Brasil";
       const opponent = displayTeam(brazilIsHome ? nextGame.away_team : nextGame.home_team);
       const isKnockout = isKnockoutMatch(nextGame);
-      const persistedScorelines = isKnockout ? scorelinesForMatch(scorelineOdds, nextGame, brazilIsHome) : [];
-      const scorelines = persistedScorelines.length
-        ? persistedScorelines
-        : mostLikelyBrazilScores(nextGame, brazilIsHome);
+      const pathScorelines = nextGame.is_path_projection
+        ? scorelinesForBrazilPath(nextGame, brazilIsHome)
+        : [];
+      const persistedScorelines = isKnockout && !nextGame.is_path_projection
+        ? scorelinesForMatch(scorelineOdds, nextGame, brazilIsHome)
+        : [];
+      const scorelines = pathScorelines.length
+        ? pathScorelines
+        : (
+          persistedScorelines.length
+            ? persistedScorelines
+            : mostLikelyBrazilScores(nextGame, brazilIsHome)
+        );
       const fallbackBrazilGoals = brazilIsHome ? nextGame.predicted_home_goals : nextGame.predicted_away_goals;
       const fallbackOpponentGoals = brazilIsHome ? nextGame.predicted_away_goals : nextGame.predicted_home_goals;
       const modelScoreline = {
@@ -1606,21 +1700,31 @@ function renderBrazilSection(
         probability: null,
         label: "Modelo",
       };
-      const mainScoreline = persistedScorelines[0] ?? modelScoreline;
+      const mainScoreline = scorelines[0] ?? modelScoreline;
       const scorelineMatchesModel = (scoreline) => (
         Number(scoreline.brazilGoals) === modelScoreline.brazilGoals
         && Number(scoreline.opponentGoals) === modelScoreline.opponentGoals
       );
       const modelScorelineProbability = scorelines.find(scorelineMatchesModel)?.probability ?? null;
       const scorelinesForDisplay = isKnockout && !persistedScorelines.length
+        && !pathScorelines.length
         ? [
           { ...modelScoreline, probability: modelScorelineProbability },
           ...scorelines.filter((scoreline) => !scorelineMatchesModel(scoreline)),
         ].slice(0, 3)
         : scorelines;
+      const brazilGameKicker = isBrazilLive
+        ? "Brasil em campo agora"
+        : nextGame.is_path_projection && !nextGame.opponent_confirmed
+          ? "Provável próximo jogo do Brasil"
+          : "Próximo jogo do Brasil";
+      const predictionLabel = nextGame.is_path_projection
+        ? "Palpite projetado mais provável"
+        : isKnockout ? "Palpite final mais provável" : "Palpite principal";
+
       armBrazilCountdown(nextGame.match_date, isBrazilLive);
       elements.brazilNextGame.innerHTML = `
-        <span class="brazil-game-kicker">${isBrazilLive ? "Brasil em campo agora" : "Próximo jogo do Brasil"}</span>
+        <span class="brazil-game-kicker">${brazilGameKicker}</span>
         ${isBrazilLive ? `
           <a class="brazil-live-pill" href="https://www.youtube.com/@CazéTV"
              target="_blank" rel="noopener noreferrer">AGORA</a>
@@ -1628,7 +1732,7 @@ function renderBrazilSection(
         <strong class="brazil-matchup">Brasil <small>×</small> ${escapeHtml(opponent)}</strong>
         <span class="brazil-game-date">${formatBrasilia(nextGame.match_date)} · Brasília</span>
         ${brazilCountdownMarkup(nextGame.match_date, isBrazilLive)}
-        <span class="prediction-label brazil-prediction-label">${isKnockout ? "Palpite final mais provável" : "Palpite principal"}</span>
+        <span class="prediction-label brazil-prediction-label">${predictionLabel}</span>
         <strong class="brazil-main-score">${mainScoreline.brazilGoals} <small>×</small> ${mainScoreline.opponentGoals}</strong>
         ${brazilResultProbability(nextGame, brazilIsHome, opponent)}
         ${liveScoreBlock(nextGame, liveMatch)}`;
@@ -1744,18 +1848,20 @@ async function renderProbabilityMap(odds) {
 
 async function loadChampionshipFeatures() {
   try {
-    const [odds, predictions, liveMatches, results, scorelineOdds] = await Promise.all([
+    const [odds, predictions, liveMatches, results, scorelineOdds, brazilPathPredictions] = await Promise.all([
       fetchChampionshipOdds(),
       cachedPredictions.length ? Promise.resolve(cachedPredictions) : fetchPredictionsForUpcoming(),
       cachedLiveMatches.length ? Promise.resolve(cachedLiveMatches) : fetchLiveMatches(),
       cachedResults.length ? Promise.resolve(cachedResults) : fetchResultsForSchedule(),
       fetchPredictionScorelines(),
+      cachedBrazilPathPredictions.length ? Promise.resolve(cachedBrazilPathPredictions) : fetchBrazilPathPredictions(),
     ]);
     if (!odds.length) return;
     cachedLiveMatches = liveMatches;
     cachedResults = results;
     cachedScorelineOdds = scorelineOdds;
-    renderBrazilSection(odds, predictions, liveMatches, scorelineOdds, results);
+    cachedBrazilPathPredictions = brazilPathPredictions;
+    renderBrazilSection(odds, predictions, liveMatches, scorelineOdds, results, brazilPathPredictions);
     renderFavorites(odds);
     await renderProbabilityMap(odds);
   } catch (error) {

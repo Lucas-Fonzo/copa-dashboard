@@ -1,0 +1,422 @@
+{
+  "generated_at": "2026-06-30T01:47:38.087035+00:00",
+  "source": "supabase",
+  "predictions": [
+    {
+      "match_id": "WC2026_091",
+      "home_team": "Brazil",
+      "away_team": "Ivory Coast",
+      "predicted_home_goals": 1,
+      "predicted_away_goals": 0,
+      "home_win_prob": 0.7591,
+      "draw_prob": 0.0,
+      "away_win_prob": 0.2409,
+      "round": "Mata-mata - Oitavas",
+      "match_date": "2026-07-05T20:00:00Z",
+      "scenario_id": "WC2026_091_ivory_coast",
+      "official_match_id": "WC2026_091",
+      "stage": "Oitavas",
+      "stage_order": 1,
+      "brazil_previous_match_id": "WC2026_076",
+      "opponent_decider_match_id": "WC2026_078",
+      "opponent": "Ivory Coast",
+      "projected_opponent": true,
+      "scorelines": [
+        {
+          "rank": 1,
+          "home_goals": 1,
+          "away_goals": 0,
+          "probability": 0.14006005
+        },
+        {
+          "rank": 2,
+          "home_goals": 2,
+          "away_goals": 1,
+          "probability": 0.12542156
+        },
+        {
+          "rank": 3,
+          "home_goals": 2,
+          "away_goals": 0,
+          "probability": 0.11998536
+        },
+        {
+          "rank": 4,
+          "home_goals": 3,
+          "away_goals": 0,
+          "probability": 0.07247291
+        },
+        {
+          "rank": 5,
+          "home_goals": 3,
+          "away_goals": 1,
+          "probability": 0.06880693
+        }
+      ]
+    },
+    {
+      "match_id": "WC2026_091",
+      "home_team": "Brazil",
+      "away_team": "Norway",
+      "predicted_home_goals": 1,
+      "predicted_away_goals": 0,
+      "home_win_prob": 0.768604,
+      "draw_prob": 0.0,
+      "away_win_prob": 0.231396,
+      "round": "Mata-mata - Oitavas",
+      "match_date": "2026-07-05T20:00:00Z",
+      "scenario_id": "WC2026_091_norway",
+      "official_match_id": "WC2026_091",
+      "stage": "Oitavas",
+      "stage_order": 1,
+      "brazil_previous_match_id": "WC2026_076",
+      "opponent_decider_match_id": "WC2026_078",
+      "opponent": "Norway",
+      "projected_opponent": false,
+      "scorelines": [
+        {
+          "rank": 1,
+          "home_goals": 1,
+          "away_goals": 0,
+          "probability": 0.14037859
+        },
+        {
+          "rank": 2,
+          "home_goals": 2,
+          "away_goals": 1,
+          "probability": 0.12514825
+        },
+        {
+          "rank": 3,
+          "home_goals": 2,
+          "away_goals": 0,
+          "probability": 0.12227023
+        },
+        {
+          "rank": 4,
+          "home_goals": 3,
+          "away_goals": 0,
+          "probability": 0.07507257
+        },
+        {
+          "rank": 5,
+          "home_goals": 3,
+          "away_goals": 1,
+          "probability": 0.06981337
+        }
+      ]
+    },
+    {
+      "match_id": "WC2026_099",
+      "home_team": "Brazil",
+      "away_team": "Mexico",
+      "predicted_home_goals": 1,
+      "predicted_away_goals": 0,
+      "home_win_prob": 0.623011,
+      "draw_prob": 0.0,
+      "away_win_prob": 0.376989,
+      "round": "Mata-mata - Quartas",
+      "match_date": "2026-07-11T21:00:00Z",
+      "scenario_id": "WC2026_099_mexico",
+      "official_match_id": "WC2026_099",
+      "stage": "Quartas",
+      "stage_order": 2,
+      "brazil_previous_match_id": "WC2026_091",
+      "opponent_decider_match_id": "WC2026_092",
+      "opponent": "Mexico",
+      "projected_opponent": false,
+      "scorelines": [
+        {
+          "rank": 1,
+          "home_goals": 1,
+          "away_goals": 0,
+          "probability": 0.12632237
+        },
+        {
+          "rank": 2,
+          "home_goals": 2,
+          "away_goals": 1,
+          "probability": 0.1193685
+        },
+        {
+          "rank": 3,
+          "home_goals": 0,
+          "away_goals": 1,
+          "probability": 0.09127185
+        },
+        {
+          "rank": 4,
+          "home_goals": 2,
+          "away_goals": 0,
+          "probability": 0.08797554
+        },
+        {
+          "rank": 5,
+          "home_goals": 1,
+          "away_goals": 2,
+          "probability": 0.08624747
+        }
+      ]
+    },
+    {
+      "match_id": "WC2026_099",
+      "home_team": "Brazil",
+      "away_team": "England",
+      "predicted_home_goals": 1,
+      "predicted_away_goals": 0,
+      "home_win_prob": 0.523005,
+      "draw_prob": 0.0,
+      "away_win_prob": 0.476995,
+      "round": "Mata-mata - Quartas",
+      "match_date": "2026-07-11T21:00:00Z",
+      "scenario_id": "WC2026_099_england",
+      "official_match_id": "WC2026_099",
+      "stage": "Quartas",
+      "stage_order": 2,
+      "brazil_previous_match_id": "WC2026_091",
+      "opponent_decider_match_id": "WC2026_092",
+      "opponent": "England",
+      "projected_opponent": true,
+      "scorelines": [
+        {
+          "rank": 1,
+          "home_goals": 1,
+          "away_goals": 0,
+          "probability": 0.10967121
+        },
+        {
+          "rank": 2,
+          "home_goals": 2,
+          "away_goals": 1,
+          "probability": 0.10705048
+        },
+        {
+          "rank": 3,
+          "home_goals": 0,
+          "away_goals": 1,
+          "probability": 0.10668656
+        },
+        {
+          "rank": 4,
+          "home_goals": 1,
+          "away_goals": 2,
+          "probability": 0.10413716
+        },
+        {
+          "rank": 5,
+          "home_goals": 2,
+          "away_goals": 0,
+          "probability": 0.06692584
+        }
+      ]
+    },
+    {
+      "match_id": "WC2026_102",
+      "home_team": "Brazil",
+      "away_team": "Argentina",
+      "predicted_home_goals": 1,
+      "predicted_away_goals": 2,
+      "home_win_prob": 0.328826,
+      "draw_prob": 0.0,
+      "away_win_prob": 0.671174,
+      "round": "Mata-mata - Semifinal",
+      "match_date": "2026-07-15T19:00:00Z",
+      "scenario_id": "WC2026_102_argentina",
+      "official_match_id": "WC2026_102",
+      "stage": "Semi",
+      "stage_order": 3,
+      "brazil_previous_match_id": "WC2026_099",
+      "opponent_decider_match_id": "WC2026_100",
+      "opponent": "Argentina",
+      "projected_opponent": true,
+      "scorelines": [
+        {
+          "rank": 1,
+          "home_goals": 1,
+          "away_goals": 2,
+          "probability": 0.12376958
+        },
+        {
+          "rank": 2,
+          "home_goals": 0,
+          "away_goals": 1,
+          "probability": 0.12065063
+        },
+        {
+          "rank": 3,
+          "home_goals": 0,
+          "away_goals": 2,
+          "probability": 0.0945877
+        },
+        {
+          "rank": 4,
+          "home_goals": 2,
+          "away_goals": 1,
+          "probability": 0.07758588
+        },
+        {
+          "rank": 5,
+          "home_goals": 1,
+          "away_goals": 0,
+          "probability": 0.07563075
+        }
+      ]
+    },
+    {
+      "match_id": "WC2026_102",
+      "home_team": "Brazil",
+      "away_team": "Egypt",
+      "predicted_home_goals": 1,
+      "predicted_away_goals": 0,
+      "home_win_prob": 0.766296,
+      "draw_prob": 0.0,
+      "away_win_prob": 0.233704,
+      "round": "Mata-mata - Semifinal",
+      "match_date": "2026-07-15T19:00:00Z",
+      "scenario_id": "WC2026_102_egypt",
+      "official_match_id": "WC2026_102",
+      "stage": "Semi",
+      "stage_order": 3,
+      "brazil_previous_match_id": "WC2026_099",
+      "opponent_decider_match_id": "WC2026_100",
+      "opponent": "Egypt",
+      "projected_opponent": false,
+      "scorelines": [
+        {
+          "rank": 1,
+          "home_goals": 1,
+          "away_goals": 0,
+          "probability": 0.14031184
+        },
+        {
+          "rank": 2,
+          "home_goals": 2,
+          "away_goals": 1,
+          "probability": 0.12522552
+        },
+        {
+          "rank": 3,
+          "home_goals": 2,
+          "away_goals": 0,
+          "probability": 0.12171629
+        },
+        {
+          "rank": 4,
+          "home_goals": 3,
+          "away_goals": 0,
+          "probability": 0.07443326
+        },
+        {
+          "rank": 5,
+          "home_goals": 3,
+          "away_goals": 1,
+          "probability": 0.06957116
+        }
+      ]
+    },
+    {
+      "match_id": "WC2026_102",
+      "home_team": "Brazil",
+      "away_team": "Algeria",
+      "predicted_home_goals": 1,
+      "predicted_away_goals": 0,
+      "home_win_prob": 0.694494,
+      "draw_prob": 0.0,
+      "away_win_prob": 0.305506,
+      "round": "Mata-mata - Semifinal",
+      "match_date": "2026-07-15T19:00:00Z",
+      "scenario_id": "WC2026_102_algeria",
+      "official_match_id": "WC2026_102",
+      "stage": "Semi",
+      "stage_order": 3,
+      "brazil_previous_match_id": "WC2026_099",
+      "opponent_decider_match_id": "WC2026_100",
+      "opponent": "Algeria",
+      "projected_opponent": false,
+      "scorelines": [
+        {
+          "rank": 1,
+          "home_goals": 1,
+          "away_goals": 0,
+          "probability": 0.1353254
+        },
+        {
+          "rank": 2,
+          "home_goals": 2,
+          "away_goals": 1,
+          "probability": 0.12455613
+        },
+        {
+          "rank": 3,
+          "home_goals": 2,
+          "away_goals": 0,
+          "probability": 0.1044657
+        },
+        {
+          "rank": 4,
+          "home_goals": 0,
+          "away_goals": 1,
+          "probability": 0.07772144
+        },
+        {
+          "rank": 5,
+          "home_goals": 1,
+          "away_goals": 2,
+          "probability": 0.07153632
+        }
+      ]
+    },
+    {
+      "match_id": "WC2026_102",
+      "home_team": "Brazil",
+      "away_team": "Colombia",
+      "predicted_home_goals": 1,
+      "predicted_away_goals": 0,
+      "home_win_prob": 0.647468,
+      "draw_prob": 0.0,
+      "away_win_prob": 0.352532,
+      "round": "Mata-mata - Semifinal",
+      "match_date": "2026-07-15T19:00:00Z",
+      "scenario_id": "WC2026_102_colombia",
+      "official_match_id": "WC2026_102",
+      "stage": "Semi",
+      "stage_order": 3,
+      "brazil_previous_match_id": "WC2026_099",
+      "opponent_decider_match_id": "WC2026_100",
+      "opponent": "Colombia",
+      "projected_opponent": false,
+      "scorelines": [
+        {
+          "rank": 1,
+          "home_goals": 1,
+          "away_goals": 0,
+          "probability": 0.12974674
+        },
+        {
+          "rank": 2,
+          "home_goals": 2,
+          "away_goals": 1,
+          "probability": 0.12155117
+        },
+        {
+          "rank": 3,
+          "home_goals": 2,
+          "away_goals": 0,
+          "probability": 0.09349927
+        },
+        {
+          "rank": 4,
+          "home_goals": 0,
+          "away_goals": 1,
+          "probability": 0.08685547
+        },
+        {
+          "rank": 5,
+          "home_goals": 1,
+          "away_goals": 2,
+          "probability": 0.08136917
+        }
+      ]
+    }
+  ]
+}
