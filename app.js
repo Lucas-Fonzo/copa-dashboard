@@ -96,6 +96,29 @@ const KNOCKOUT_MATCHES = {
   88: ["Runner-up Group D", "Runner-up Group G"],
 };
 
+const THIRD_PLACE_ASSIGNMENT_OVERRIDES = {
+  // Combinação real dos 8 melhores terceiros da fase de grupos.
+  // Sem isso, o backtracking encontra uma solução válida matematicamente,
+  // mas não necessariamente o encaixe oficial do chaveamento.
+  "B/D/E/F/I/J/K/L": {
+    "Best 3rd (Groups A/B/C/D/F)": "D",
+    "Best 3rd (Groups C/D/F/G/H)": "F",
+    "Best 3rd (Groups B/E/F/I/J)": "B",
+    "Best 3rd (Groups A/E/H/I/J)": "I",
+    "Best 3rd (Groups C/E/F/H/I)": "E",
+    "Best 3rd (Groups E/H/I/J/K)": "K",
+    "Best 3rd (Groups E/F/G/I/J)": "J",
+    "Best 3rd (Groups D/E/I/J/L)": "L",
+  },
+};
+
+const KNOCKOUT_ADVANCEMENT_OVERRIDES = {
+  // Resultado empatado no tempo/prorrogação, decidido nos pênaltis.
+  // O schema atual de results guarda apenas gols, então registramos aqui
+  // quem avançou para o chaveamento não precisar "adivinhar".
+  WC2026_074: { winner: "Paraguay", loser: "Germany", decidedOnPenalties: true },
+};
+
 const BRACKET_LAYOUT = {
   left32: [74, 77, 73, 75, 83, 84, 81, 82],
   right32: [76, 78, 79, 80, 86, 88, 85, 87],
@@ -242,6 +265,7 @@ const elements = {
 
 let cachedPredictions = [];
 let cachedLiveMatches = [];
+let cachedResults = [];
 let cachedScorelineOdds = [];
 let brazilCountdownInterval = null;
 let brazilCountdownTarget = null;
@@ -344,15 +368,21 @@ function isMatchConfirmedFinished(liveMatch) {
   return liveMatch?.status === "finished";
 }
 
-function isActiveMatch(matchDate, liveMatch, now = new Date()) {
+function isMatchFinishedByResult(result) {
+  return Boolean(result);
+}
+
+function isActiveMatch(matchDate, liveMatch, now = new Date(), result = null) {
+  if (isMatchFinishedByResult(result)) return false;
   if (isMatchConfirmedLive(liveMatch)) return true;
   if (isMatchConfirmedFinished(liveMatch)) return false;
   return isLiveMatch(matchDate, now);
 }
 
-function shouldShowScheduleMatch(matchDate, liveMatch, now = new Date()) {
+function shouldShowScheduleMatch(matchDate, liveMatch, now = new Date(), result = null) {
   const start = new Date(matchDate).getTime();
   if (!Number.isFinite(start)) return false;
+  if (isMatchFinishedByResult(result)) return false;
   if (isMatchConfirmedLive(liveMatch)) return true;
   if (isMatchConfirmedFinished(liveMatch) && start <= now.getTime()) return false;
   return start > now.getTime() || isLiveMatch(matchDate, now);
@@ -480,6 +510,20 @@ async function fetchLiveMatches() {
   }
 }
 
+async function fetchResultsForSchedule() {
+  if (!isConfigured()) return [];
+  try {
+    const response = await supabase
+      .from("results")
+      .select("match_id,actual_home_goals,actual_away_goals,match_date");
+    if (response.error) throw response.error;
+    return response.data ?? [];
+  } catch (error) {
+    console.warn("Resultados indisponíveis para filtrar a agenda.", error);
+    return [];
+  }
+}
+
 function renderUpcomingGames(games) {
   elements.upcomingGames.innerHTML = games.map(({ game, prediction, date, liveMatch }) => `
     <article class="upcoming-card">
@@ -508,13 +552,16 @@ function renderUpcomingGames(games) {
 async function loadUpcomingGames() {
   elements.upcomingSection.hidden = true;
   try {
-    const [predictions, liveMatches] = await Promise.all([
+    const [predictions, liveMatches, results] = await Promise.all([
       fetchPredictionsForUpcoming(),
       fetchLiveMatches(),
+      fetchResultsForSchedule(),
     ]);
     cachedPredictions = predictions;
     cachedLiveMatches = liveMatches;
+    cachedResults = results;
     const liveByMatchId = new Map(liveMatches.map((match) => [match.match_id, match]));
+    const resultByMatchId = new Map(results.map((result) => [result.match_id, result]));
     const now = new Date();
 
     // Países, horário, placar e probabilidades vêm do mesmo registro. Isso evita
@@ -528,8 +575,14 @@ async function loadUpcomingGames() {
         date,
         finished: false,
       };
-      return { game, prediction, date, liveMatch: liveByMatchId.get(prediction.match_id) };
-    }).filter(({ date, liveMatch }) => shouldShowScheduleMatch(date, liveMatch, now))
+      return {
+        game,
+        prediction,
+        date,
+        liveMatch: liveByMatchId.get(prediction.match_id),
+        result: resultByMatchId.get(prediction.match_id),
+      };
+    }).filter(({ date, liveMatch, result }) => shouldShowScheduleMatch(date, liveMatch, now, result))
       .sort((a, b) => a.date - b.date)
       .slice(0, 3);
 
@@ -594,8 +647,14 @@ function liveScoreBlock(prediction, liveMatch) {
 }
 
 function hasLiveGame(now = new Date()) {
-  return cachedLiveMatches.some((match) => match.status === "live")
-    || cachedPredictions.some((prediction) => isLiveMatch(prediction.match_date, now));
+  const finishedMatchIds = new Set(cachedResults.map((result) => result.match_id));
+  return cachedLiveMatches.some((match) => (
+    match.status === "live" && !finishedMatchIds.has(match.match_id)
+  ))
+    || cachedPredictions.some((prediction) => (
+      !finishedMatchIds.has(prediction.match_id)
+      && isLiveMatch(prediction.match_date, now)
+    ));
 }
 
 function positionBrazilSection(isBrazilLive) {
@@ -703,6 +762,18 @@ function slotShortLabel(slot) {
 function allowedThirdGroups(slot) {
   const match = slot.match(/^Best 3rd \(Groups ([A-L/]+)\)$/);
   return match ? match[1].split("/") : [];
+}
+
+function thirdPlaceAssignmentOverride(thirdByGroup) {
+  const key = Object.keys(thirdByGroup).sort().join("/");
+  const override = THIRD_PLACE_ASSIGNMENT_OVERRIDES[key];
+  if (!override) return null;
+
+  return Object.fromEntries(
+    Object.entries(override)
+      .filter(([, group]) => thirdByGroup[group])
+      .map(([slot, group]) => [slot, thirdByGroup[group]]),
+  );
 }
 
 function flagToken(team) {
@@ -840,6 +911,9 @@ function assignThirdPlaces(standings, completedGroups) {
       .map((row) => [row.group, row.team]),
   );
 
+  const override = thirdPlaceAssignmentOverride(thirdByGroup);
+  if (override && Object.keys(override).length === 8) return override;
+
   const thirdSlots = Object.values(KNOCKOUT_MATCHES)
     .flat()
     .filter((slot) => slot.startsWith("Best 3rd"))
@@ -919,12 +993,16 @@ function actualKnockoutOutcomes(predictions, results) {
 
     const homeGoals = Number(result.actual_home_goals);
     const awayGoals = Number(result.actual_away_goals);
+    const advancement = KNOCKOUT_ADVANCEMENT_OVERRIDES[matchId];
     if (homeGoals > awayGoals) {
       winners.set(numericId, prediction.home_team);
       losers.set(numericId, prediction.away_team);
     } else if (awayGoals > homeGoals) {
       winners.set(numericId, prediction.away_team);
       losers.set(numericId, prediction.home_team);
+    } else if (advancement?.winner && advancement?.loser) {
+      winners.set(numericId, advancement.winner);
+      losers.set(numericId, advancement.loser);
     }
   }
 
@@ -1429,7 +1507,13 @@ function scorelinesForMatch(scorelineOdds, match, brazilIsHome) {
     }));
 }
 
-function renderBrazilSection(odds, predictions, liveMatches = cachedLiveMatches, scorelineOdds = cachedScorelineOdds) {
+function renderBrazilSection(
+  odds,
+  predictions,
+  liveMatches = cachedLiveMatches,
+  scorelineOdds = cachedScorelineOdds,
+  results = cachedResults,
+) {
   const brazil = odds.find((row) => row.team === "Brasil");
   if (!brazil) {
     clearBrazilCountdown();
@@ -1464,6 +1548,7 @@ function renderBrazilSection(odds, predictions, liveMatches = cachedLiveMatches,
   } else {
     const now = new Date();
     const liveByMatchId = new Map(liveMatches.map((match) => [match.match_id, match]));
+    const resultByMatchId = new Map(results.map((result) => [result.match_id, result]));
     const brazilGames = predictions
       .filter((prediction) => (
         displayTeam(prediction.home_team) === "Brasil"
@@ -1471,10 +1556,12 @@ function renderBrazilSection(odds, predictions, liveMatches = cachedLiveMatches,
       ))
       .map((prediction) => {
         const liveMatch = liveByMatchId.get(prediction.match_id);
+        const result = resultByMatchId.get(prediction.match_id);
         return {
           ...prediction,
           liveMatch,
-          is_live: isActiveMatch(prediction.match_date, liveMatch, now),
+          result,
+          is_live: isActiveMatch(prediction.match_date, liveMatch, now, result),
           starts_at: new Date(prediction.match_date),
         };
       })
@@ -1482,6 +1569,7 @@ function renderBrazilSection(odds, predictions, liveMatches = cachedLiveMatches,
         prediction.match_date,
         prediction.liveMatch,
         now,
+        prediction.result,
       ))
       .sort((a, b) => {
         if (a.is_live !== b.is_live) return a.is_live ? -1 : 1;
@@ -1656,16 +1744,18 @@ async function renderProbabilityMap(odds) {
 
 async function loadChampionshipFeatures() {
   try {
-    const [odds, predictions, liveMatches, scorelineOdds] = await Promise.all([
+    const [odds, predictions, liveMatches, results, scorelineOdds] = await Promise.all([
       fetchChampionshipOdds(),
       cachedPredictions.length ? Promise.resolve(cachedPredictions) : fetchPredictionsForUpcoming(),
       cachedLiveMatches.length ? Promise.resolve(cachedLiveMatches) : fetchLiveMatches(),
+      cachedResults.length ? Promise.resolve(cachedResults) : fetchResultsForSchedule(),
       fetchPredictionScorelines(),
     ]);
     if (!odds.length) return;
     cachedLiveMatches = liveMatches;
+    cachedResults = results;
     cachedScorelineOdds = scorelineOdds;
-    renderBrazilSection(odds, predictions, liveMatches, scorelineOdds);
+    renderBrazilSection(odds, predictions, liveMatches, scorelineOdds, results);
     renderFavorites(odds);
     await renderProbabilityMap(odds);
   } catch (error) {

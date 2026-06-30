@@ -44,6 +44,33 @@ PENALTY_STRONGER_PROBABILITY = 0.60
 MAX_GOALS_90 = 10
 MAX_GOALS_EXTRA = 6
 
+THIRD_PLACE_ASSIGNMENT_OVERRIDES = {
+    # Combinação real dos 8 melhores terceiros da fase de grupos.
+    # O backtracking puro encontra uma solução compatível, mas não garante
+    # o encaixe oficial do chaveamento.
+    "B/D/E/F/I/J/K/L": {
+        "Best 3rd (Groups A/B/C/D/F)": "D",
+        "Best 3rd (Groups C/D/F/G/H)": "F",
+        "Best 3rd (Groups B/E/F/I/J)": "B",
+        "Best 3rd (Groups A/E/H/I/J)": "I",
+        "Best 3rd (Groups C/E/F/H/I)": "E",
+        "Best 3rd (Groups E/H/I/J/K)": "K",
+        "Best 3rd (Groups E/F/G/I/J)": "J",
+        "Best 3rd (Groups D/E/I/J/L)": "L",
+    },
+}
+
+KNOCKOUT_ADVANCEMENT_OVERRIDES = {
+    # Resultado empatado no tempo/prorrogação, decidido nos pênaltis.
+    # O schema atual de results guarda apenas gols, então registramos aqui
+    # quem avançou para o chaveamento não precisar inferir vencedor em empate.
+    "WC2026_074": {
+        "winner": "Paraguay",
+        "loser": "Germany",
+        "decided_on_penalties": True,
+    },
+}
+
 ROUND_LABELS = {
     "Round of 32": "Mata-mata - Fase de 32",
     "Round of 16": "Mata-mata - Oitavas",
@@ -266,7 +293,23 @@ def allowed_third_groups(slot: str) -> list[str]:
     return slot.removeprefix(marker).removesuffix(")").split("/")
 
 
+def third_place_assignment_override(third_by_group: dict[str, str]) -> dict[str, str] | None:
+    key = "/".join(sorted(third_by_group))
+    override = THIRD_PLACE_ASSIGNMENT_OVERRIDES.get(key)
+    if not override:
+        return None
+    return {
+        slot: third_by_group[group]
+        for slot, group in override.items()
+        if group in third_by_group
+    }
+
+
 def assign_third_places(third_by_group: dict[str, str]) -> dict[str, str]:
+    override = third_place_assignment_override(third_by_group)
+    if override and len(override) == 8:
+        return override
+
     slots = load_knockout_slots()
     third_slots = sorted(
         [
@@ -516,6 +559,11 @@ def actual_knockout_outcomes(
             winners[number] = away
             losers[number] = home
         else:
+            override = KNOCKOUT_ADVANCEMENT_OVERRIDES.get(match_id)
+            if override:
+                winners[number] = str(override["winner"])
+                losers[number] = str(override["loser"])
+                continue
             # O schema atual não guarda vencedor dos pênaltis. Se o placar vier
             # empatado, é mais seguro não avançar ninguém automaticamente.
             print(
@@ -535,8 +583,19 @@ def generate_defined_knockout_predictions(
     rankings, complete_groups = completed_group_rankings(fixtures, results)
     third_assignment = third_place_assignment(rankings, complete_groups)
     existing_ids = {str(row["match_id"]) for row in predictions}
-    ratings, home_model, away_model = build_latest_model(predictions, results)
-    trained_models = (home_model, away_model)
+    group_stage_results = [
+        result
+        for result in results
+        if match_num(result["match_id"]) < 73
+    ]
+    group_ratings, group_home_model, group_away_model = build_latest_model(
+        predictions,
+        group_stage_results,
+    )
+    latest_ratings, latest_home_model, latest_away_model = build_latest_model(
+        predictions,
+        results,
+    )
 
     winners, losers = actual_knockout_outcomes(predictions, results)
     generated: list[KnockoutPrediction] = []
@@ -567,6 +626,13 @@ def generate_defined_knockout_predictions(
 
         if not home or not away:
             continue
+
+        if number <= 88:
+            ratings = group_ratings
+            trained_models = (group_home_model, group_away_model)
+        else:
+            ratings = latest_ratings
+            trained_models = (latest_home_model, latest_away_model)
 
         prediction = predict_match(
             number,

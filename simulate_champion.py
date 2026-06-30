@@ -21,7 +21,7 @@ from dotenv import load_dotenv
 from supabase import Client, create_client
 
 
-DEFAULT_SIMULATIONS = 10_000
+DEFAULT_SIMULATIONS = 50_000
 GROUP_MARKER = "fase de grupos"
 EXTRA_TIME_INTENSITY = 0.95
 EXTRA_TIME_SHARE_OF_MATCH = 30 / 90
@@ -84,6 +84,30 @@ ROUND_OF_32_SLOTS = [
     ("Winner Group B", "Best 3rd (Groups E/F/G/I/J)"),
     ("Winner Group K", "Best 3rd (Groups D/E/I/J/L)"),
 ]
+
+THIRD_PLACE_ASSIGNMENT_OVERRIDES = {
+    # Combinação real dos 8 melhores terceiros da fase de grupos.
+    # Mantém o Monte Carlo alinhado com o chaveamento exibido no dashboard.
+    "B/D/E/F/I/J/K/L": {
+        "Best 3rd (Groups A/B/C/D/F)": "D",
+        "Best 3rd (Groups C/D/F/G/H)": "F",
+        "Best 3rd (Groups B/E/F/I/J)": "B",
+        "Best 3rd (Groups A/E/H/I/J)": "I",
+        "Best 3rd (Groups C/E/F/H/I)": "E",
+        "Best 3rd (Groups E/H/I/J/K)": "K",
+        "Best 3rd (Groups E/F/G/I/J)": "J",
+        "Best 3rd (Groups D/E/I/J/L)": "L",
+    },
+}
+
+KNOCKOUT_ADVANCEMENT_OVERRIDES = {
+    # Resultado empatado no tempo/prorrogação, decidido nos pênaltis.
+    "WC2026_074": {
+        "winner": "Paraguay",
+        "loser": "Germany",
+        "decided_on_penalties": True,
+    },
+}
 
 
 @dataclass
@@ -372,8 +396,24 @@ def allowed_third_groups(slot: str) -> list[str]:
     return slot.removeprefix(marker).removesuffix(")").split("/")
 
 
+def third_place_assignment_override(third_by_group: dict[str, str]) -> dict[str, str] | None:
+    key = "/".join(sorted(third_by_group))
+    override = THIRD_PLACE_ASSIGNMENT_OVERRIDES.get(key)
+    if not override:
+        return None
+    return {
+        slot: third_by_group[group]
+        for slot, group in override.items()
+        if group in third_by_group
+    }
+
+
 def assign_third_places(third_by_group: dict[str, str]) -> dict[str, str]:
     """Atribui os oito melhores terceiros aos slots oficiais compatíveis."""
+    override = third_place_assignment_override(third_by_group)
+    if override and len(override) == 8:
+        return override
+
     third_slots = sorted(
         [slot for match in ROUND_OF_32_SLOTS for slot in match if slot.startswith("Best 3rd")],
         key=lambda slot: sum(1 for group in allowed_third_groups(slot) if group in third_by_group),
