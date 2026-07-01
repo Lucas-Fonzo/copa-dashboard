@@ -269,6 +269,7 @@ const elements = {
   matchFilterReset: document.querySelector("#match-filter-reset"),
   matchFilterCount: document.querySelector("#match-filter-count"),
   matchesBody: document.querySelector("#matches-body"),
+  siteVisitCounter: document.querySelector("#site-visit-counter"),
 };
 
 let cachedPredictions = [];
@@ -309,6 +310,43 @@ function showState(state) {
   elements.error.hidden = state !== "error";
   elements.empty.hidden = state !== "empty";
   elements.dashboard.hidden = state !== "dashboard";
+}
+
+function formatVisitCount(value) {
+  const count = Number(value);
+  if (!Number.isFinite(count)) return "Visitas: —";
+  return `Visitas: <strong>${count.toLocaleString("pt-BR")}</strong>`;
+}
+
+async function fetchSiteVisitCount() {
+  const response = await supabase
+    .from("site_visits")
+    .select("total_count")
+    .eq("key", "dashboard")
+    .maybeSingle();
+  if (response.error) throw response.error;
+  return response.data?.total_count ?? 0;
+}
+
+async function renderVisitCounter() {
+  if (!elements.siteVisitCounter || !isConfigured()) return;
+
+  try {
+    const sessionKey = "radar-copa-visit-counted";
+    let count;
+    if (sessionStorage.getItem(sessionKey)) {
+      count = await fetchSiteVisitCount();
+    } else {
+      const response = await supabase.rpc("increment_site_visit", { counter_key: "dashboard" });
+      if (response.error) throw response.error;
+      sessionStorage.setItem(sessionKey, "1");
+      count = response.data;
+    }
+    elements.siteVisitCounter.innerHTML = formatVisitCount(count);
+  } catch (error) {
+    console.warn("Contador de acessos indisponível.", error);
+    elements.siteVisitCounter.textContent = "Visitas: indisponível";
+  }
 }
 
 function escapeHtml(value) {
@@ -2243,6 +2281,7 @@ async function pollingTick() {
 
 async function initializeDashboard() {
   window.addEventListener("resize", fitBracketBoard);
+  renderVisitCounter();
   await Promise.all([loadDashboard(), loadUpcomingGames(), loadBracket()]);
   await loadChampionshipFeatures();
   setInterval(pollingTick, LIVE_CHECK_INTERVAL_MS);

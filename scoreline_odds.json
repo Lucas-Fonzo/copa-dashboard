@@ -558,5 +558,110 @@
     "home_goals": 0,
     "away_goals": 2,
     "probability": 0.06731585
+  },
+  {
+    "match_id": "WC2026_089",
+    "rank": 1,
+    "home_goals": 0,
+    "away_goals": 4,
+    "probability": 0.11662047
+  },
+  {
+    "match_id": "WC2026_089",
+    "rank": 2,
+    "home_goals": 0,
+    "away_goals": 3,
+    "probability": 0.11137636
+  },
+  {
+    "match_id": "WC2026_089",
+    "rank": 3,
+    "home_goals": 0,
+    "away_goals": 5,
+    "probability": 0.09801223
+  },
+  {
+    "match_id": "WC2026_089",
+    "rank": 4,
+    "home_goals": 0,
+    "away_goals": 2,
+    "probability": 0.08060109
+  },
+  {
+    "match_id": "WC2026_089",
+    "rank": 5,
+    "home_goals": 0,
+    "away_goals": 6,
+    "probability": 0.06871641
+  },
+  {
+    "match_id": "WC2026_090",
+    "rank": 1,
+    "home_goals": 0,
+    "away_goals": 2,
+    "probability": 0.11971982
+  },
+  {
+    "match_id": "WC2026_090",
+    "rank": 2,
+    "home_goals": 1,
+    "away_goals": 2,
+    "probability": 0.11822619
+  },
+  {
+    "match_id": "WC2026_090",
+    "rank": 3,
+    "home_goals": 0,
+    "away_goals": 1,
+    "probability": 0.10942137
+  },
+  {
+    "match_id": "WC2026_090",
+    "rank": 4,
+    "home_goals": 0,
+    "away_goals": 3,
+    "probability": 0.09171631
+  },
+  {
+    "match_id": "WC2026_090",
+    "rank": 5,
+    "home_goals": 1,
+    "away_goals": 3,
+    "probability": 0.08314892
+  },
+  {
+    "match_id": "WC2026_091",
+    "rank": 1,
+    "home_goals": 1,
+    "away_goals": 0,
+    "probability": 0.13804163
+  },
+  {
+    "match_id": "WC2026_091",
+    "rank": 2,
+    "home_goals": 2,
+    "away_goals": 1,
+    "probability": 0.12549986
+  },
+  {
+    "match_id": "WC2026_091",
+    "rank": 3,
+    "home_goals": 2,
+    "away_goals": 0,
+    "probability": 0.11168481
+  },
+  {
+    "match_id": "WC2026_091",
+    "rank": 4,
+    "home_goals": 0,
+    "away_goals": 1,
+    "probability": 0.07144139
+  },
+  {
+    "match_id": "WC2026_091",
+    "rank": 5,
+    "home_goals": 3,
+    "away_goals": 1,
+    "probability": 0.06500251
   }
 ]

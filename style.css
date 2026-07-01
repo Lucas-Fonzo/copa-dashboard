@@ -418,6 +418,11 @@ h1 strong { color: transparent; font: inherit; background: linear-gradient(115de
 .live-update-indicator span { --pulse-color: rgba(142,224,0,.55); width: 8px; height: 8px; border-radius: 50%; background: var(--lime); box-shadow: 0 0 0 0 var(--pulse-color); animation: live-pulse 1.5s infinite; }
 @keyframes live-pulse { 0% { box-shadow: 0 0 0 0 var(--pulse-color); } 70% { box-shadow: 0 0 0 8px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
 
+/* Rodapé */
+.site-footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px; margin: 22px 0 10px; padding: 13px 16px; color: var(--muted); border-top: 1px solid var(--line-soft); font-size: 11px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+.site-footer strong { color: var(--lime-bright); font-family: var(--display); font-size: 16px; font-style: italic; letter-spacing: 0; }
+.footer-divider { width: 5px; height: 5px; border-radius: 50%; background: var(--lime); box-shadow: 0 0 8px rgba(142,224,0,.55); }
+
 /* Estados */
 .state-panel { display: flex; align-items: center; justify-content: center; gap: 12px; min-height: 120px; margin-top: 22px; padding: 24px; text-align: center; border: 1px solid var(--line-soft); color: var(--silver); background: var(--panel); }
 .state-panel[hidden], [hidden] { display: none !important; }
@@ -540,5 +545,7 @@ tbody tr:hover { background: rgba(142,224,0,.035); }
   .match-filters { grid-template-columns: 1fr; }
   .match-search,
   .match-filter-count { grid-column: auto; }
+  .site-footer { align-items: center; flex-direction: column; gap: 7px; text-align: center; }
+  .footer-divider { display: none; }
   .section-block { padding: 16px; }
 }

@@ -69,6 +69,11 @@ KNOCKOUT_ADVANCEMENT_OVERRIDES = {
         "loser": "Germany",
         "decided_on_penalties": True,
     },
+    "WC2026_075": {
+        "winner": "Morocco",
+        "loser": "Netherlands",
+        "decided_on_penalties": True,
+    },
 }
 
 ROUND_LABELS = {

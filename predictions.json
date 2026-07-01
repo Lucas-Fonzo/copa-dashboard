@@ -921,7 +921,7 @@
     "draw_prob": 0.0,
     "away_win_prob": 0.042038,
     "round": "Mata-mata - Fase de 32",
-    "match_date": "2026-06-30T17:00:00Z"
+    "match_date": "2026-06-30T21:00:00Z"
   },
   {
     "match_id": "WC2026_078",
@@ -933,7 +933,7 @@
     "draw_prob": 0.0,
     "away_win_prob": 0.464855,
     "round": "Mata-mata - Fase de 32",
-    "match_date": "2026-06-30T21:00:00Z"
+    "match_date": "2026-06-30T17:00:00Z"
   },
   {
     "match_id": "WC2026_079",
@@ -1054,5 +1054,41 @@
     "away_win_prob": 0.525845,
     "round": "Mata-mata - Fase de 32",
     "match_date": "2026-07-04T01:30:00Z"
+  },
+  {
+    "match_id": "WC2026_089",
+    "home_team": "Paraguay",
+    "away_team": "France",
+    "predicted_home_goals": 0,
+    "predicted_away_goals": 4,
+    "home_win_prob": 0.020957,
+    "draw_prob": 0.0,
+    "away_win_prob": 0.979043,
+    "round": "Mata-mata - Oitavas",
+    "match_date": "2026-07-04T21:00:00Z"
+  },
+  {
+    "match_id": "WC2026_090",
+    "home_team": "Canada",
+    "away_team": "Morocco",
+    "predicted_home_goals": 0,
+    "predicted_away_goals": 2,
+    "home_win_prob": 0.164069,
+    "draw_prob": 0.0,
+    "away_win_prob": 0.835931,
+    "round": "Mata-mata - Oitavas",
+    "match_date": "2026-07-04T17:00:00Z"
+  },
+  {
+    "match_id": "WC2026_091",
+    "home_team": "Brazil",
+    "away_team": "Norway",
+    "predicted_home_goals": 1,
+    "predicted_away_goals": 0,
+    "home_win_prob": 0.724672,
+    "draw_prob": 0.0,
+    "away_win_prob": 0.275328,
+    "round": "Mata-mata - Oitavas",
+    "match_date": "2026-07-05T20:00:00Z"
   }
 ]

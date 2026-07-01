@@ -244,3 +244,57 @@ with check (true);
 
 grant select on public.championship_odds to anon;
 grant all on public.championship_odds to service_role;
+
+-- Contador simples de acessos do dashboard.
+-- O visitante não escreve diretamente na tabela: ele chama a função
+-- increment_site_visit, que incrementa e devolve o total atualizado.
+create table if not exists public.site_visits (
+    key text primary key,
+    total_count bigint not null default 0 check (total_count >= 0),
+    updated_at timestamptz not null default now()
+);
+
+insert into public.site_visits (key, total_count)
+values ('dashboard', 0)
+on conflict (key) do nothing;
+
+alter table public.site_visits enable row level security;
+
+drop policy if exists "Leitura pública do contador de acessos"
+    on public.site_visits;
+create policy "Leitura pública do contador de acessos"
+on public.site_visits for select
+to anon
+using (true);
+
+drop policy if exists "Service role gerencia contador de acessos"
+    on public.site_visits;
+create policy "Service role gerencia contador de acessos"
+on public.site_visits for all
+to service_role
+using (true)
+with check (true);
+
+create or replace function public.increment_site_visit(counter_key text default 'dashboard')
+returns bigint
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+    new_total bigint;
+begin
+    insert into public.site_visits as visits (key, total_count, updated_at)
+    values (counter_key, 1, now())
+    on conflict (key) do update
+        set total_count = visits.total_count + 1,
+            updated_at = now()
+    returning total_count into new_total;
+
+    return new_total;
+end;
+$$;
+
+grant select on public.site_visits to anon;
+grant all on public.site_visits to service_role;
+grant execute on function public.increment_site_visit(text) to anon, authenticated, service_role;
