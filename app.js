@@ -117,6 +117,7 @@ const KNOCKOUT_ADVANCEMENT_OVERRIDES = {
   // O schema atual de results guarda apenas gols, então registramos aqui
   // quem avançou para o chaveamento não precisar "adivinhar".
   WC2026_074: { winner: "Paraguay", loser: "Germany", decidedOnPenalties: true },
+  WC2026_075: { winner: "Morocco", loser: "Netherlands", decidedOnPenalties: true },
 };
 
 const BRACKET_LAYOUT = {
@@ -260,6 +261,13 @@ const elements = {
   bestRoundValue: document.querySelector("#best-round-value"),
   bestRoundDetail: document.querySelector("#best-round-detail"),
   roundRanking: document.querySelector("#round-ranking"),
+  matchRoundFilter: document.querySelector("#match-round-filter"),
+  matchTeamFilter: document.querySelector("#match-team-filter"),
+  matchResultFilter: document.querySelector("#match-result-filter"),
+  matchExactFilter: document.querySelector("#match-exact-filter"),
+  matchSearchFilter: document.querySelector("#match-search-filter"),
+  matchFilterReset: document.querySelector("#match-filter-reset"),
+  matchFilterCount: document.querySelector("#match-filter-count"),
   matchesBody: document.querySelector("#matches-body"),
 };
 
@@ -268,6 +276,7 @@ let cachedLiveMatches = [];
 let cachedResults = [];
 let cachedScorelineOdds = [];
 let cachedBrazilPathPredictions = [];
+let cachedMatchSummaries = [];
 let brazilCountdownInterval = null;
 let brazilCountdownTarget = null;
 let dashboardRefreshInFlight = false;
@@ -275,6 +284,21 @@ let lastDashboardRefresh = 0;
 let lastIdleRefresh = 0;
 
 elements.retry.addEventListener("click", () => loadDashboard());
+[
+  elements.matchRoundFilter,
+  elements.matchTeamFilter,
+  elements.matchResultFilter,
+  elements.matchExactFilter,
+].forEach((control) => control?.addEventListener("change", renderFilteredMatches));
+elements.matchSearchFilter?.addEventListener("input", renderFilteredMatches);
+elements.matchFilterReset?.addEventListener("click", () => {
+  elements.matchRoundFilter.value = "all";
+  elements.matchTeamFilter.value = "all";
+  elements.matchResultFilter.value = "all";
+  elements.matchExactFilter.value = "all";
+  elements.matchSearchFilter.value = "";
+  renderFilteredMatches();
+});
 
 function isConfigured() {
   return !SUPABASE_URL.includes("SEU-PROJETO") && !SUPABASE_ANON_KEY.includes("SUA-ANON-KEY");
@@ -1773,6 +1797,43 @@ function renderFavorites(odds) {
   elements.favoritesSection.hidden = false;
 }
 
+function knockoutEliminatedTeams(predictions, results) {
+  const predictionById = new Map(predictions.map((prediction) => [normalizedMatchId(prediction.match_id), prediction]));
+  const eliminated = new Set();
+
+  for (const result of results) {
+    const matchId = normalizedMatchId(result.match_id);
+    const numericId = Number(matchId.replace("WC2026_", ""));
+    if (!Number.isFinite(numericId) || numericId < 73) continue;
+
+    const prediction = predictionById.get(matchId);
+    if (!prediction) continue;
+
+    const homeGoals = Number(result.actual_home_goals);
+    const awayGoals = Number(result.actual_away_goals);
+    if (homeGoals > awayGoals) {
+      eliminated.add(normalizeLookup(displayTeam(prediction.away_team)));
+    } else if (awayGoals > homeGoals) {
+      eliminated.add(normalizeLookup(displayTeam(prediction.home_team)));
+    } else {
+      const advancement = KNOCKOUT_ADVANCEMENT_OVERRIDES[matchId];
+      if (advancement?.loser) eliminated.add(normalizeLookup(displayTeam(advancement.loser)));
+    }
+  }
+
+  return eliminated;
+}
+
+function applyKnockoutEliminations(odds, predictions, results) {
+  const eliminated = knockoutEliminatedTeams(predictions, results);
+  if (!eliminated.size) return odds;
+
+  return odds.map((row) => {
+    if (!eliminated.has(normalizeLookup(displayTeam(row.team)))) return row;
+    return { ...row, champion_prob: 0, eliminated: true };
+  });
+}
+
 function mapColor(entries) {
   if (!entries?.length) return "#1a1a2e";
   if (entries.every((entry) => entry.eliminated)) return "#ff2d55";
@@ -1861,9 +1922,10 @@ async function loadChampionshipFeatures() {
     cachedResults = results;
     cachedScorelineOdds = scorelineOdds;
     cachedBrazilPathPredictions = brazilPathPredictions;
-    renderBrazilSection(odds, predictions, liveMatches, scorelineOdds, results, brazilPathPredictions);
-    renderFavorites(odds);
-    await renderProbabilityMap(odds);
+    const adjustedOdds = applyKnockoutEliminations(odds, predictions, results);
+    renderBrazilSection(adjustedOdds, predictions, liveMatches, scorelineOdds, results, brazilPathPredictions);
+    renderFavorites(adjustedOdds);
+    await renderProbabilityMap(adjustedOdds);
   } catch (error) {
     // As seções são complementares e somem silenciosamente enquanto não houver dados.
     console.warn("Probabilidades de título indisponíveis.", error);
@@ -1877,6 +1939,78 @@ function accuracyBadge(correct, label) {
   const className = correct ? "badge-success" : "badge-error";
   const symbol = correct ? "✓" : "✕";
   return `<span class="badge ${className}">${symbol} ${label}</span>`;
+}
+
+function predictedAdvancingTeam(match) {
+  const homeGoals = Number(match.predicted_home_goals);
+  const awayGoals = Number(match.predicted_away_goals);
+  if (homeGoals > awayGoals) return displayTeam(match.home_team);
+  if (awayGoals > homeGoals) return displayTeam(match.away_team);
+
+  const homeAdvanceProb = Number(match.home_win_prob);
+  const awayAdvanceProb = Number(match.away_win_prob);
+  if (!Number.isFinite(homeAdvanceProb) || !Number.isFinite(awayAdvanceProb)) return null;
+  return homeAdvanceProb >= awayAdvanceProb
+    ? displayTeam(match.home_team)
+    : displayTeam(match.away_team);
+}
+
+function actualAdvancingTeam(match) {
+  const homeGoals = Number(match.actual_home_goals);
+  const awayGoals = Number(match.actual_away_goals);
+  if (homeGoals > awayGoals) return displayTeam(match.home_team);
+  if (awayGoals > homeGoals) return displayTeam(match.away_team);
+
+  const advancement = KNOCKOUT_ADVANCEMENT_OVERRIDES[normalizedMatchId(match.match_id)];
+  return advancement?.winner ? displayTeam(advancement.winner) : null;
+}
+
+function withKnockoutAccuracy(match) {
+  if (!isKnockoutMatch(match)) return match;
+
+  const predictedWinner = predictedAdvancingTeam(match);
+  const actualWinner = actualAdvancingTeam(match);
+  if (!predictedWinner || !actualWinner) return match;
+
+  return {
+    ...match,
+    result_correct: sameTeam(predictedWinner, actualWinner),
+    actual_advancing_team: actualWinner,
+    predicted_advancing_team: predictedWinner,
+  };
+}
+
+function buildAccuracyRow(round, matches) {
+  const total = matches.length;
+  const correctResults = matches.filter((match) => Boolean(match.result_correct)).length;
+  const exactScores = matches.filter((match) => Boolean(match.exact_score)).length;
+  const latestMatchDate = matches
+    .map((match) => match.match_date)
+    .filter(Boolean)
+    .sort((a, b) => new Date(b) - new Date(a))[0] ?? null;
+
+  return {
+    round,
+    total_matches: total,
+    correct_results: correctResults,
+    exact_scores: exactScores,
+    result_accuracy_pct: total ? (100 * correctResults) / total : 0,
+    exact_accuracy_pct: total ? (100 * exactScores) / total : 0,
+    latest_match_date: latestMatchDate,
+  };
+}
+
+function summarizeAccuracy(matches) {
+  const byRound = new Map();
+  for (const match of matches) {
+    const round = match.round ?? "Sem rodada";
+    byRound.set(round, [...(byRound.get(round) ?? []), match]);
+  }
+
+  return [
+    buildAccuracyRow("Geral", matches),
+    ...[...byRound.entries()].map(([round, roundMatches]) => buildAccuracyRow(round, roundMatches)),
+  ];
 }
 
 function renderSummary(overall, rounds, matches) {
@@ -1919,7 +2053,109 @@ function renderRounds(rounds) {
   `).join("");
 }
 
+function setSelectOptions(select, options, allLabel) {
+  if (!select) return;
+  const currentValue = select.value || "all";
+  select.innerHTML = "";
+
+  const allOption = document.createElement("option");
+  allOption.value = "all";
+  allOption.textContent = allLabel;
+  select.append(allOption);
+
+  for (const option of options) {
+    const item = document.createElement("option");
+    item.value = option.value;
+    item.textContent = option.label;
+    select.append(item);
+  }
+
+  select.value = [...select.options].some((option) => option.value === currentValue)
+    ? currentValue
+    : "all";
+}
+
+function renderMatchFilterOptions(matches) {
+  const rounds = new Map();
+  const teams = new Map();
+
+  for (const match of matches) {
+    const round = match.round ?? "Sem rodada";
+    const existingDate = rounds.get(round);
+    if (!existingDate || new Date(match.match_date) > new Date(existingDate)) {
+      rounds.set(round, match.match_date);
+    }
+
+    [match.home_team, match.away_team].map(displayTeam).forEach((team) => {
+      teams.set(normalizeLookup(team), team);
+    });
+  }
+
+  const roundOptions = [...rounds.entries()]
+    .sort((a, b) => new Date(b[1]) - new Date(a[1]))
+    .map(([round]) => ({ value: round, label: round }));
+  const teamOptions = [...teams.entries()]
+    .sort((a, b) => a[1].localeCompare(b[1], "pt-BR"))
+    .map(([value, label]) => ({ value, label }));
+
+  setSelectOptions(elements.matchRoundFilter, roundOptions, "Todas");
+  setSelectOptions(elements.matchTeamFilter, teamOptions, "Todas");
+}
+
+function matchSearchText(match) {
+  return normalizeLookup([
+    displayTeam(match.home_team),
+    displayTeam(match.away_team),
+    match.round,
+    `${match.predicted_home_goals}x${match.predicted_away_goals}`,
+    `${match.actual_home_goals}x${match.actual_away_goals}`,
+  ].join(" "));
+}
+
+function filterMatches(matches) {
+  const roundFilter = elements.matchRoundFilter?.value ?? "all";
+  const teamFilter = elements.matchTeamFilter?.value ?? "all";
+  const resultFilter = elements.matchResultFilter?.value ?? "all";
+  const exactFilter = elements.matchExactFilter?.value ?? "all";
+  const searchFilter = normalizeLookup(elements.matchSearchFilter?.value ?? "");
+
+  return matches.filter((match) => {
+    if (roundFilter !== "all" && match.round !== roundFilter) return false;
+    if (
+      teamFilter !== "all"
+      && normalizeLookup(displayTeam(match.home_team)) !== teamFilter
+      && normalizeLookup(displayTeam(match.away_team)) !== teamFilter
+    ) return false;
+    if (resultFilter === "correct" && !match.result_correct) return false;
+    if (resultFilter === "wrong" && match.result_correct) return false;
+    if (exactFilter === "exact" && !match.exact_score) return false;
+    if (exactFilter === "not-exact" && match.exact_score) return false;
+    if (searchFilter && !matchSearchText(match).includes(searchFilter)) return false;
+    return true;
+  });
+}
+
+function renderFilteredMatches() {
+  const filteredMatches = filterMatches(cachedMatchSummaries);
+  renderMatches(filteredMatches);
+
+  if (!elements.matchFilterCount) return;
+  const total = cachedMatchSummaries.length;
+  elements.matchFilterCount.textContent = filteredMatches.length === total
+    ? `${total} jogo(s)`
+    : `${filteredMatches.length} de ${total} jogo(s)`;
+}
+
 function renderMatches(matches) {
+  if (!matches.length) {
+    elements.matchesBody.innerHTML = `
+      <tr class="match-empty-row">
+        <td colspan="7">Nenhum jogo encontrado com esses filtros.</td>
+      </tr>
+    `;
+    return;
+  }
+
   elements.matchesBody.innerHTML = matches.map((match) => `
     <tr>
       <td class="match-teams">
@@ -1946,16 +2182,15 @@ async function loadDashboard(silent = false) {
   }
 
   try {
-    const [matchesResponse, accuracyResponse] = await Promise.all([
-      supabase.from("match_summary").select("*").order("match_date", { ascending: false }),
-      supabase.from("accuracy_summary").select("*"),
-    ]);
+    const matchesResponse = await supabase
+      .from("match_summary")
+      .select("*")
+      .order("match_date", { ascending: false });
 
     if (matchesResponse.error) throw matchesResponse.error;
-    if (accuracyResponse.error) throw accuracyResponse.error;
 
-    const matches = matchesResponse.data ?? [];
-    const summaries = accuracyResponse.data ?? [];
+    const matches = (matchesResponse.data ?? []).map(withKnockoutAccuracy);
+    const summaries = summarizeAccuracy(matches);
     if (!matches.length) {
       elements.lastUpdate.textContent = "Sem resultados";
       showState("empty");
@@ -1968,7 +2203,9 @@ async function loadDashboard(silent = false) {
 
     renderSummary(overall, rounds, matches);
     renderRounds(rounds);
-    renderMatches(matches);
+    cachedMatchSummaries = matches;
+    renderMatchFilterOptions(matches);
+    renderFilteredMatches();
     showState("dashboard");
     lastDashboardRefresh = Date.now();
   } catch (error) {

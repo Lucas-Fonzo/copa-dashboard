@@ -108,6 +108,13 @@ OFFICIAL_GROUPS = {
     "L": ["England", "Croatia", "Ghana", "Panama"],
 }
 
+KNOCKOUT_ADVANCEMENT_OVERRIDES = {
+    # Jogos empatados no tempo/prorrogação e decididos nos pênaltis.
+    # A tabela results guarda apenas gols, então precisamos registrar quem avançou.
+    "WC2026_074": {"winner": "Paraguay", "loser": "Germany"},
+    "WC2026_075": {"winner": "Morocco", "loser": "Netherlands"},
+}
+
 
 @dataclass(frozen=True)
 class FinishedGame:
@@ -422,6 +429,10 @@ def infer_eliminated_teams(
             eliminated.add(display_team(str(prediction["away_team"])))
         elif away_goals > home_goals:
             eliminated.add(display_team(str(prediction["home_team"])))
+        else:
+            advancement = KNOCKOUT_ADVANCEMENT_OVERRIDES.get(str(prediction["match_id"]))
+            if advancement:
+                eliminated.add(display_team(str(advancement["loser"])))
 
     return eliminated
 

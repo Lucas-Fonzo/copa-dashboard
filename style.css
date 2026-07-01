@@ -461,6 +461,20 @@ h1 strong { color: transparent; font: inherit; background: linear-gradient(115de
 .round-stat span { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
 
 /* Tabelas */
+.match-filters { display: grid; grid-template-columns: 1.05fr 1.05fr .82fr .82fr minmax(230px, 1.35fr) auto auto; align-items: end; gap: 10px; margin: -3px 0 16px; }
+.match-filters label { display: grid; gap: 6px; min-width: 0; }
+.match-filters label span { color: var(--lime-bright); font-size: 10px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.match-filters select,
+.match-filters input,
+.match-filters button { width: 100%; min-height: 38px; color: var(--silver); border: 1px solid var(--line-soft); border-radius: 0; background: rgba(1,8,18,.72); font: 700 12px var(--body); }
+.match-filters select,
+.match-filters input { padding: 0 10px; }
+.match-filters input::placeholder { color: rgba(159,189,200,.58); }
+.match-filters select:focus,
+.match-filters input:focus { outline: 1px solid var(--lime); outline-offset: 1px; border-color: rgba(142,224,0,.5); }
+.match-filters button { padding: 0 13px; color: var(--night-1000); border-color: rgba(142,224,0,.62); background: var(--lime); font-weight: 900; letter-spacing: .08em; text-transform: uppercase; cursor: pointer; }
+.match-filter-count { align-self: center; justify-self: end; color: var(--muted); font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; }
+.match-empty-row td { padding: 24px 14px; color: var(--muted); text-align: center; }
 .table-wrap { overflow-x: auto; border: 1px solid var(--line-soft); background: rgba(1,8,18,.4); }
 table { width: 100%; border-collapse: collapse; font-size: 13px; }
 th, td { padding: 15px 14px; text-align: left; vertical-align: middle; border-bottom: 1px solid var(--line-soft); white-space: nowrap; }
@@ -491,6 +505,10 @@ tbody tr:hover { background: rgba(142,224,0,.035); }
   .bracket-board { grid-template-columns: 1.5fr .88fr .76fr .66fr .7fr .66fr .76fr .88fr 1.5fr; }
   .favorites-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
   .update-box { align-self: flex-end; }
+  .match-filters { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .match-search,
+  .match-filter-count { grid-column: 1 / -1; }
+  .match-filter-count { justify-self: start; }
 }
 
 @media (max-width: 700px) {
@@ -519,5 +537,8 @@ tbody tr:hover { background: rgba(142,224,0,.035); }
   .metric-card { min-height: 150px; }
   .section-heading { align-items: flex-start; flex-direction: column; }
   .section-heading > p { text-align: left; }
+  .match-filters { grid-template-columns: 1fr; }
+  .match-search,
+  .match-filter-count { grid-column: auto; }
   .section-block { padding: 16px; }
 }

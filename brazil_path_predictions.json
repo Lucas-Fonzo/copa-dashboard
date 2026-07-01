@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-30T01:47:38.087035+00:00",
+  "generated_at": "2026-07-01T01:47:21.698995+00:00",
   "source": "supabase",
   "predictions": [
     {
@@ -8,9 +8,9 @@
       "away_team": "Ivory Coast",
       "predicted_home_goals": 1,
       "predicted_away_goals": 0,
-      "home_win_prob": 0.7591,
+      "home_win_prob": 0.799735,
       "draw_prob": 0.0,
-      "away_win_prob": 0.2409,
+      "away_win_prob": 0.200265,
       "round": "Mata-mata - Oitavas",
       "match_date": "2026-07-05T20:00:00Z",
       "scenario_id": "WC2026_091_ivory_coast",
@@ -26,31 +26,31 @@
           "rank": 1,
           "home_goals": 1,
           "away_goals": 0,
-          "probability": 0.14006005
+          "probability": 0.14054415
         },
         {
           "rank": 2,
           "home_goals": 2,
-          "away_goals": 1,
-          "probability": 0.12542156
+          "away_goals": 0,
+          "probability": 0.1296454
         },
         {
           "rank": 3,
           "home_goals": 2,
-          "away_goals": 0,
-          "probability": 0.11998536
+          "away_goals": 1,
+          "probability": 0.12335377
         },
         {
           "rank": 4,
           "home_goals": 3,
           "away_goals": 0,
-          "probability": 0.07247291
+          "probability": 0.08423283
         },
         {
           "rank": 5,
           "home_goals": 3,
           "away_goals": 1,
-          "probability": 0.06880693
+          "probability": 0.07290867
         }
       ]
     },
@@ -60,9 +60,9 @@
       "away_team": "Norway",
       "predicted_home_goals": 1,
       "predicted_away_goals": 0,
-      "home_win_prob": 0.768604,
+      "home_win_prob": 0.724672,
       "draw_prob": 0.0,
-      "away_win_prob": 0.231396,
+      "away_win_prob": 0.275328,
       "round": "Mata-mata - Oitavas",
       "match_date": "2026-07-05T20:00:00Z",
       "scenario_id": "WC2026_091_norway",
@@ -78,31 +78,31 @@
           "rank": 1,
           "home_goals": 1,
           "away_goals": 0,
-          "probability": 0.14037859
+          "probability": 0.13804163
         },
         {
           "rank": 2,
           "home_goals": 2,
           "away_goals": 1,
-          "probability": 0.12514825
+          "probability": 0.12549986
         },
         {
           "rank": 3,
           "home_goals": 2,
           "away_goals": 0,
-          "probability": 0.12227023
+          "probability": 0.11168481
         },
         {
           "rank": 4,
-          "home_goals": 3,
-          "away_goals": 0,
-          "probability": 0.07507257
+          "home_goals": 0,
+          "away_goals": 1,
+          "probability": 0.07144139
         },
         {
           "rank": 5,
           "home_goals": 3,
           "away_goals": 1,
-          "probability": 0.06981337
+          "probability": 0.06500251
         }
       ]
     },
@@ -112,9 +112,9 @@
       "away_team": "Mexico",
       "predicted_home_goals": 1,
       "predicted_away_goals": 0,
-      "home_win_prob": 0.623011,
+      "home_win_prob": 0.62302,
       "draw_prob": 0.0,
-      "away_win_prob": 0.376989,
+      "away_win_prob": 0.37698,
       "round": "Mata-mata - Quartas",
       "match_date": "2026-07-11T21:00:00Z",
       "scenario_id": "WC2026_099_mexico",
@@ -130,31 +130,31 @@
           "rank": 1,
           "home_goals": 1,
           "away_goals": 0,
-          "probability": 0.12632237
+          "probability": 0.12632648
         },
         {
           "rank": 2,
           "home_goals": 2,
           "away_goals": 1,
-          "probability": 0.1193685
+          "probability": 0.11936913
         },
         {
           "rank": 3,
           "home_goals": 0,
           "away_goals": 1,
-          "probability": 0.09127185
+          "probability": 0.09127214
         },
         {
           "rank": 4,
           "home_goals": 2,
           "away_goals": 0,
-          "probability": 0.08797554
+          "probability": 0.08797838
         },
         {
           "rank": 5,
           "home_goals": 1,
           "away_goals": 2,
-          "probability": 0.08624747
+          "probability": 0.08624539
         }
       ]
     },
@@ -164,9 +164,9 @@
       "away_team": "England",
       "predicted_home_goals": 1,
       "predicted_away_goals": 0,
-      "home_win_prob": 0.523005,
+      "home_win_prob": 0.522981,
       "draw_prob": 0.0,
-      "away_win_prob": 0.476995,
+      "away_win_prob": 0.477019,
       "round": "Mata-mata - Quartas",
       "match_date": "2026-07-11T21:00:00Z",
       "scenario_id": "WC2026_099_england",
@@ -182,31 +182,31 @@
           "rank": 1,
           "home_goals": 1,
           "away_goals": 0,
-          "probability": 0.10967121
+          "probability": 0.10966772
         },
         {
           "rank": 2,
           "home_goals": 2,
           "away_goals": 1,
-          "probability": 0.10705048
+          "probability": 0.10704679
         },
         {
           "rank": 3,
           "home_goals": 0,
           "away_goals": 1,
-          "probability": 0.10668656
+          "probability": 0.10669075
         },
         {
           "rank": 4,
           "home_goals": 1,
           "away_goals": 2,
-          "probability": 0.10413716
+          "probability": 0.10414097
         },
         {
           "rank": 5,
           "home_goals": 2,
           "away_goals": 0,
-          "probability": 0.06692584
+          "probability": 0.06692123
         }
       ]
     },
@@ -216,9 +216,9 @@
       "away_team": "Argentina",
       "predicted_home_goals": 1,
       "predicted_away_goals": 2,
-      "home_win_prob": 0.328826,
+      "home_win_prob": 0.328801,
       "draw_prob": 0.0,
-      "away_win_prob": 0.671174,
+      "away_win_prob": 0.671199,
       "round": "Mata-mata - Semifinal",
       "match_date": "2026-07-15T19:00:00Z",
       "scenario_id": "WC2026_102_argentina",
@@ -234,31 +234,31 @@
           "rank": 1,
           "home_goals": 1,
           "away_goals": 2,
-          "probability": 0.12376958
+          "probability": 0.12377113
         },
         {
           "rank": 2,
           "home_goals": 0,
           "away_goals": 1,
-          "probability": 0.12065063
+          "probability": 0.12064974
         },
         {
           "rank": 3,
           "home_goals": 0,
           "away_goals": 2,
-          "probability": 0.0945877
+          "probability": 0.09459171
         },
         {
           "rank": 4,
           "home_goals": 2,
           "away_goals": 1,
-          "probability": 0.07758588
+          "probability": 0.077581
         },
         {
           "rank": 5,
           "home_goals": 1,
           "away_goals": 0,
-          "probability": 0.07563075
+          "probability": 0.07562449
         }
       ]
     },
@@ -268,9 +268,9 @@
       "away_team": "Egypt",
       "predicted_home_goals": 1,
       "predicted_away_goals": 0,
-      "home_win_prob": 0.766296,
+      "home_win_prob": 0.766272,
       "draw_prob": 0.0,
-      "away_win_prob": 0.233704,
+      "away_win_prob": 0.233728,
       "round": "Mata-mata - Semifinal",
       "match_date": "2026-07-15T19:00:00Z",
       "scenario_id": "WC2026_102_egypt",
@@ -286,31 +286,31 @@
           "rank": 1,
           "home_goals": 1,
           "away_goals": 0,
-          "probability": 0.14031184
+          "probability": 0.14031739
         },
         {
           "rank": 2,
           "home_goals": 2,
           "away_goals": 1,
-          "probability": 0.12522552
+          "probability": 0.12522597
         },
         {
           "rank": 3,
           "home_goals": 2,
           "away_goals": 0,
-          "probability": 0.12171629
+          "probability": 0.12171317
         },
         {
           "rank": 4,
           "home_goals": 3,
           "away_goals": 0,
-          "probability": 0.07443326
+          "probability": 0.07442662
         },
         {
           "rank": 5,
           "home_goals": 3,
           "away_goals": 1,
-          "probability": 0.06957116
+          "probability": 0.06956682
         }
       ]
     },
@@ -320,9 +320,9 @@
       "away_team": "Algeria",
       "predicted_home_goals": 1,
       "predicted_away_goals": 0,
-      "home_win_prob": 0.694494,
+      "home_win_prob": 0.694457,
       "draw_prob": 0.0,
-      "away_win_prob": 0.305506,
+      "away_win_prob": 0.305543,
       "round": "Mata-mata - Semifinal",
       "match_date": "2026-07-15T19:00:00Z",
       "scenario_id": "WC2026_102_algeria",
@@ -338,31 +338,31 @@
           "rank": 1,
           "home_goals": 1,
           "away_goals": 0,
-          "probability": 0.1353254
+          "probability": 0.13532602
         },
         {
           "rank": 2,
           "home_goals": 2,
           "away_goals": 1,
-          "probability": 0.12455613
+          "probability": 0.12455415
         },
         {
           "rank": 3,
           "home_goals": 2,
           "away_goals": 0,
-          "probability": 0.1044657
+          "probability": 0.10445853
         },
         {
           "rank": 4,
           "home_goals": 0,
           "away_goals": 1,
-          "probability": 0.07772144
+          "probability": 0.07773113
         },
         {
           "rank": 5,
           "home_goals": 1,
           "away_goals": 2,
-          "probability": 0.07153632
+          "probability": 0.07154377
         }
       ]
     },
@@ -372,9 +372,9 @@
       "away_team": "Colombia",
       "predicted_home_goals": 1,
       "predicted_away_goals": 0,
-      "home_win_prob": 0.647468,
+      "home_win_prob": 0.64748,
       "draw_prob": 0.0,
-      "away_win_prob": 0.352532,
+      "away_win_prob": 0.35252,
       "round": "Mata-mata - Semifinal",
       "match_date": "2026-07-15T19:00:00Z",
       "scenario_id": "WC2026_102_colombia",
@@ -390,31 +390,31 @@
           "rank": 1,
           "home_goals": 1,
           "away_goals": 0,
-          "probability": 0.12974674
+          "probability": 0.12975163
         },
         {
           "rank": 2,
           "home_goals": 2,
           "away_goals": 1,
-          "probability": 0.12155117
+          "probability": 0.12155186
         },
         {
           "rank": 3,
           "home_goals": 2,
           "away_goals": 0,
-          "probability": 0.09349927
+          "probability": 0.09350303
         },
         {
           "rank": 4,
           "home_goals": 0,
           "away_goals": 1,
-          "probability": 0.08685547
+          "probability": 0.08685529
         },
         {
           "rank": 5,
           "home_goals": 1,
           "away_goals": 2,
-          "probability": 0.08136917
+          "probability": 0.0813664
         }
       ]
     }
