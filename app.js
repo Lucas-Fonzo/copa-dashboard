@@ -2188,7 +2188,7 @@ function renderMatches(matches) {
   if (!matches.length) {
     elements.matchesBody.innerHTML = `
       <tr class="match-empty-row">
-        <td colspan="7">Nenhum jogo encontrado com esses filtros.</td>
+        <td colspan="7" data-label="Filtro">Nenhum jogo encontrado com esses filtros.</td>
       </tr>
     `;
     return;
@@ -2196,16 +2196,16 @@ function renderMatches(matches) {
 
   elements.matchesBody.innerHTML = matches.map((match) => `
     <tr>
-      <td class="match-teams">
+      <td class="match-teams" data-label="Jogo">
         <strong>${escapeHtml(match.home_team)} × ${escapeHtml(match.away_team)}</strong>
         <span class="match-date">${formatDate(match.match_date, true)}</span>
       </td>
       <td><span class="score">${match.predicted_home_goals} × ${match.predicted_away_goals}</span></td>
-      <td>${probabilityCell(match)}</td>
+      <td data-label="Probabilidades">${probabilityCell(match)}</td>
       <td><span class="score">${match.actual_home_goals} × ${match.actual_away_goals}</span></td>
-      <td>${accuracyBadge(match.result_correct, match.result_correct ? "Correto" : "Errado")}</td>
+      <td data-label="Resultado">${accuracyBadge(match.result_correct, match.result_correct ? "Correto" : "Errado")}</td>
       <td>${accuracyBadge(match.exact_score, match.exact_score ? "Exato" : "Não exato")}</td>
-      <td><span class="round-pill">${escapeHtml(match.round)}</span></td>
+      <td data-label="Rodada"><span class="round-pill">${escapeHtml(match.round)}</span></td>
     </tr>
   `).join("");
 }

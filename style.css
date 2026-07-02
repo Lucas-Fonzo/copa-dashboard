@@ -545,6 +545,63 @@ tbody tr:hover { background: rgba(142,224,0,.035); }
   .match-filters { grid-template-columns: 1fr; }
   .match-search,
   .match-filter-count { grid-column: auto; }
+  .matches-table-wrap,
+  .table-wrap:has(.matches-table) { overflow: visible; border: 0; background: transparent; }
+  .matches-table,
+  .matches-table thead,
+  .matches-table tbody,
+  .matches-table tr,
+  .matches-table th,
+  .matches-table td { display: block; }
+  .matches-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .matches-table tbody { display: grid; gap: 11px; }
+  .matches-table tr {
+    padding: 11px 12px;
+    border: 1px solid rgba(142,224,0,.22);
+    background: rgba(1,8,18,.56);
+    clip-path: polygon(9px 0,100% 0,100% calc(100% - 9px),calc(100% - 9px) 100%,0 100%,0 9px);
+  }
+  .matches-table tbody tr:hover { background: rgba(1,8,18,.64); }
+  .matches-table td {
+    display: grid;
+    grid-template-columns: minmax(92px,.7fr) minmax(0,1fr);
+    gap: 10px;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(159,189,200,.11);
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  .matches-table td:last-child { border-bottom: 0; }
+  .matches-table td::before {
+    content: attr(data-label);
+    color: var(--lime-bright);
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+  }
+  .matches-table td:nth-child(2)::before { content: "Previsão"; }
+  .matches-table td:nth-child(4)::before { content: "Real"; }
+  .matches-table td:nth-child(6)::before { content: "Exato"; }
+  .matches-table .match-teams {
+    grid-template-columns: 1fr;
+    gap: 5px;
+    padding-top: 2px;
+  }
+  .matches-table .match-teams::before { content: none; }
+  .matches-table .match-teams strong { font-size: 17px; line-height: 1.06; }
+  .matches-table .score { font-size: 27px; line-height: 1; }
+  .matches-table .probability { min-width: 0; width: 100%; }
+  .matches-table .probability-labels { gap: 8px; font-size: 9px; }
+  .matches-table .badge,
+  .matches-table .round-pill { width: fit-content; max-width: 100%; white-space: normal; }
+  .match-empty-row td {
+    display: block;
+    padding: 18px 10px;
+    text-align: center;
+  }
+  .match-empty-row td::before { content: none; }
   .site-footer { align-items: center; flex-direction: column; gap: 7px; text-align: center; }
   .footer-divider { display: none; }
   .section-block { padding: 16px; }

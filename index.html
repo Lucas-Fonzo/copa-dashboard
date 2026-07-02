@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;0,900;1,800;1,900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=20260701-02">
+  <link rel="stylesheet" href="style.css?v=20260702-01">
 </head>
 <body>
   <main class="page-shell">
@@ -167,6 +167,38 @@
         <div id="round-ranking" class="round-grid"></div>
       </section>
 
+      <section id="favorites-section" class="section-block championship-section" hidden>
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow dark">MONTE CARLO</p>
+            <h2>Favoritos ao título</h2>
+          </div>
+          <p id="simulations-detail">Probabilidades estimadas pelo modelo.</p>
+        </div>
+        <div id="favorites-grid" class="favorites-grid"></div>
+      </section>
+
+      <section id="probability-map-section" class="section-block map-section" hidden>
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow dark">VISÃO GLOBAL</p>
+            <h2>Mapa de probabilidades — Copa 2026</h2>
+          </div>
+          <p>Passe o cursor sobre um país participante para ver sua chance.</p>
+        </div>
+        <div class="map-frame">
+          <svg id="probability-map" role="img" aria-label="Mapa mundial das probabilidades de título"></svg>
+          <div id="map-tooltip" class="map-tooltip" hidden></div>
+        </div>
+        <div class="map-legend" aria-label="Legenda do mapa">
+          <span><i class="legend-high"></i>&gt; 15%</span>
+          <span><i class="legend-medium"></i>5–15%</span>
+          <span><i class="legend-low"></i>1–5%</span>
+          <span><i class="legend-minimal"></i>&lt; 1%</span>
+          <span><i class="legend-eliminated"></i>Eliminado</span>
+        </div>
+      </section>
+
       <section class="section-block">
         <div class="section-heading">
           <div>
@@ -211,8 +243,8 @@
           <button id="match-filter-reset" type="button">Limpar</button>
           <strong id="match-filter-count" class="match-filter-count">Todos os jogos</strong>
         </div>
-        <div class="table-wrap">
-          <table>
+        <div class="table-wrap matches-table-wrap">
+          <table class="matches-table">
             <thead>
               <tr>
                 <th>Jogo</th>
@@ -229,37 +261,6 @@
         </div>
       </section>
 
-      <section id="favorites-section" class="section-block championship-section" hidden>
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow dark">MONTE CARLO</p>
-            <h2>Favoritos ao título</h2>
-          </div>
-          <p id="simulations-detail">Probabilidades estimadas pelo modelo.</p>
-        </div>
-        <div id="favorites-grid" class="favorites-grid"></div>
-      </section>
-
-      <section id="probability-map-section" class="section-block map-section" hidden>
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow dark">VISÃO GLOBAL</p>
-            <h2>Mapa de probabilidades — Copa 2026</h2>
-          </div>
-          <p>Passe o cursor sobre um país participante para ver sua chance.</p>
-        </div>
-        <div class="map-frame">
-          <svg id="probability-map" role="img" aria-label="Mapa mundial das probabilidades de título"></svg>
-          <div id="map-tooltip" class="map-tooltip" hidden></div>
-        </div>
-        <div class="map-legend" aria-label="Legenda do mapa">
-          <span><i class="legend-high"></i>&gt; 15%</span>
-          <span><i class="legend-medium"></i>5–15%</span>
-          <span><i class="legend-low"></i>1–5%</span>
-          <span><i class="legend-minimal"></i>&lt; 1%</span>
-          <span><i class="legend-eliminated"></i>Eliminado</span>
-        </div>
-      </section>
     </div>
 
     <footer class="site-footer" aria-label="Informações do site">
@@ -279,6 +280,6 @@
     integrity="sha384-su5kReKyYlIFrI62mbQRKXHzFobMa7BHp1cK6julLPbnYcCW9NIZKJiTODjLPeDh"
     crossorigin="anonymous"
   ></script>
-  <script type="module" src="app.js?v=20260701-02"></script>
+  <script type="module" src="app.js?v=20260702-01"></script>
 </body>
 </html>
