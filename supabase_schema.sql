@@ -48,8 +48,11 @@ create index if not exists predictions_round_idx
 create index if not exists results_match_date_idx
     on public.results (match_date desc);
 
+drop view if exists public.accuracy_summary;
+drop view if exists public.match_summary;
+
 -- security_invoker faz a view respeitar o RLS das tabelas de origem.
-create or replace view public.match_summary
+create view public.match_summary
 with (security_invoker = true)
 as
 select
@@ -102,7 +105,7 @@ select
 from public.predictions p
 inner join public.results r using (match_id);
 
-create or replace view public.accuracy_summary
+create view public.accuracy_summary
 with (security_invoker = true)
 as
 select
