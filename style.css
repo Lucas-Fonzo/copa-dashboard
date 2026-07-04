@@ -410,8 +410,10 @@ h1 strong { color: transparent; font: inherit; background: linear-gradient(115de
 .map-legend { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 13px; color: var(--muted); font-size: 11px; }
 .map-legend span { display: inline-flex; align-items: center; gap: 6px; }
 .map-legend i { width: 14px; height: 8px; border: 1px solid rgba(255,255,255,.12); }
+.legend-leader { background: #ffc400; box-shadow: 0 0 10px rgba(255,196,0,.48); }
 .legend-high { background: #00ff88; } .legend-medium { background: #00cc66; }
-.legend-low { background: #007744; } .legend-minimal { background: #003322; }
+.legend-low { background: #008a4f; } .legend-minimal { background: #00502f; }
+.legend-tiny { background: #00251a; }
 .legend-eliminated { background: #ff2d55; box-shadow: 0 0 10px rgba(255,45,85,.45); }
 
 .live-update-indicator { position: fixed; z-index: 60; right: 18px; bottom: 18px; display: flex; align-items: center; gap: 8px; padding: 8px 12px; color: var(--silver); border: 1px solid rgba(142,224,0,.28); background: rgba(1,8,18,.92); box-shadow: var(--glow); font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }

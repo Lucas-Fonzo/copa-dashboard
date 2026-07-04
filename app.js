@@ -1895,16 +1895,17 @@ function applyKnockoutEliminations(odds, predictions, results) {
   });
 }
 
-function mapColor(entries) {
+function mapColor(entries, leaderTeam) {
   if (!entries?.length) return "#1a1a2e";
   if (entries.every((entry) => entry.eliminated)) return "#ff2d55";
-  const probability = Math.max(
-    ...entries.filter((entry) => !entry.eliminated).map((entry) => Number(entry.champion_prob)),
-  );
-  if (probability > 0.15) return "#00ff88";
-  if (probability >= 0.05) return "#00cc66";
-  if (probability >= 0.01) return "#007744";
-  return "#003322";
+  const activeEntries = entries.filter((entry) => !entry.eliminated);
+  if (activeEntries.some((entry) => entry.team === leaderTeam)) return "#ffc400";
+  const probability = Math.max(...activeEntries.map((entry) => Number(entry.champion_prob)));
+  if (probability >= 0.20) return "#00ff88";
+  if (probability >= 0.10) return "#00cc66";
+  if (probability >= 0.05) return "#008a4f";
+  if (probability >= 0.01) return "#00502f";
+  return "#00251a";
 }
 
 async function renderProbabilityMap(odds) {
@@ -1923,6 +1924,10 @@ async function renderProbabilityMap(odds) {
       if (!oddsByIso.has(iso)) oddsByIso.set(iso, []);
       oddsByIso.get(iso).push(row);
     }
+    const activeOdds = odds
+      .filter((row) => !row.eliminated)
+      .sort((a, b) => Number(b.champion_prob) - Number(a.champion_prob));
+    const leaderTeam = activeOdds[0]?.team ?? null;
 
     const d3 = window.d3;
     const svg = d3.select(elements.probabilityMap);
@@ -1943,7 +1948,7 @@ async function renderProbabilityMap(odds) {
       .attr("d", path)
       .attr("fill", (feature) => {
         const iso = feature.id ?? feature.properties?.iso_a3;
-        return mapColor(oddsByIso.get(iso));
+        return mapColor(oddsByIso.get(iso), leaderTeam);
       })
       .on("mousemove", (event, feature) => {
         const iso = feature.id ?? feature.properties?.iso_a3;
@@ -1951,7 +1956,7 @@ async function renderProbabilityMap(odds) {
         if (!entries?.length) return;
         elements.mapTooltip.innerHTML = entries.map((entry) => `
           <strong>${escapeHtml(entry.team)}</strong>
-          <span>${entry.eliminated ? "Eliminado" : `${championPercent(entry.champion_prob)} de chance`}</span>
+          <span>${entry.eliminated ? "Eliminado" : `${championPercent(entry.champion_prob)} de chance${entry.team === leaderTeam ? " / lider atual" : ""}`}</span>
         `).join("");
         elements.mapTooltip.style.left = `${event.clientX + 14}px`;
         elements.mapTooltip.style.top = `${event.clientY + 14}px`;
