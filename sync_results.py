@@ -1,4 +1,4 @@
-"""Sincroniza resultados finalizados da Copa 2026 com o Supabase.
+﻿"""Sincroniza resultados finalizados da Copa 2026 com o Supabase.
 
 Uso:
     python sync_results.py
@@ -24,47 +24,47 @@ PRIMARY_API = "https://worldcup26.ir/get/games"
 FALLBACK_API = "https://raw.githubusercontent.com/openfootball/worldcup.json/master/2026/worldcup.json"
 REQUEST_TIMEOUT = 30
 
-# O valor de cada item é o nome canônico usado antes da remoção de acentos.
+# O valor de cada item Ã© o nome canÃ´nico usado antes da remoÃ§Ã£o de acentos.
 TEAM_NAME_MAP = {
     "Brazil": "Brasil",
     "Germany": "Alemanha",
-    "France": "França",
+    "France": "FranÃ§a",
     "England": "Inglaterra",
     "Spain": "Espanha",
     "Portugal": "Portugal",
     "Argentina": "Argentina",
     "Netherlands": "Holanda",
-    "Croatia": "Croácia",
+    "Croatia": "CroÃ¡cia",
     "Morocco": "Marrocos",
-    "Mexico": "México",
+    "Mexico": "MÃ©xico",
     "United States": "Estados Unidos",
     "USA": "Estados Unidos",
     "South Korea": "Coreia do Sul",
-    "South Africa": "África do Sul",
-    "Saudi Arabia": "Arábia Saudita",
-    "New Zealand": "Nova Zelândia",
+    "South Africa": "Ãfrica do Sul",
+    "Saudi Arabia": "ArÃ¡bia Saudita",
+    "New Zealand": "Nova ZelÃ¢ndia",
     "Ivory Coast": "Costa do Marfim",
-    "Côte d'Ivoire": "Costa do Marfim",
+    "CÃ´te d'Ivoire": "Costa do Marfim",
     "Cape Verde": "Cabo Verde",
     "Cabo Verde": "Cabo Verde",
-    "Curaçao": "Curaçao",
-    "Switzerland": "Suíça",
-    "Belgium": "Bélgica",
-    "Austria": "Áustria",
-    "Czech Republic": "República Tcheca",
-    "Bosnia and Herzegovina": "Bósnia e Herzegovina",
+    "CuraÃ§ao": "CuraÃ§ao",
+    "Switzerland": "SuÃ­Ã§a",
+    "Belgium": "BÃ©lgica",
+    "Austria": "Ãustria",
+    "Czech Republic": "RepÃºblica Tcheca",
+    "Bosnia and Herzegovina": "BÃ³snia e Herzegovina",
     "DR Congo": "RD Congo",
     "Democratic Republic of the Congo": "RD Congo",
     "Congo DR": "RD Congo",
-    "Türkiye": "Turquia",
+    "TÃ¼rkiye": "Turquia",
     "Turkey": "Turquia",
-    "Japan": "Japão",
+    "Japan": "JapÃ£o",
     "Egypt": "Egito",
-    "Scotland": "Escócia",
-    "Sweden": "Suécia",
-    "Tunisia": "Tunísia",
-    "Algeria": "Argélia",
-    "Colombia": "Colômbia",
+    "Scotland": "EscÃ³cia",
+    "Sweden": "SuÃ©cia",
+    "Tunisia": "TunÃ­sia",
+    "Algeria": "ArgÃ©lia",
+    "Colombia": "ColÃ´mbia",
     "Paraguay": "Paraguai",
     "Uruguay": "Uruguai",
     "Norway": "Noruega",
@@ -72,25 +72,25 @@ TEAM_NAME_MAP = {
 }
 
 TEAM_DISPLAY = {
-    "Algeria": "Argélia", "Argentina": "Argentina", "Australia": "Austrália",
-    "Austria": "Áustria", "Belgium": "Bélgica",
-    "Bosnia and Herzegovina": "Bósnia e Herzegovina", "Brazil": "Brasil",
-    "Canada": "Canadá", "Cape Verde": "Cabo Verde", "Colombia": "Colômbia",
-    "Croatia": "Croácia", "Curaçao": "Curaçao",
-    "Czech Republic": "República Tcheca", "DR Congo": "RD Congo",
+    "Algeria": "ArgÃ©lia", "Argentina": "Argentina", "Australia": "AustrÃ¡lia",
+    "Austria": "Ãustria", "Belgium": "BÃ©lgica",
+    "Bosnia and Herzegovina": "BÃ³snia e Herzegovina", "Brazil": "Brasil",
+    "Canada": "CanadÃ¡", "Cape Verde": "Cabo Verde", "Colombia": "ColÃ´mbia",
+    "Croatia": "CroÃ¡cia", "CuraÃ§ao": "CuraÃ§ao",
+    "Czech Republic": "RepÃºblica Tcheca", "DR Congo": "RD Congo",
     "Ecuador": "Equador", "Egypt": "Egito", "England": "Inglaterra",
-    "France": "França", "Germany": "Alemanha", "Ghana": "Gana",
-    "Haiti": "Haiti", "Iran": "Irã", "Iraq": "Iraque",
-    "Ivory Coast": "Costa do Marfim", "Japan": "Japão", "Jordan": "Jordânia",
-    "Mexico": "México", "Morocco": "Marrocos", "Netherlands": "Holanda",
-    "New Zealand": "Nova Zelândia", "Norway": "Noruega", "Panama": "Panamá",
+    "France": "FranÃ§a", "Germany": "Alemanha", "Ghana": "Gana",
+    "Haiti": "Haiti", "Iran": "IrÃ£", "Iraq": "Iraque",
+    "Ivory Coast": "Costa do Marfim", "Japan": "JapÃ£o", "Jordan": "JordÃ¢nia",
+    "Mexico": "MÃ©xico", "Morocco": "Marrocos", "Netherlands": "Holanda",
+    "New Zealand": "Nova ZelÃ¢ndia", "Norway": "Noruega", "Panama": "PanamÃ¡",
     "Paraguay": "Paraguai", "Portugal": "Portugal", "Qatar": "Catar",
-    "Saudi Arabia": "Arábia Saudita", "Scotland": "Escócia",
-    "Senegal": "Senegal", "South Africa": "África do Sul",
-    "South Korea": "Coreia do Sul", "Spain": "Espanha", "Sweden": "Suécia",
-    "Switzerland": "Suíça", "Tunisia": "Tunísia", "Turkey": "Turquia",
+    "Saudi Arabia": "ArÃ¡bia Saudita", "Scotland": "EscÃ³cia",
+    "Senegal": "Senegal", "South Africa": "Ãfrica do Sul",
+    "South Korea": "Coreia do Sul", "Spain": "Espanha", "Sweden": "SuÃ©cia",
+    "Switzerland": "SuÃ­Ã§a", "Tunisia": "TunÃ­sia", "Turkey": "Turquia",
     "United States": "Estados Unidos", "Uruguay": "Uruguai",
-    "Uzbekistan": "Uzbequistão",
+    "Uzbekistan": "UzbequistÃ£o",
 }
 
 OFFICIAL_GROUPS = {
@@ -98,7 +98,7 @@ OFFICIAL_GROUPS = {
     "B": ["Canada", "Bosnia and Herzegovina", "Qatar", "Switzerland"],
     "C": ["Brazil", "Morocco", "Haiti", "Scotland"],
     "D": ["United States", "Paraguay", "Australia", "Turkey"],
-    "E": ["Germany", "Curaçao", "Ivory Coast", "Ecuador"],
+    "E": ["Germany", "CuraÃ§ao", "Ivory Coast", "Ecuador"],
     "F": ["Netherlands", "Japan", "Sweden", "Tunisia"],
     "G": ["Belgium", "Egypt", "Iran", "New Zealand"],
     "H": ["Spain", "Cape Verde", "Saudi Arabia", "Uruguay"],
@@ -109,10 +109,11 @@ OFFICIAL_GROUPS = {
 }
 
 KNOCKOUT_ADVANCEMENT_OVERRIDES = {
-    # Jogos empatados no tempo/prorrogação e decididos nos pênaltis.
-    # A tabela results guarda apenas gols, então precisamos registrar quem avançou.
+    # Jogos empatados no tempo/prorrogaÃ§Ã£o e decididos nos pÃªnaltis.
+    # A tabela results guarda apenas gols, entÃ£o precisamos registrar quem avanÃ§ou.
     "WC2026_074": {"winner": "Paraguay", "loser": "Germany"},
     "WC2026_075": {"winner": "Morocco", "loser": "Netherlands"},
+    "WC2026_088": {"winner": "Egypt", "loser": "Australia"},
 }
 
 
@@ -122,6 +123,8 @@ class FinishedGame:
     away_team: str
     home_goals: int
     away_goals: int
+    home_penalties: int | None = None
+    away_penalties: int | None = None
     match_date: datetime | None = None
 
 
@@ -133,20 +136,34 @@ class ApiGame:
     away_goals: int | None
     finished: bool
     status: str
+    home_penalties: int | None = None
+    away_penalties: int | None = None
     minute: str | None = None
     match_date: datetime | None = None
 
 
 def canonical_team(name: str | None) -> str:
-    """Normaliza idioma, acentos, caixa e pontuação sem falhar em nomes desconhecidos."""
+    """Normaliza idioma, acentos, caixa e pontuaÃ§Ã£o sem falhar em nomes desconhecidos."""
     raw = " ".join(str(name or "").strip().split())
     mapped = TEAM_NAME_MAP.get(raw, raw)
     ascii_name = unicodedata.normalize("NFKD", mapped).encode("ascii", "ignore").decode()
     return "".join(character for character in ascii_name.lower() if character.isalnum())
 
 
+def optional_int(value: Any) -> int | None:
+    if value is None:
+        return None
+    text = str(value).strip()
+    if not text or text.lower() == "null":
+        return None
+    try:
+        return int(text)
+    except ValueError:
+        return None
+
+
 def parse_primary_games(payload: dict[str, Any]) -> list[ApiGame]:
-    """Converte o formato de worldcup26.ir em uma lista interna estável."""
+    """Converte o formato de worldcup26.ir em uma lista interna estÃ¡vel."""
     games: list[ApiGame] = []
     for item in payload.get("games", []):
         finished = str(item.get("finished", "")).upper() == "TRUE"
@@ -156,17 +173,10 @@ def parse_primary_games(payload: dict[str, Any]) -> list[ApiGame]:
             print(f"[AVISO] Jogo sem nomes de times na API principal: {item!r}")
             continue
 
-        home_goals: int | None = None
-        away_goals: int | None = None
-        try:
-            if item.get("home_score") is not None:
-                home_goals = int(item["home_score"])
-            if item.get("away_score") is not None:
-                away_goals = int(item["away_score"])
-        except (TypeError, ValueError):
-            if finished:
-                print(f"[AVISO] Jogo finalizado com placar inválido na API principal: {item!r}")
-                continue
+        home_goals = optional_int(item.get("home_score"))
+        away_goals = optional_int(item.get("away_score"))
+        home_penalties = optional_int(item.get("home_penalty_score"))
+        away_penalties = optional_int(item.get("away_penalty_score"))
 
         match_date = None
         try:
@@ -192,6 +202,8 @@ def parse_primary_games(payload: dict[str, Any]) -> list[ApiGame]:
                 away_goals,
                 finished,
                 status,
+                home_penalties,
+                away_penalties,
                 raw_time or None,
                 match_date,
             )
@@ -213,6 +225,8 @@ def parse_primary(payload: dict[str, Any]) -> list[FinishedGame]:
                 game.away_team,
                 game.home_goals,
                 game.away_goals,
+                game.home_penalties,
+                game.away_penalties,
                 game.match_date,
             )
         )
@@ -225,6 +239,7 @@ def parse_fallback(payload: dict[str, Any]) -> list[FinishedGame]:
     for item in payload.get("matches", []):
         score = item.get("score") or {}
         full_time = score.get("ft")
+        penalties = score.get("p")
         if not isinstance(full_time, list) or len(full_time) != 2:
             continue
         if full_time[0] is None or full_time[1] is None:
@@ -241,11 +256,13 @@ def parse_fallback(payload: dict[str, Any]) -> list[FinishedGame]:
                     str(away),
                     int(full_time[0]),
                     int(full_time[1]),
+                    int(penalties[0]) if isinstance(penalties, list) and len(penalties) == 2 and penalties[0] is not None else None,
+                    int(penalties[1]) if isinstance(penalties, list) and len(penalties) == 2 and penalties[1] is not None else None,
                     match_date,
                 )
             )
         except (TypeError, ValueError):
-            print(f"[AVISO] Jogo inválido no fallback: {item!r}")
+            print(f"[AVISO] Jogo invÃ¡lido no fallback: {item!r}")
     return games
 
 
@@ -263,14 +280,14 @@ def request_json(url: str) -> dict[str, Any]:
 
 
 def fetch_finished_games() -> tuple[list[FinishedGame], str]:
-    """Usa a API principal e troca para o GitHub quando necessário."""
+    """Usa a API principal e troca para o GitHub quando necessÃ¡rio."""
     try:
         games = parse_primary(request_json(PRIMARY_API))
         if not games:
-            raise ValueError("A API principal não retornou jogos finalizados.")
+            raise ValueError("A API principal nÃ£o retornou jogos finalizados.")
         return games, "worldcup26.ir"
     except (requests.RequestException, ValueError) as error:
-        print(f"[AVISO] API principal indisponível ({error}). Tentando fallback…")
+        print(f"[AVISO] API principal indisponÃ­vel ({error}). Tentando fallbackâ€¦")
         games = parse_fallback(request_json(FALLBACK_API))
         return games, "openfootball/worldcup.json"
 
@@ -282,6 +299,8 @@ def finished_from_api_games(games: list[ApiGame]) -> list[FinishedGame]:
             game.away_team,
             game.home_goals,
             game.away_goals,
+            game.home_penalties,
+            game.away_penalties,
             game.match_date,
         )
         for game in games
@@ -381,7 +400,7 @@ def infer_eliminated_teams(
     predictions: list[dict[str, Any]],
     results: list[dict[str, Any]],
 ) -> set[str]:
-    """Marca automaticamente seleções eliminadas por grupos completos e mata-mata."""
+    """Marca automaticamente seleÃ§Ãµes eliminadas por grupos completos e mata-mata."""
     results_by_id = {str(row["match_id"]): row for row in results}
     eliminated: set[str] = set()
     completed_rankings: dict[str, list[dict[str, Any]]] = {}
@@ -391,10 +410,10 @@ def infer_eliminated_teams(
         if not ranking:
             continue
         completed_rankings[group] = ranking
-        # O quarto colocado de grupo fechado está eliminado imediatamente.
+        # O quarto colocado de grupo fechado estÃ¡ eliminado imediatamente.
         eliminated.add(display_team(str(ranking[3]["team"])))
 
-    # Quando todos os grupos fecharem, os 4 piores terceiros também estão eliminados.
+    # Quando todos os grupos fecharem, os 4 piores terceiros tambÃ©m estÃ£o eliminados.
     if len(completed_rankings) == len(OFFICIAL_GROUPS):
         thirds = [
             {**ranking[2], "group": group}
@@ -416,7 +435,7 @@ def infer_eliminated_teams(
             if canonical_team(str(row["team"])) not in qualified_third_keys:
                 eliminated.add(display_team(str(row["team"])))
 
-    # Em mata-mata, o perdedor de jogos decididos no tempo normal/prorrogação é eliminado.
+    # Em mata-mata, o perdedor de jogos decididos no tempo normal/prorrogaÃ§Ã£o Ã© eliminado.
     for prediction in predictions:
         if is_group_round(prediction):
             continue
@@ -425,7 +444,13 @@ def infer_eliminated_teams(
             continue
         home_goals = int(result["actual_home_goals"])
         away_goals = int(result["actual_away_goals"])
-        if home_goals > away_goals:
+        advanced_team = result.get("advanced_team")
+        if advanced_team:
+            if canonical_team(str(advanced_team)) == canonical_team(str(prediction["home_team"])):
+                eliminated.add(display_team(str(prediction["away_team"])))
+            elif canonical_team(str(advanced_team)) == canonical_team(str(prediction["away_team"])):
+                eliminated.add(display_team(str(prediction["home_team"])))
+        elif home_goals > away_goals:
             eliminated.add(display_team(str(prediction["away_team"])))
         elif away_goals > home_goals:
             eliminated.add(display_team(str(prediction["home_team"])))
@@ -438,7 +463,7 @@ def infer_eliminated_teams(
 
 
 def normalize_championship_odds(client: Client) -> None:
-    """Redistribui a probabilidade dos eliminados entre as seleções ainda vivas."""
+    """Redistribui a probabilidade dos eliminados entre as seleÃ§Ãµes ainda vivas."""
     response = (
         client.table("championship_odds")
         .select("team,champion_prob,eliminated,simulations_run")
@@ -452,7 +477,7 @@ def normalize_championship_odds(client: Client) -> None:
     active = [row for row in rows if not row.get("eliminated")]
     active_total = sum(float(row.get("champion_prob") or 0) for row in active)
     if not active or active_total <= 0:
-        print("[ODDS] Sem seleções ativas com probabilidade positiva para redistribuir.")
+        print("[ODDS] Sem seleÃ§Ãµes ativas com probabilidade positiva para redistribuir.")
         return
 
     updated_at = datetime.now(timezone.utc).isoformat()
@@ -483,12 +508,12 @@ def normalize_championship_odds(client: Client) -> None:
             })
 
     client.table("championship_odds").upsert(payload, on_conflict="team").execute()
-    print(f"[ODDS] Probabilidades redistribuídas; {len(active)} seleção(ões) ainda vivas somam 100%.")
+    print(f"[ODDS] Probabilidades redistribuÃ­das; {len(active)} seleÃ§Ã£o(Ãµes) ainda vivas somam 100%.")
 
 
 def sync_eliminated_teams(client: Client, eliminated: set[str]) -> None:
     if not eliminated:
-        print("[ELIMINADOS] Nenhuma seleção nova inferida.")
+        print("[ELIMINADOS] Nenhuma seleÃ§Ã£o nova inferida.")
         return
 
     response = client.table("championship_odds").select("team,eliminated").execute()
@@ -506,7 +531,7 @@ def sync_eliminated_teams(client: Client, eliminated: set[str]) -> None:
             matched.append(row["team"])
 
     if not matched:
-        print("[ELIMINADOS] Nenhuma atualização necessária.")
+        print("[ELIMINADOS] Nenhuma atualizaÃ§Ã£o necessÃ¡ria.")
         normalize_championship_odds(client)
         return
 
@@ -517,7 +542,7 @@ def sync_eliminated_teams(client: Client, eliminated: set[str]) -> None:
             "updated_at": datetime.now(timezone.utc).isoformat(),
         }
     ).in_("team", matched).execute()
-    print(f"[ELIMINADOS] {len(matched)} seleção(ões) marcada(s): {', '.join(matched)}")
+    print(f"[ELIMINADOS] {len(matched)} seleÃ§Ã£o(Ãµes) marcada(s): {', '.join(matched)}")
     normalize_championship_odds(client)
 
 
@@ -525,7 +550,7 @@ def choose_prediction(
     game: FinishedGame | ApiGame,
     candidates: list[dict[str, Any]],
 ) -> dict[str, Any] | None:
-    """Desempata confrontos repetidos pela data mais próxima, quando disponível."""
+    """Desempata confrontos repetidos pela data mais prÃ³xima, quando disponÃ­vel."""
     if not candidates:
         return None
     if len(candidates) == 1 or game.match_date is None:
@@ -548,7 +573,7 @@ def choose_prediction_for_game(
     predictions_by_pair: dict[tuple[str, str], list[dict[str, Any]]],
     used_match_ids: set[str],
 ) -> tuple[dict[str, Any] | None, bool]:
-    """Casa jogo da API com previsão mesmo quando casa/fora vêm invertidos."""
+    """Casa jogo da API com previsÃ£o mesmo quando casa/fora vÃªm invertidos."""
     home_key = canonical_team(game.home_team)
     away_key = canonical_team(game.away_team)
     for pair, reversed_pair in [((home_key, away_key), False), ((away_key, home_key), True)]:
@@ -567,10 +592,47 @@ def orient_score_to_prediction(
     game: FinishedGame | ApiGame,
     reversed_pair: bool,
 ) -> tuple[int | None, int | None]:
-    """Retorna placar na ordem home/away da previsão salva no Supabase."""
+    """Retorna placar na ordem home/away da previsÃ£o salva no Supabase."""
     if reversed_pair:
         return game.away_goals, game.home_goals
     return game.home_goals, game.away_goals
+
+
+def orient_penalties_to_prediction(
+    game: FinishedGame | ApiGame,
+    reversed_pair: bool,
+) -> tuple[int | None, int | None]:
+    if reversed_pair:
+        return game.away_penalties, game.home_penalties
+    return game.home_penalties, game.away_penalties
+
+
+def is_knockout_prediction(prediction: dict[str, Any]) -> bool:
+    return "fase de grupos" not in str(prediction.get("round", "")).casefold()
+
+
+def advanced_team_for_prediction(
+    prediction: dict[str, Any],
+    home_goals: int | None,
+    away_goals: int | None,
+    home_penalties: int | None,
+    away_penalties: int | None,
+) -> tuple[str | None, bool]:
+    if not is_knockout_prediction(prediction):
+        return None, False
+    if home_goals is None or away_goals is None:
+        return None, False
+    if home_goals > away_goals:
+        return str(prediction["home_team"]), False
+    if away_goals > home_goals:
+        return str(prediction["away_team"]), False
+    if home_penalties is None or away_penalties is None:
+        return None, False
+    if home_penalties > away_penalties:
+        return str(prediction["home_team"]), True
+    if away_penalties > home_penalties:
+        return str(prediction["away_team"]), True
+    return None, False
 
 
 def sync_live_matches(
@@ -614,7 +676,7 @@ def sync_live_matches(
         finished_count = sum(1 for record in records if record["status"] == "finished")
         print(f"[LIVE] {live_count} ao vivo e {finished_count} finalizado(s) atualizados em live_matches.")
     except Exception as error:  # noqa: BLE001 - evita quebrar o Action antes do SQL novo ser aplicado.
-        print(f"[LIVE][AVISO] Não foi possível atualizar live_matches: {error}")
+        print(f"[LIVE][AVISO] NÃ£o foi possÃ­vel atualizar live_matches: {error}")
 
 
 def run_once(client: Client) -> None:
@@ -624,7 +686,7 @@ def run_once(client: Client) -> None:
         games = finished_from_api_games(api_games)
         source = "worldcup26.ir"
     except (requests.RequestException, ValueError) as error:
-        print(f"[AVISO] API principal indisponível ({error}). Tentando fallback…")
+        print(f"[AVISO] API principal indisponÃ­vel ({error}). Tentando fallbackâ€¦")
         games = parse_fallback(request_json(FALLBACK_API))
         source = "openfootball/worldcup.json"
 
@@ -635,11 +697,21 @@ def run_once(client: Client) -> None:
         .select("match_id,home_team,away_team,round,match_date")
         .execute()
     )
-    results_response = (
-        client.table("results")
-        .select("match_id,actual_home_goals,actual_away_goals,match_date")
-        .execute()
-    )
+    supports_advancement_results = True
+    try:
+        results_response = (
+            client.table("results")
+            .select("match_id,actual_home_goals,actual_away_goals,home_penalties,away_penalties,advanced_team,decided_on_penalties,match_date")
+            .execute()
+        )
+    except Exception as error:  # noqa: BLE001 - compatibilidade antes da migraÃ§Ã£o do schema.
+        print(f"[RESULTS][AVISO] Schema sem campos de pÃªnaltis/avanÃ§o ({error}). Usando modo legado.")
+        supports_advancement_results = False
+        results_response = (
+            client.table("results")
+            .select("match_id,actual_home_goals,actual_away_goals,match_date")
+            .execute()
+        )
     predictions = predictions_response.data or []
     synced_results = results_response.data or []
     existing_results = {row["match_id"] for row in synced_results}
@@ -651,37 +723,51 @@ def run_once(client: Client) -> None:
     if api_games:
         sync_live_matches(client, api_games, predictions_by_pair, source)
 
-    pending: list[dict[str, Any]] = []
+    upserts: list[dict[str, Any]] = []
     used_match_ids: set[str] = set()
     for game in games:
         prediction, reversed_pair = choose_prediction_for_game(game, predictions_by_pair, used_match_ids)
-        label = f"{game.home_team} {game.home_goals}×{game.away_goals} {game.away_team}"
+        label = f"{game.home_team} {game.home_goals}Ã—{game.away_goals} {game.away_team}"
 
         if prediction is None:
-            print(f"[SEM PREVISÃO] {label}")
+            print(f"[SEM PREVISÃƒO] {label}")
             continue
 
         match_id = prediction["match_id"]
         used_match_ids.add(match_id)
         home_goals, away_goals = orient_score_to_prediction(game, reversed_pair)
-        if match_id in existing_results:
-            print(f"[JÁ EXISTE] {match_id}: {label}")
-            continue
-
-        pending.append(
-            {
-                "match_id": match_id,
-                "actual_home_goals": home_goals,
-                "actual_away_goals": away_goals,
-                # A previsão contém o horário oficial completo e com fuso.
-                "match_date": prediction["match_date"],
-            }
+        home_penalties, away_penalties = orient_penalties_to_prediction(game, reversed_pair)
+        advanced_team, decided_on_penalties = advanced_team_for_prediction(
+            prediction,
+            home_goals,
+            away_goals,
+            home_penalties,
+            away_penalties,
         )
-        print(f"[NOVO] {match_id}: {label}")
 
-    if pending:
-        client.table("results").upsert(pending, on_conflict="match_id").execute()
-        synced_results.extend(pending)
+        record = {
+            "match_id": match_id,
+            "actual_home_goals": home_goals,
+            "actual_away_goals": away_goals,
+            # A previsÃ£o contÃ©m o horÃ¡rio oficial completo e com fuso.
+            "match_date": prediction["match_date"],
+        }
+        if supports_advancement_results:
+            record.update({
+                "home_penalties": home_penalties,
+                "away_penalties": away_penalties,
+                "advanced_team": advanced_team,
+                "decided_on_penalties": decided_on_penalties,
+            })
+        upserts.append(record)
+        action = "ATUALIZA" if match_id in existing_results else "NOVO"
+        print(f"[{action}] {match_id}: {label}")
+
+    if upserts:
+        client.table("results").upsert(upserts, on_conflict="match_id").execute()
+        by_match_id = {row["match_id"]: row for row in synced_results}
+        by_match_id.update({row["match_id"]: row for row in upserts})
+        synced_results = list(by_match_id.values())
     sync_eliminated_teams(client, infer_eliminated_teams(predictions, synced_results))
     try:
         from sync_defined_knockout_predictions import sync_defined_knockout_predictions
@@ -693,9 +779,9 @@ def run_once(client: Client) -> None:
             overwrite=True,
             update_local=False,
         )
-    except Exception as error:  # noqa: BLE001 - o sync de resultados não deve falhar por previsão pendente.
-        print(f"[MATA-MATA][AVISO] Não foi possível calcular confrontos definidos: {error}")
-    print(f"[FIM] {len(pending)} resultado(s) inserido(s).")
+    except Exception as error:  # noqa: BLE001 - o sync de resultados nÃ£o deve falhar por previsÃ£o pendente.
+        print(f"[MATA-MATA][AVISO] NÃ£o foi possÃ­vel calcular confrontos definidos: {error}")
+    print(f"[FIM] {len(upserts)} resultado(s) processado(s).")
 
 
 def positive_interval(value: str) -> int:
@@ -712,7 +798,7 @@ def parse_args() -> argparse.Namespace:
         "--interval",
         type=positive_interval,
         default=300,
-        help="Segundos entre sincronizações no modo watch (padrão: 300).",
+        help="Segundos entre sincronizaÃ§Ãµes no modo watch (padrÃ£o: 300).",
     )
     return parser.parse_args()
 
@@ -724,16 +810,16 @@ def main() -> None:
         run_once(client)
         return
 
-    print(f"[INFO] Modo contínuo ativo; intervalo de {args.interval}s. Ctrl+C para encerrar.")
+    print(f"[INFO] Modo contÃ­nuo ativo; intervalo de {args.interval}s. Ctrl+C para encerrar.")
     try:
         while True:
             try:
                 run_once(client)
             except (requests.RequestException, RuntimeError, ValueError) as error:
-                print(f"[ERRO] Sincronização falhou: {error}")
+                print(f"[ERRO] SincronizaÃ§Ã£o falhou: {error}")
             time.sleep(args.interval)
     except KeyboardInterrupt:
-        print("\n[INFO] Sincronização encerrada pelo usuário.")
+        print("\n[INFO] SincronizaÃ§Ã£o encerrada pelo usuÃ¡rio.")
 
 
 if __name__ == "__main__":

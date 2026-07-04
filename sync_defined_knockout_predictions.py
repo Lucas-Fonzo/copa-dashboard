@@ -1,12 +1,12 @@
-"""Gera previsões de mata-mata assim que os confrontos ficam definidos.
+﻿"""Gera previsÃµes de mata-mata assim que os confrontos ficam definidos.
 
-O script usa os resultados já disponíveis, resolve os slots do chaveamento e
-calcula os confrontos definidos com a versão mais recente do Elo + Poisson.
+O script usa os resultados jÃ¡ disponÃ­veis, resolve os slots do chaveamento e
+calcula os confrontos definidos com a versÃ£o mais recente do Elo + Poisson.
 
 Uso local:
     python sync_defined_knockout_predictions.py
 
-Para também enviar ao Supabase:
+Para tambÃ©m enviar ao Supabase:
     python sync_defined_knockout_predictions.py --upload
 """
 
@@ -45,8 +45,8 @@ MAX_GOALS_90 = 10
 MAX_GOALS_EXTRA = 6
 
 THIRD_PLACE_ASSIGNMENT_OVERRIDES = {
-    # Combinação real dos 8 melhores terceiros da fase de grupos.
-    # O backtracking puro encontra uma solução compatível, mas não garante
+    # CombinaÃ§Ã£o real dos 8 melhores terceiros da fase de grupos.
+    # O backtracking puro encontra uma soluÃ§Ã£o compatÃ­vel, mas nÃ£o garante
     # o encaixe oficial do chaveamento.
     "B/D/E/F/I/J/K/L": {
         "Best 3rd (Groups A/B/C/D/F)": "D",
@@ -61,9 +61,9 @@ THIRD_PLACE_ASSIGNMENT_OVERRIDES = {
 }
 
 KNOCKOUT_ADVANCEMENT_OVERRIDES = {
-    # Resultado empatado no tempo/prorrogação, decidido nos pênaltis.
-    # O schema atual de results guarda apenas gols, então registramos aqui
-    # quem avançou para o chaveamento não precisar inferir vencedor em empate.
+    # Resultado empatado no tempo/prorrogaÃ§Ã£o, decidido nos pÃªnaltis.
+    # O schema atual de results guarda apenas gols, entÃ£o registramos aqui
+    # quem avanÃ§ou para o chaveamento nÃ£o precisar inferir vencedor em empate.
     "WC2026_074": {
         "winner": "Paraguay",
         "loser": "Germany",
@@ -74,6 +74,11 @@ KNOCKOUT_ADVANCEMENT_OVERRIDES = {
         "loser": "Netherlands",
         "decided_on_penalties": True,
     },
+    "WC2026_088": {
+        "winner": "Egypt",
+        "loser": "Australia",
+        "decided_on_penalties": True,
+    },
 }
 
 ROUND_LABELS = {
@@ -81,7 +86,7 @@ ROUND_LABELS = {
     "Round of 16": "Mata-mata - Oitavas",
     "Quarter-final": "Mata-mata - Quartas",
     "Semi-final": "Mata-mata - Semifinal",
-    "Third-place playoff": "Mata-mata - 3º lugar",
+    "Third-place playoff": "Mata-mata - 3Âº lugar",
     "Final": "Mata-mata - Final",
 }
 
@@ -166,13 +171,22 @@ def load_supabase_data(client: Client) -> tuple[list[dict[str, Any]], list[dict[
         .data
         or []
     )
-    results = (
-        client.table("results")
-        .select("match_id,actual_home_goals,actual_away_goals,match_date")
-        .execute()
-        .data
-        or []
-    )
+    try:
+        results = (
+            client.table("results")
+            .select("match_id,actual_home_goals,actual_away_goals,home_penalties,away_penalties,advanced_team,decided_on_penalties,match_date")
+            .execute()
+            .data
+            or []
+        )
+    except Exception:
+        results = (
+            client.table("results")
+            .select("match_id,actual_home_goals,actual_away_goals,match_date")
+            .execute()
+            .data
+            or []
+        )
     return predictions, results
 
 
@@ -348,8 +362,8 @@ def third_place_assignment(
     rankings: dict[str, list[tuple[str, dict[str, int]]]],
     complete_groups: set[str],
 ) -> dict[str, str]:
-    # A ordem de melhores terceiros só fica realmente fechada quando os 12 grupos
-    # estão completos. Antes disso, evitamos projetar vaga como se fosse fato.
+    # A ordem de melhores terceiros sÃ³ fica realmente fechada quando os 12 grupos
+    # estÃ£o completos. Antes disso, evitamos projetar vaga como se fosse fato.
     if len(complete_groups) < 12:
         return {}
 
@@ -534,8 +548,8 @@ def actual_knockout_outcomes(
 ) -> tuple[dict[int, str], dict[int, str]]:
     """Resolve vencedores/perdedores somente a partir de resultados reais.
 
-    Importante: previsões projetadas não alimentam a próxima fase. Um slot como
-    `Winner Match 74` só fica disponível quando `results` já contém o placar de
+    Importante: previsÃµes projetadas nÃ£o alimentam a prÃ³xima fase. Um slot como
+    `Winner Match 74` sÃ³ fica disponÃ­vel quando `results` jÃ¡ contÃ©m o placar de
     `WC2026_074`.
     """
     prediction_by_id = {str(row["match_id"]): row for row in predictions}
@@ -557,7 +571,14 @@ def actual_knockout_outcomes(
         away = str(prediction["away_team"])
         home_goals = int(result["actual_home_goals"])
         away_goals = int(result["actual_away_goals"])
-        if home_goals > away_goals:
+        advanced_team = result.get("advanced_team")
+        if advanced_team and model.norm(str(advanced_team)) == model.norm(home):
+            winners[number] = home
+            losers[number] = away
+        elif advanced_team and model.norm(str(advanced_team)) == model.norm(away):
+            winners[number] = away
+            losers[number] = home
+        elif home_goals > away_goals:
             winners[number] = home
             losers[number] = away
         elif away_goals > home_goals:
@@ -569,11 +590,22 @@ def actual_knockout_outcomes(
                 winners[number] = str(override["winner"])
                 losers[number] = str(override["loser"])
                 continue
-            # O schema atual não guarda vencedor dos pênaltis. Se o placar vier
-            # empatado, é mais seguro não avançar ninguém automaticamente.
+            home_penalties = result.get("home_penalties")
+            away_penalties = result.get("away_penalties")
+            if home_penalties is not None and away_penalties is not None:
+                if int(home_penalties) > int(away_penalties):
+                    winners[number] = home
+                    losers[number] = away
+                    continue
+                if int(away_penalties) > int(home_penalties):
+                    winners[number] = away
+                    losers[number] = home
+                    continue
+            # O schema atual nÃ£o guarda vencedor dos pÃªnaltis. Se o placar vier
+            # empatado, Ã© mais seguro nÃ£o avanÃ§ar ninguÃ©m automaticamente.
             print(
                 f"[MATA-MATA][AVISO] {match_id} tem empate em results; "
-                "não dá para inferir vencedor sem pênaltis."
+                "nÃ£o dÃ¡ para inferir vencedor sem pÃªnaltis."
             )
     return winners, losers
 
@@ -711,19 +743,19 @@ def sync_defined_knockout_predictions(
             ).execute()
         except Exception as error:
             print(
-                "[MATA-MATA][AVISO] prediction_scorelines não foi atualizada. "
+                "[MATA-MATA][AVISO] prediction_scorelines nÃ£o foi atualizada. "
                 "Rode o trecho novo do supabase_schema.sql se quiser persistir "
                 f"os placares finais no Supabase. Detalhe: {error}"
             )
 
-    print(f"[MATA-MATA] {len(generated)} previsão(ões) calculada(s).")
+    print(f"[MATA-MATA] {len(generated)} previsÃ£o(Ãµes) calculada(s).")
     for prediction in generated:
         print(
             "[MATA-MATA]",
             prediction.match_id,
             f"{prediction.home_team} {prediction.predicted_home_goals} x "
             f"{prediction.predicted_away_goals} {prediction.away_team}",
-            f"({prediction.home_win_prob * 100:.1f}% x {prediction.away_win_prob * 100:.1f}% avanço)",
+            f"({prediction.home_win_prob * 100:.1f}% x {prediction.away_win_prob * 100:.1f}% avanÃ§o)",
         )
     return generated
 
@@ -734,18 +766,18 @@ def parse_args() -> argparse.Namespace:
         "--source",
         choices=["local", "supabase"],
         default="local",
-        help="Fonte das previsões/resultados para resolver o chaveamento.",
+        help="Fonte das previsÃµes/resultados para resolver o chaveamento.",
     )
-    parser.add_argument("--upload", action="store_true", help="Envia previsões calculadas ao Supabase.")
+    parser.add_argument("--upload", action="store_true", help="Envia previsÃµes calculadas ao Supabase.")
     parser.add_argument(
         "--keep-existing",
         action="store_true",
-        help="Não recalcula jogos de mata-mata que já existem em predictions.",
+        help="NÃ£o recalcula jogos de mata-mata que jÃ¡ existem em predictions.",
     )
     parser.add_argument(
         "--no-local-update",
         action="store_true",
-        help="Não atualiza o predictions.json local.",
+        help="NÃ£o atualiza o predictions.json local.",
     )
     return parser.parse_args()
 

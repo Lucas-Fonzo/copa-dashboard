@@ -118,6 +118,7 @@ const KNOCKOUT_ADVANCEMENT_OVERRIDES = {
   // quem avançou para o chaveamento não precisar "adivinhar".
   WC2026_074: { winner: "Paraguay", loser: "Germany", decidedOnPenalties: true },
   WC2026_075: { winner: "Morocco", loser: "Netherlands", decidedOnPenalties: true },
+  WC2026_088: { winner: "Egypt", loser: "Australia", decidedOnPenalties: true },
 };
 
 const BRACKET_LAYOUT = {
@@ -576,9 +577,14 @@ async function fetchLiveMatches() {
 async function fetchResultsForSchedule() {
   if (!isConfigured()) return [];
   try {
-    const response = await supabase
+    let response = await supabase
       .from("results")
-      .select("match_id,actual_home_goals,actual_away_goals,match_date");
+      .select("match_id,actual_home_goals,actual_away_goals,home_penalties,away_penalties,advanced_team,decided_on_penalties,match_date");
+    if (response.error) {
+      response = await supabase
+        .from("results")
+        .select("match_id,actual_home_goals,actual_away_goals,match_date");
+    }
     if (response.error) throw response.error;
     return response.data ?? [];
   } catch (error) {
@@ -1057,7 +1063,13 @@ function actualKnockoutOutcomes(predictions, results) {
     const homeGoals = Number(result.actual_home_goals);
     const awayGoals = Number(result.actual_away_goals);
     const advancement = KNOCKOUT_ADVANCEMENT_OVERRIDES[matchId];
-    if (homeGoals > awayGoals) {
+    if (result.advanced_team && sameTeam(result.advanced_team, prediction.home_team)) {
+      winners.set(numericId, prediction.home_team);
+      losers.set(numericId, prediction.away_team);
+    } else if (result.advanced_team && sameTeam(result.advanced_team, prediction.away_team)) {
+      winners.set(numericId, prediction.away_team);
+      losers.set(numericId, prediction.home_team);
+    } else if (homeGoals > awayGoals) {
       winners.set(numericId, prediction.home_team);
       losers.set(numericId, prediction.away_team);
     } else if (awayGoals > homeGoals) {
@@ -1351,14 +1363,21 @@ function renderBracket(predictions, results, odds = []) {
 async function loadBracket() {
   if (!elements.bracketSection || !isConfigured()) return;
   try {
-    const [predictionsResponse, resultsResponse, oddsResponse] = await Promise.all([
+    const [predictionsResponse, oddsResponse] = await Promise.all([
       supabase
         .from("predictions")
         .select("match_id,home_team,away_team,predicted_home_goals,predicted_away_goals,home_win_prob,away_win_prob,round")
         .order("match_id"),
-      supabase.from("results").select("match_id,actual_home_goals,actual_away_goals"),
       supabase.from("championship_odds").select("team,champion_prob,eliminated"),
     ]);
+    let resultsResponse = await supabase
+      .from("results")
+      .select("match_id,actual_home_goals,actual_away_goals,home_penalties,away_penalties,advanced_team,decided_on_penalties");
+    if (resultsResponse.error) {
+      resultsResponse = await supabase
+        .from("results")
+        .select("match_id,actual_home_goals,actual_away_goals");
+    }
     if (predictionsResponse.error) throw predictionsResponse.error;
     if (resultsResponse.error) throw resultsResponse.error;
     if (oddsResponse.error) console.warn("Odds indisponÃ­veis para projeÃ§Ã£o da chave.", oddsResponse.error);
@@ -1849,7 +1868,11 @@ function knockoutEliminatedTeams(predictions, results) {
 
     const homeGoals = Number(result.actual_home_goals);
     const awayGoals = Number(result.actual_away_goals);
-    if (homeGoals > awayGoals) {
+    if (result.advanced_team && sameTeam(result.advanced_team, prediction.home_team)) {
+      eliminated.add(normalizeLookup(displayTeam(prediction.away_team)));
+    } else if (result.advanced_team && sameTeam(result.advanced_team, prediction.away_team)) {
+      eliminated.add(normalizeLookup(displayTeam(prediction.home_team)));
+    } else if (homeGoals > awayGoals) {
       eliminated.add(normalizeLookup(displayTeam(prediction.away_team)));
     } else if (awayGoals > homeGoals) {
       eliminated.add(normalizeLookup(displayTeam(prediction.home_team)));
@@ -1994,6 +2017,8 @@ function predictedAdvancingTeam(match) {
 }
 
 function actualAdvancingTeam(match) {
+  if (match.advanced_team) return displayTeam(match.advanced_team);
+
   const homeGoals = Number(match.actual_home_goals);
   const awayGoals = Number(match.actual_away_goals);
   if (homeGoals > awayGoals) return displayTeam(match.home_team);
@@ -2016,6 +2041,19 @@ function withKnockoutAccuracy(match) {
     actual_advancing_team: actualWinner,
     predicted_advancing_team: predictedWinner,
   };
+}
+
+function actualScoreText(match) {
+  const score = `${match.actual_home_goals} × ${match.actual_away_goals}`;
+  if (
+    match.home_penalties !== null
+    && match.home_penalties !== undefined
+    && match.away_penalties !== null
+    && match.away_penalties !== undefined
+  ) {
+    return `${score} (${match.home_penalties} × ${match.away_penalties} pen.)`;
+  }
+  return score;
 }
 
 function buildAccuracyRow(round, matches) {
@@ -2202,7 +2240,7 @@ function renderMatches(matches) {
       </td>
       <td><span class="score">${match.predicted_home_goals} × ${match.predicted_away_goals}</span></td>
       <td data-label="Probabilidades">${probabilityCell(match)}</td>
-      <td><span class="score">${match.actual_home_goals} × ${match.actual_away_goals}</span></td>
+      <td><span class="score">${escapeHtml(actualScoreText(match))}</span></td>
       <td data-label="Resultado">${accuracyBadge(match.result_correct, match.result_correct ? "Correto" : "Errado")}</td>
       <td>${accuracyBadge(match.exact_score, match.exact_score ? "Exato" : "Não exato")}</td>
       <td data-label="Rodada"><span class="round-pill">${escapeHtml(match.round)}</span></td>

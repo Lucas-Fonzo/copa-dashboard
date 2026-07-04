@@ -351,12 +351,40 @@
     "match_id": "WC2026_074",
     "actual_home_goals": 1,
     "actual_away_goals": 1,
-    "match_date": "2026-06-29T20:30:00+00:00"
+    "match_date": "2026-06-29T20:30:00+00:00",
+    "home_penalties": 3,
+    "away_penalties": 4,
+    "advanced_team": "Paraguay",
+    "decided_on_penalties": true
+  },
+  {
+    "match_id": "WC2026_075",
+    "actual_home_goals": 1,
+    "actual_away_goals": 1,
+    "home_penalties": 2,
+    "away_penalties": 3,
+    "advanced_team": "Morocco",
+    "decided_on_penalties": true,
+    "match_date": "2026-06-30T01:00:00+00:00"
   },
   {
     "match_id": "WC2026_076",
     "actual_home_goals": 2,
     "actual_away_goals": 1,
-    "match_date": "2026-06-29T17:00:00+00:00"
+    "match_date": "2026-06-29T17:00:00+00:00",
+    "home_penalties": null,
+    "away_penalties": null,
+    "advanced_team": "Brazil",
+    "decided_on_penalties": false
+  },
+  {
+    "match_id": "WC2026_088",
+    "actual_home_goals": 1,
+    "actual_away_goals": 1,
+    "home_penalties": 2,
+    "away_penalties": 4,
+    "advanced_team": "Egypt",
+    "decided_on_penalties": true,
+    "match_date": "2026-07-03T18:00:00+00:00"
   }
 ]

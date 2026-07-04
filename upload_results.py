@@ -45,6 +45,15 @@ def load_records(path: Path) -> list[dict[str, Any]]:
         for field in ("actual_home_goals", "actual_away_goals"):
             if not isinstance(record[field], int) or record[field] < 0:
                 raise ValueError(f"Registro {index}: {field} deve ser inteiro não negativo.")
+        for field in ("home_penalties", "away_penalties"):
+            if field in record and record[field] is not None:
+                if not isinstance(record[field], int) or record[field] < 0:
+                    raise ValueError(f"Registro {index}: {field} deve ser inteiro nao negativo ou null.")
+        if "advanced_team" in record and record["advanced_team"] is not None:
+            if not str(record["advanced_team"]).strip():
+                raise ValueError(f"Registro {index}: advanced_team nao pode ser vazio.")
+        if "decided_on_penalties" in record and not isinstance(record["decided_on_penalties"], bool):
+            raise ValueError(f"Registro {index}: decided_on_penalties deve ser booleano.")
         datetime.fromisoformat(str(record["match_date"]).replace("Z", "+00:00"))
 
     return records
@@ -94,4 +103,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

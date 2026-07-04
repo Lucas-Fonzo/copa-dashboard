@@ -27,9 +27,19 @@ create table if not exists public.results (
     match_id text not null unique,
     actual_home_goals integer not null check (actual_home_goals >= 0),
     actual_away_goals integer not null check (actual_away_goals >= 0),
+    home_penalties integer check (home_penalties is null or home_penalties >= 0),
+    away_penalties integer check (away_penalties is null or away_penalties >= 0),
+    advanced_team text,
+    decided_on_penalties boolean not null default false,
     match_date timestamptz not null,
     created_at timestamptz not null default now()
 );
+
+alter table public.results
+    add column if not exists home_penalties integer check (home_penalties is null or home_penalties >= 0),
+    add column if not exists away_penalties integer check (away_penalties is null or away_penalties >= 0),
+    add column if not exists advanced_team text,
+    add column if not exists decided_on_penalties boolean not null default false;
 
 create index if not exists predictions_match_date_idx
     on public.predictions (match_date desc);
@@ -58,9 +68,25 @@ select
     p.created_at as prediction_created_at,
     r.actual_home_goals,
     r.actual_away_goals,
+    r.home_penalties,
+    r.away_penalties,
+    r.advanced_team,
+    r.decided_on_penalties,
     r.match_date as result_match_date,
     r.created_at as result_created_at,
     case
+        when lower(p.round) not like '%fase de grupos%'
+             and r.advanced_team is not null
+             and lower(r.advanced_team) = lower(
+                case
+                    when p.predicted_home_goals > p.predicted_away_goals then p.home_team
+                    when p.predicted_home_goals < p.predicted_away_goals then p.away_team
+                    when p.home_win_prob >= p.away_win_prob then p.home_team
+                    else p.away_team
+                end
+             ) then true
+        when lower(p.round) not like '%fase de grupos%'
+             and r.advanced_team is not null then false
         when p.predicted_home_goals > p.predicted_away_goals
              and r.actual_home_goals > r.actual_away_goals then true
         when p.predicted_home_goals = p.predicted_away_goals
