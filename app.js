@@ -1222,13 +1222,13 @@ function futureBracketMatch(label, sources, confirmedWinners, projectedWinners, 
                     ${outcomes.some((outcome) => outcome.team) ? "has-team" : ""}"
              title="${escapeHtml(label)}">
       ${outcomes.map((outcome) => (
-        bracketSlot(
-          `Vencedor ${outcome.source}`,
-          outcome.team,
-          `Vencedor ${outcome.source}`,
-          outcome.state,
-        )
-      )).join("")}
+    bracketSlot(
+      `Vencedor ${outcome.source}`,
+      outcome.team,
+      `Vencedor ${outcome.source}`,
+      outcome.state,
+    )
+  )).join("")}
     </article>`;
 }
 
@@ -1239,14 +1239,14 @@ function decisionBracketMatch(label, outcomes, size = "normal", span = 4) {
              title="${escapeHtml(label)}">
       <span class="bracket-decision-title">${escapeHtml(label)}</span>
       ${outcomes.map((outcome) => (
-        bracketSlot(
-          outcome.slot,
-          outcome.team,
-          outcome.fallback,
-          outcome.state,
-          outcome.badge ?? "",
-        )
-      )).join("")}
+    bracketSlot(
+      outcome.slot,
+      outcome.team,
+      outcome.fallback,
+      outcome.state,
+      outcome.badge ?? "",
+    )
+  )).join("")}
     </article>`;
 }
 
@@ -1674,7 +1674,7 @@ function renderBrazilSection(
   brazilPathPredictions = cachedBrazilPathPredictions,
 ) {
   const brazil = odds.find((row) => row.team === "Brasil");
-  if (!brazil) {
+  if (!brazil || brazil.eliminated) {
     clearBrazilCountdown();
     elements.brazilSection.hidden = true;
     return;
@@ -1684,27 +1684,13 @@ function renderBrazilSection(
     .sort((a, b) => Number(b.champion_prob) - Number(a.champion_prob))
     .findIndex((row) => row.team === "Brasil") + 1;
 
-  if (brazil.eliminated) {
-    elements.brazilTitleRank.textContent = "—";
-  } else {
-    elements.brazilTitleRank.innerHTML = `${titleRanking || "—"}<sup>º</sup>`;
-  }
+  elements.brazilTitleRank.innerHTML = `${titleRanking || "—"}<sup>º</sup>`;
 
-  elements.brazilChampionProb.classList.toggle("is-eliminated", Boolean(brazil.eliminated));
-  if (brazil.eliminated) {
-    elements.brazilChampionProb.textContent = "Eliminado";
-  } else {
-    elements.brazilChampionProb.innerHTML = `
-      <span>${championPercent(brazil.champion_prob)}</span>
-      <small>de chance de ser campeão</small>`;
-  }
+  elements.brazilChampionProb.innerHTML = `
+    <span>${championPercent(brazil.champion_prob)}</span>
+    <small>de chance de ser campeão</small>`;
 
-  if (brazil.eliminated) {
-    clearBrazilCountdown();
-    elements.brazilNextGame.hidden = true;
-    elements.brazilScorelines.hidden = true;
-    positionBrazilSection(false);
-  } else {
+  {
     const now = new Date();
     const liveByMatchId = new Map(liveMatches.map((match) => [match.match_id, match]));
     const resultByMatchId = new Map(results.map((result) => [result.match_id, result]));
