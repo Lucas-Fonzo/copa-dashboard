@@ -236,6 +236,12 @@ const elements = {
   brazilChampionProb: document.querySelector("#brazil-champion-prob"),
   brazilNextGame: document.querySelector("#brazil-next-game"),
   brazilScorelines: document.querySelector("#brazil-scorelines"),
+  argentinaWatchSection: document.querySelector("#argentina-watch-section"),
+  argentinaWatchRank: document.querySelector("#argentina-watch-rank"),
+  argentinaWatchRankLabel: document.querySelector("#argentina-watch-rank-label"),
+  argentinaWatchProb: document.querySelector("#argentina-watch-prob"),
+  argentinaWatchNextGame: document.querySelector("#argentina-watch-next-game"),
+  argentinaWatchScorelines: document.querySelector("#argentina-watch-scorelines"),
   favoritesSection: document.querySelector("#favorites-section"),
   favoritesGrid: document.querySelector("#favorites-grid"),
   simulationsDetail: document.querySelector("#simulations-detail"),
@@ -1544,6 +1550,71 @@ function mostLikelyBrazilScores(match, brazilIsHome) {
     .slice(0, 3);
 }
 
+function scorelinesForTeam(scorelineOdds, match, teamName) {
+  const teamIsHome = displayTeam(match.home_team) === teamName;
+  return scorelinesForMatch(scorelineOdds, match, teamIsHome)
+    .map((scoreline) => ({
+      teamGoals: scoreline.brazilGoals,
+      opponentGoals: scoreline.opponentGoals,
+      probability: scoreline.probability,
+    }));
+}
+
+function mostLikelyTeamScores(match, teamName) {
+  const teamIsHome = displayTeam(match.home_team) === teamName;
+  return mostLikelyBrazilScores(match, teamIsHome)
+    .map((scoreline) => ({
+      teamGoals: scoreline.brazilGoals,
+      opponentGoals: scoreline.opponentGoals,
+      probability: scoreline.probability,
+    }));
+}
+
+function mostLikelyTeamScoresWhere(match, teamName, predicate, limit = 1) {
+  const teamIsHome = displayTeam(match.home_team) === teamName;
+  const { homeLambda, awayLambda } = estimatePoissonLambdas(match);
+  const homeDistribution = poissonDistribution(homeLambda, 7);
+  const awayDistribution = poissonDistribution(awayLambda, 7);
+  const scorelineMap = new Map();
+  const shouldApplyExtraTime = isKnockoutMatch(match);
+  const extraHomeDistribution = shouldApplyExtraTime
+    ? poissonDistribution(homeLambda * EXTRA_TIME_SHARE_OF_MATCH * EXTRA_TIME_INTENSITY, 5)
+    : [];
+  const extraAwayDistribution = shouldApplyExtraTime
+    ? poissonDistribution(awayLambda * EXTRA_TIME_SHARE_OF_MATCH * EXTRA_TIME_INTENSITY, 5)
+    : [];
+
+  for (let homeGoals = 0; homeGoals < homeDistribution.length; homeGoals += 1) {
+    for (let awayGoals = 0; awayGoals < awayDistribution.length; awayGoals += 1) {
+      const probability90 = homeDistribution[homeGoals] * awayDistribution[awayGoals];
+      if (shouldApplyExtraTime && homeGoals === awayGoals) {
+        for (let extraHomeGoals = 0; extraHomeGoals < extraHomeDistribution.length; extraHomeGoals += 1) {
+          for (let extraAwayGoals = 0; extraAwayGoals < extraAwayDistribution.length; extraAwayGoals += 1) {
+            addScoreline(
+              scorelineMap,
+              homeGoals + extraHomeGoals,
+              awayGoals + extraAwayGoals,
+              probability90 * extraHomeDistribution[extraHomeGoals] * extraAwayDistribution[extraAwayGoals],
+            );
+          }
+        }
+      } else {
+        addScoreline(scorelineMap, homeGoals, awayGoals, probability90);
+      }
+    }
+  }
+
+  return [...scorelineMap.values()]
+    .map((scoreline) => ({
+      teamGoals: teamIsHome ? scoreline.homeGoals : scoreline.awayGoals,
+      opponentGoals: teamIsHome ? scoreline.awayGoals : scoreline.homeGoals,
+      probability: scoreline.probability,
+    }))
+    .filter(predicate)
+    .sort((a, b) => b.probability - a.probability)
+    .slice(0, limit);
+}
+
 async function fetchChampionshipOdds() {
   const response = await supabase
     .from("championship_odds")
@@ -1820,6 +1891,201 @@ function renderBrazilSection(
   elements.brazilSection.hidden = false;
 }
 
+function argentinaEliminationProbability(match, argentinaIsHome, opponent) {
+  if (isKnockoutMatch(match)) {
+    const { homeAdvance, awayAdvance } = advancementProbabilities(match);
+    const argentinaAdvance = argentinaIsHome ? homeAdvance : awayAdvance;
+    const argentinaPct = Math.round(argentinaAdvance * 100);
+    const fallPct = Math.max(0, 100 - argentinaPct);
+    return `
+      <div class="probability brazil-result-probability argentina-result-probability"
+           aria-label="Argentina avanca ${argentinaPct}%, ${escapeHtml(opponent)} elimina ${fallPct}%">
+        <div class="probability-labels">
+          <span>Argentina passa ${argentinaPct}%</span>
+          <span>${escapeHtml(opponent)} elimina ${fallPct}%</span>
+        </div>
+        <div class="probability-bar">
+          <span class="prob-home" style="width:${clampPercent(argentinaPct)}%"></span>
+          <span class="prob-away" style="width:${clampPercent(fallPct)}%"></span>
+        </div>
+      </div>`;
+  }
+
+  const argentinaWin = Number(argentinaIsHome ? match.home_win_prob : match.away_win_prob);
+  const opponentWin = Number(argentinaIsHome ? match.away_win_prob : match.home_win_prob);
+  const argentinaPct = Math.round(argentinaWin * 100);
+  const opponentPct = Math.round(opponentWin * 100);
+  const drawPct = Math.max(0, 100 - argentinaPct - opponentPct);
+  return `
+    <div class="probability brazil-result-probability argentina-result-probability"
+         aria-label="Argentina vence ${argentinaPct}%, empate ${drawPct}%, ${escapeHtml(opponent)} vence ${opponentPct}%">
+      <div class="probability-labels">
+        <span>Argentina vence ${argentinaPct}%</span>
+        <span>Empate ${drawPct}%</span>
+        <span>${escapeHtml(opponent)} vence ${opponentPct}%</span>
+      </div>
+      <div class="probability-bar">
+        <span class="prob-home" style="width:${clampPercent(argentinaPct)}%"></span>
+        <span class="prob-draw" style="width:${clampPercent(drawPct)}%"></span>
+        <span class="prob-away" style="width:${clampPercent(opponentPct)}%"></span>
+      </div>
+    </div>`;
+}
+
+function renderArgentinaWatchSection(
+  odds,
+  predictions,
+  liveMatches = cachedLiveMatches,
+  scorelineOdds = cachedScorelineOdds,
+  results = cachedResults,
+) {
+  if (!elements.argentinaWatchSection) return;
+
+  const argentina = odds.find((row) => row.team === "Argentina");
+  if (!argentina) {
+    elements.argentinaWatchSection.hidden = true;
+    return;
+  }
+
+  const titleRanking = [...odds]
+    .sort((a, b) => Number(b.champion_prob) - Number(a.champion_prob))
+    .findIndex((row) => row.team === "Argentina") + 1;
+  const antiTitleChance = Math.max(0, 1 - Number(argentina.champion_prob || 0));
+
+  if (argentina.eliminated) {
+    elements.argentinaWatchRank.innerHTML = "OK";
+    elements.argentinaWatchRankLabel.textContent = "secagem concluida";
+    elements.argentinaWatchProb.classList.add("is-eliminated");
+    elements.argentinaWatchProb.innerHTML = "Missao cumprida";
+    elements.argentinaWatchNextGame.innerHTML = `
+      <span class="brazil-game-kicker">Argentina fora</span>
+      <strong class="brazil-matchup argentina-matchup">Pode respirar</strong>
+      <span class="brazil-game-date">Nao de nem agua: a campanha acabou.</span>`;
+    elements.argentinaWatchScorelines.innerHTML = `
+      <span class="brazil-card-kicker">Resumo da torcida</span>
+      <strong class="scorelines-match">Secagem 1 &times; 0 ansiedade</strong>`;
+    elements.argentinaWatchSection.hidden = false;
+    return;
+  }
+
+  elements.argentinaWatchProb.classList.remove("is-eliminated");
+  elements.argentinaWatchRank.innerHTML = `${titleRanking || "-"}<sup>o</sup>`;
+  elements.argentinaWatchRankLabel.textContent = "alvo da secagem";
+  elements.argentinaWatchProb.innerHTML = `
+    <span>${championPercent(antiTitleChance)}</span>
+    <small>de chance de alguem acabar com a festa</small>`;
+
+  const now = new Date();
+  const liveByMatchId = new Map(liveMatches.map((match) => [match.match_id, match]));
+  const resultByMatchId = new Map(results.map((result) => [result.match_id, result]));
+  const argentinaGames = predictions
+    .filter((prediction) => (
+      displayTeam(prediction.home_team) === "Argentina"
+      || displayTeam(prediction.away_team) === "Argentina"
+    ))
+    .map((prediction) => {
+      const liveMatch = liveByMatchId.get(prediction.match_id);
+      const result = resultByMatchId.get(prediction.match_id);
+      return {
+        ...prediction,
+        liveMatch,
+        result,
+        is_live: isActiveMatch(prediction.match_date, liveMatch, now, result),
+        starts_at: new Date(prediction.match_date),
+      };
+    })
+    .filter((prediction) => shouldShowScheduleMatch(
+      prediction.match_date,
+      prediction.liveMatch,
+      now,
+      prediction.result,
+    ))
+    .sort((a, b) => {
+      if (a.is_live !== b.is_live) return a.is_live ? -1 : 1;
+      return a.starts_at - b.starts_at;
+    });
+
+  const nextGame = argentinaGames[0];
+  elements.argentinaWatchNextGame.hidden = false;
+  elements.argentinaWatchScorelines.hidden = false;
+
+  if (!nextGame) {
+    elements.argentinaWatchNextGame.innerHTML = `
+      <span class="brazil-game-kicker">Proxima chance de secar</span>
+      <strong class="brazil-matchup argentina-matchup">Aguardando jogo</strong>
+      <span class="brazil-game-date">Nenhum confronto futuro da Argentina esta registrado.</span>`;
+    elements.argentinaWatchScorelines.innerHTML = `
+      <span class="brazil-card-kicker">Top 3 do modelo</span>
+      <strong class="scorelines-match">Aguardando previsao</strong>`;
+    elements.argentinaWatchSection.hidden = false;
+    return;
+  }
+
+  const argentinaIsHome = displayTeam(nextGame.home_team) === "Argentina";
+  const opponent = displayTeam(argentinaIsHome ? nextGame.away_team : nextGame.home_team);
+  const liveMatch = nextGame.liveMatch ?? null;
+  const isArgentinaLive = Boolean(nextGame.is_live);
+  const isKnockout = isKnockoutMatch(nextGame);
+  const persistedScorelines = isKnockout ? scorelinesForTeam(scorelineOdds, nextGame, "Argentina") : [];
+  const scorelines = persistedScorelines.length
+    ? persistedScorelines
+    : mostLikelyTeamScores(nextGame, "Argentina");
+  const upsetScoreline = mostLikelyTeamScoresWhere(
+    nextGame,
+    "Argentina",
+    (scoreline) => scoreline.opponentGoals > scoreline.teamGoals,
+    1,
+  )[0] ?? null;
+  const fallbackArgentinaGoals = argentinaIsHome ? nextGame.predicted_home_goals : nextGame.predicted_away_goals;
+  const fallbackOpponentGoals = argentinaIsHome ? nextGame.predicted_away_goals : nextGame.predicted_home_goals;
+  const mainScoreline = scorelines[0] ?? {
+    teamGoals: Number(fallbackArgentinaGoals),
+    opponentGoals: Number(fallbackOpponentGoals),
+    probability: null,
+  };
+  const { homeAdvance, awayAdvance } = advancementProbabilities(nextGame);
+  const argentinaAdvance = argentinaIsHome ? homeAdvance : awayAdvance;
+  const opponentAdvance = isKnockout ? Math.max(0, 1 - argentinaAdvance) : null;
+  const kicker = isArgentinaLive ? "Argentina em campo agora" : "Nao de nem agua";
+  if (!isArgentinaLive) armBrazilCountdown(nextGame.match_date, false);
+
+  elements.argentinaWatchNextGame.innerHTML = `
+    <span class="brazil-game-kicker">${kicker}</span>
+    <strong class="brazil-matchup argentina-matchup">Argentina <small>&times;</small> ${escapeHtml(opponent)}</strong>
+    <span class="brazil-game-date">${formatBrasilia(nextGame.match_date)} &middot; Brasilia</span>
+    ${isArgentinaLive ? "" : brazilCountdownMarkup(nextGame.match_date, false)}
+    <span class="prediction-label brazil-prediction-label">${isKnockout ? `Chance de ${escapeHtml(opponent)} fazer o servico` : "Probabilidades do jogo"}</span>
+    <strong class="brazil-main-score argentina-main-score">${mainScoreline.teamGoals} <small>&times;</small> ${mainScoreline.opponentGoals}</strong>
+    ${argentinaEliminationProbability(nextGame, argentinaIsHome, opponent)}
+    ${liveScoreBlock(nextGame, liveMatch)}`;
+
+  elements.argentinaWatchScorelines.innerHTML = `
+    <span class="brazil-card-kicker">Top 3 do modelo</span>
+    <strong class="scorelines-match">Argentina &times; ${escapeHtml(opponent)}</strong>
+    ${opponentAdvance === null ? "" : `
+      <div class="argentina-upset-pill">
+        <span>${escapeHtml(opponent)} elimina</span>
+        <strong>${championPercent(opponentAdvance)}</strong>
+      </div>`}
+    ${upsetScoreline ? `
+      <div class="argentina-upset-pill argentina-scoreline-pill">
+        <span>Placar da secagem</span>
+        <strong>${upsetScoreline.teamGoals} &times; ${upsetScoreline.opponentGoals}</strong>
+        <em>${championPercent(upsetScoreline.probability)}</em>
+      </div>` : ""}
+    <div class="scoreline-ranking">
+      ${scorelines.map((scoreline, index) => `
+        <div class="scoreline-row ${index === 0 ? "is-leading" : ""}">
+          <span class="scoreline-position">${index + 1}o</span>
+          <strong>${scoreline.teamGoals} &times; ${scoreline.opponentGoals}</strong>
+          <span>${scoreline.probability === null ? "palpite" : championPercent(scoreline.probability)}</span>
+        </div>
+      `).join("")}
+    </div>`;
+
+  elements.argentinaWatchSection.hidden = false;
+}
+
 function renderFavorites(odds) {
   const favorites = odds.slice(0, 5);
   if (!favorites.length) {
@@ -1976,12 +2242,14 @@ async function loadChampionshipFeatures() {
     cachedBrazilPathPredictions = brazilPathPredictions;
     const adjustedOdds = applyKnockoutEliminations(odds, predictions, results);
     renderBrazilSection(adjustedOdds, predictions, liveMatches, scorelineOdds, results, brazilPathPredictions);
+    renderArgentinaWatchSection(adjustedOdds, predictions, liveMatches, scorelineOdds, results);
     renderFavorites(adjustedOdds);
     await renderProbabilityMap(adjustedOdds);
   } catch (error) {
     // As seções são complementares e somem silenciosamente enquanto não houver dados.
     console.warn("Probabilidades de título indisponíveis.", error);
     elements.brazilSection.hidden = true;
+    elements.argentinaWatchSection.hidden = true;
     elements.favoritesSection.hidden = true;
     elements.probabilityMapSection.hidden = true;
   }

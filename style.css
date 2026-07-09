@@ -236,6 +236,26 @@ h1 strong { color: transparent; font: inherit; background: linear-gradient(115de
 .scoreline-row.is-leading strong { color: var(--lime-bright); font-size: 36px; }
 .scoreline-row > span:last-child { color: var(--yellow); font: 800 17px var(--display); }
 
+.argentina-watch-section { border-color: rgba(255,86,86,.34); box-shadow: inset 0 0 58px rgba(255,86,86,.035); }
+.argentina-watch-section::before { width: 210px; background: linear-gradient(90deg, var(--red), var(--yellow), transparent); box-shadow: 0 0 14px rgba(255,86,86,.36); }
+.argentina-section-title { color: var(--white); }
+.argentina-flag { position: relative; flex: 0 0 auto; overflow: hidden; width: 38px; height: 26px; border: 1px solid rgba(255,255,255,.35); background: linear-gradient(180deg,#75aadb 0 33%,#fff 33% 66%,#75aadb 66%); box-shadow: 0 0 14px rgba(0,217,255,.25); transform: skewX(-5deg); }
+.argentina-flag i { position: absolute; left: 15px; top: 9px; width: 8px; height: 8px; border-radius: 50%; background: var(--yellow); box-shadow: 0 0 8px rgba(255,196,0,.7); }
+.argentina-card { border-color: rgba(255,86,86,.25); background: linear-gradient(145deg,rgba(38,20,34,.88),rgba(2,13,24,.96)); box-shadow: inset 0 0 45px rgba(255,86,86,.035); }
+.argentina-rank { color: var(--yellow); text-shadow: 0 0 26px rgba(255,196,0,.22); }
+.argentina-chance-detail { border-left-color: var(--red); background: rgba(255,86,86,.075); }
+.argentina-chance-detail span { color: var(--yellow); }
+.argentina-matchup small,
+.argentina-main-score small { color: var(--red); }
+.argentina-result-probability .prob-home { background: var(--red); box-shadow: 0 0 9px rgba(255,86,86,.38); }
+.argentina-result-probability .prob-away { background: var(--lime); box-shadow: 0 0 9px rgba(142,224,0,.35); }
+.argentina-upset-pill { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: -4px 0 12px; padding: 9px 11px; border: 1px solid rgba(142,224,0,.26); background: rgba(142,224,0,.075); }
+.argentina-upset-pill span { color: var(--silver); font-size: 10px; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; }
+.argentina-upset-pill strong { color: var(--lime-bright); font: italic 900 28px var(--display); line-height: .9; }
+.argentina-scoreline-pill { display: grid; grid-template-columns: 1fr auto auto; background: rgba(255,196,0,.075); border-color: rgba(255,196,0,.28); }
+.argentina-scoreline-pill strong { color: var(--yellow); }
+.argentina-scoreline-pill em { color: var(--lime-bright); font: italic 900 20px var(--display); line-height: .9; }
+
 /* Chaveamento */
 .bracket-section { overflow: hidden; border-color: rgba(255,196,0,.24); }
 .bracket-status { display: flex; flex-wrap: wrap; gap: 9px; margin: -4px 0 17px; }
