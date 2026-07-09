@@ -172,7 +172,27 @@ def build_elo(data: pd.DataFrame, base: float = 1500, k0: float = 20) -> tuple[d
 
 
 def load_historical_results(observed_predictions: list[dict[str, Any]], result_by_id: dict[str, dict[str, Any]]) -> pd.DataFrame:
-    dataset_path = Path(kagglehub.dataset_download("martj42/international-football-results-from-1872-to-2017"))
+    try:
+        dataset_path = Path(kagglehub.dataset_download("martj42/international-football-results-from-1872-to-2017"))
+    except Exception as error:
+        cache_root = (
+            Path.home()
+            / ".cache"
+            / "kagglehub"
+            / "datasets"
+            / "martj42"
+            / "international-football-results-from-1872-to-2017"
+            / "versions"
+        )
+        cached_versions = sorted(
+            [path for path in cache_root.glob("*") if (path / "results.csv").exists()],
+            key=lambda path: int(path.name) if path.name.isdigit() else -1,
+            reverse=True,
+        )
+        if not cached_versions:
+            raise error
+        dataset_path = cached_versions[0]
+        print(f"[AVISO] Kaggle indisponivel; usando cache local {dataset_path}.")
     results = pd.read_csv(dataset_path / "results.csv")
     results["date"] = pd.to_datetime(results["date"])
     results = results.dropna(subset=["home_score", "away_score"]).copy()

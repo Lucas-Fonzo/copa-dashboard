@@ -349,8 +349,13 @@ def knockout_winner(
     away: str,
     team_strength: dict[str, float],
     knockout_predictions: dict[tuple[str, str], dict[str, Any]],
+    fixed_knockout_winners: dict[tuple[str, str], str],
     rng: random.Random,
 ) -> str:
+    fixed_winner = fixed_knockout_winners.get((home, away))
+    if fixed_winner:
+        return fixed_winner
+
     prediction, reversed_pair = prediction_for_pair(home, away, knockout_predictions)
     if prediction:
         home_prob, draw_prob, away_prob = probability_triplet(prediction)
@@ -504,6 +509,7 @@ def simulate_once(
     results_by_id: dict[str, dict[str, Any]],
     groups: list[list[str]],
     knockout_predictions: dict[tuple[str, str], dict[str, Any]],
+    fixed_knockout_winners: dict[tuple[str, str], str],
     team_strength: dict[str, float],
     rng: random.Random,
 ) -> str:
@@ -533,7 +539,14 @@ def simulate_once(
             next_round.append(bracket.pop())
         for index in range(0, len(bracket), 2):
             home, away = bracket[index], bracket[index + 1]
-            winner = knockout_winner(home, away, team_strength, knockout_predictions, rng)
+            winner = knockout_winner(
+                home,
+                away,
+                team_strength,
+                knockout_predictions,
+                fixed_knockout_winners,
+                rng,
+            )
             next_round.append(winner)
         bracket = next_round
     return bracket[0]
@@ -553,6 +566,7 @@ def run_simulations(
         for prediction in predictions
         if not is_group_prediction(prediction)
     }
+    fixed_knockout_winners = build_fixed_knockout_winners(predictions, results_by_id)
     groups = infer_groups(group_predictions)
     validate_groups(groups)
     rng = random.Random(seed)
@@ -564,11 +578,78 @@ def run_simulations(
                 results_by_id,
                 groups,
                 knockout_predictions,
+                fixed_knockout_winners,
                 team_strength,
                 rng,
             )
         ] += 1
     return champions, groups
+
+
+def fixed_winner_for_prediction(
+    prediction: dict[str, Any],
+    result: dict[str, Any],
+) -> str | None:
+    advanced_team = result.get("advanced_team")
+    home_team = str(prediction["home_team"])
+    away_team = str(prediction["away_team"])
+    if advanced_team:
+        return str(advanced_team)
+
+    home_goals = result.get("actual_home_goals")
+    away_goals = result.get("actual_away_goals")
+    if home_goals is None or away_goals is None:
+        return None
+    if int(home_goals) > int(away_goals):
+        return home_team
+    if int(away_goals) > int(home_goals):
+        return away_team
+    return None
+
+
+def build_fixed_knockout_winners(
+    predictions: list[dict[str, Any]],
+    results_by_id: dict[str, dict[str, Any]],
+) -> dict[tuple[str, str], str]:
+    fixed: dict[tuple[str, str], str] = {}
+    for prediction in predictions:
+        if is_group_prediction(prediction):
+            continue
+        result = results_by_id.get(str(prediction["match_id"]))
+        if not result:
+            continue
+        winner = fixed_winner_for_prediction(prediction, result)
+        if not winner:
+            continue
+        home_team = str(prediction["home_team"])
+        away_team = str(prediction["away_team"])
+        fixed[(home_team, away_team)] = winner
+        fixed[(away_team, home_team)] = winner
+    return fixed
+
+
+def build_knockout_eliminated(
+    predictions: list[dict[str, Any]],
+    results_by_id: dict[str, dict[str, Any]],
+) -> set[str]:
+    eliminated: set[str] = set()
+    for prediction in predictions:
+        if is_group_prediction(prediction):
+            continue
+        result = results_by_id.get(str(prediction["match_id"]))
+        if not result:
+            continue
+        winner = fixed_winner_for_prediction(prediction, result)
+        if not winner:
+            continue
+        home_team = TEAM_DISPLAY.get(str(prediction["home_team"]), str(prediction["home_team"]))
+        away_team = TEAM_DISPLAY.get(str(prediction["away_team"]), str(prediction["away_team"]))
+        winner_display = TEAM_DISPLAY.get(str(winner), str(winner))
+        if winner_display == home_team:
+            eliminated.add(away_team)
+        elif winner_display == away_team:
+            eliminated.add(home_team)
+    return eliminated
 
 
 def load_predictions(client: Client) -> list[dict[str, Any]]:
@@ -584,7 +665,7 @@ def load_predictions(client: Client) -> list[dict[str, Any]]:
 
 def load_results(client: Client) -> list[dict[str, Any]]:
     response = client.table("results").select(
-        "match_id,actual_home_goals,actual_away_goals,match_date"
+        "match_id,actual_home_goals,actual_away_goals,advanced_team,match_date"
     ).execute()
     return response.data or []
 
@@ -641,9 +722,10 @@ def main() -> None:
     client = supabase_client()
     predictions = load_predictions(client)
     results = load_results(client)
+    results_by_id = {str(result["match_id"]): result for result in results}
     champions, groups = run_simulations(predictions, results, args.simulations, args.seed)
     teams = {team for group in groups for team in group}
-    eliminated = load_eliminated(client)
+    eliminated = load_eliminated(client) | build_knockout_eliminated(predictions, results_by_id)
     payload = build_payload(champions, teams, eliminated, args.simulations)
     client.table("championship_odds").upsert(payload, on_conflict="team").execute()
 

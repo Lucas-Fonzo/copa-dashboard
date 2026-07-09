@@ -838,5 +838,145 @@
     "home_goals": 0,
     "away_goals": 2,
     "probability": 0.07935998
+  },
+  {
+    "match_id": "WC2026_097",
+    "rank": 1,
+    "home_goals": 1,
+    "away_goals": 0,
+    "probability": 0.12615143
+  },
+  {
+    "match_id": "WC2026_097",
+    "rank": 2,
+    "home_goals": 2,
+    "away_goals": 1,
+    "probability": 0.11925551
+  },
+  {
+    "match_id": "WC2026_097",
+    "rank": 3,
+    "home_goals": 0,
+    "away_goals": 1,
+    "probability": 0.0914753
+  },
+  {
+    "match_id": "WC2026_097",
+    "rank": 4,
+    "home_goals": 2,
+    "away_goals": 0,
+    "probability": 0.08771636
+  },
+  {
+    "match_id": "WC2026_097",
+    "rank": 5,
+    "home_goals": 1,
+    "away_goals": 2,
+    "probability": 0.08647491
+  },
+  {
+    "match_id": "WC2026_098",
+    "rank": 1,
+    "home_goals": 1,
+    "away_goals": 0,
+    "probability": 0.1397914
+  },
+  {
+    "match_id": "WC2026_098",
+    "rank": 2,
+    "home_goals": 2,
+    "away_goals": 0,
+    "probability": 0.13394231
+  },
+  {
+    "match_id": "WC2026_098",
+    "rank": 3,
+    "home_goals": 2,
+    "away_goals": 1,
+    "probability": 0.12148245
+  },
+  {
+    "match_id": "WC2026_098",
+    "rank": 4,
+    "home_goals": 3,
+    "away_goals": 0,
+    "probability": 0.09033578
+  },
+  {
+    "match_id": "WC2026_098",
+    "rank": 5,
+    "home_goals": 3,
+    "away_goals": 1,
+    "probability": 0.07460678
+  },
+  {
+    "match_id": "WC2026_099",
+    "rank": 1,
+    "home_goals": 1,
+    "away_goals": 2,
+    "probability": 0.12582206
+  },
+  {
+    "match_id": "WC2026_099",
+    "rank": 2,
+    "home_goals": 0,
+    "away_goals": 1,
+    "probability": 0.12064231
+  },
+  {
+    "match_id": "WC2026_099",
+    "rank": 3,
+    "home_goals": 0,
+    "away_goals": 2,
+    "probability": 0.10490973
+  },
+  {
+    "match_id": "WC2026_099",
+    "rank": 4,
+    "home_goals": 1,
+    "away_goals": 3,
+    "probability": 0.07015659
+  },
+  {
+    "match_id": "WC2026_099",
+    "rank": 5,
+    "home_goals": 2,
+    "away_goals": 1,
+    "probability": 0.06568081
+  },
+  {
+    "match_id": "WC2026_100",
+    "rank": 1,
+    "home_goals": 2,
+    "away_goals": 0,
+    "probability": 0.14084052
+  },
+  {
+    "match_id": "WC2026_100",
+    "rank": 2,
+    "home_goals": 1,
+    "away_goals": 0,
+    "probability": 0.13674625
+  },
+  {
+    "match_id": "WC2026_100",
+    "rank": 3,
+    "home_goals": 2,
+    "away_goals": 1,
+    "probability": 0.11648165
+  },
+  {
+    "match_id": "WC2026_100",
+    "rank": 4,
+    "home_goals": 3,
+    "away_goals": 0,
+    "probability": 0.10196593
+  },
+  {
+    "match_id": "WC2026_100",
+    "rank": 5,
+    "home_goals": 3,
+    "away_goals": 1,
+    "probability": 0.07695056
   }
 ]

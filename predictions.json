@@ -873,7 +873,7 @@
     "draw_prob": 0.0,
     "away_win_prob": 0.636186,
     "round": "Mata-mata - Fase de 32",
-    "match_date": "2026-06-28T19:00:00Z"
+    "match_date": "2026-06-28T19:00:00+00:00"
   },
   {
     "match_id": "WC2026_074",
@@ -885,7 +885,7 @@
     "draw_prob": 0.0,
     "away_win_prob": 0.130535,
     "round": "Mata-mata - Fase de 32",
-    "match_date": "2026-06-29T20:30:00Z"
+    "match_date": "2026-06-29T20:30:00+00:00"
   },
   {
     "match_id": "WC2026_075",
@@ -897,7 +897,7 @@
     "draw_prob": 0.0,
     "away_win_prob": 0.618192,
     "round": "Mata-mata - Fase de 32",
-    "match_date": "2026-06-30T01:00:00Z"
+    "match_date": "2026-06-30T01:00:00+00:00"
   },
   {
     "match_id": "WC2026_076",
@@ -909,7 +909,7 @@
     "draw_prob": 0.0,
     "away_win_prob": 0.462401,
     "round": "Mata-mata - Fase de 32",
-    "match_date": "2026-06-29T17:00:00Z"
+    "match_date": "2026-06-29T17:00:00+00:00"
   },
   {
     "match_id": "WC2026_077",
@@ -921,7 +921,7 @@
     "draw_prob": 0.0,
     "away_win_prob": 0.042038,
     "round": "Mata-mata - Fase de 32",
-    "match_date": "2026-06-30T21:00:00Z"
+    "match_date": "2026-06-30T21:00:00+00:00"
   },
   {
     "match_id": "WC2026_078",
@@ -933,7 +933,7 @@
     "draw_prob": 0.0,
     "away_win_prob": 0.464855,
     "round": "Mata-mata - Fase de 32",
-    "match_date": "2026-06-30T17:00:00Z"
+    "match_date": "2026-06-30T17:00:00+00:00"
   },
   {
     "match_id": "WC2026_079",
@@ -945,7 +945,7 @@
     "draw_prob": 0.0,
     "away_win_prob": 0.250788,
     "round": "Mata-mata - Fase de 32",
-    "match_date": "2026-07-01T01:00:00Z"
+    "match_date": "2026-07-01T01:00:00+00:00"
   },
   {
     "match_id": "WC2026_080",
@@ -957,7 +957,7 @@
     "draw_prob": 0.0,
     "away_win_prob": 0.135572,
     "round": "Mata-mata - Fase de 32",
-    "match_date": "2026-07-01T16:00:00Z"
+    "match_date": "2026-07-01T16:00:00+00:00"
   },
   {
     "match_id": "WC2026_081",
@@ -969,7 +969,7 @@
     "draw_prob": 0.0,
     "away_win_prob": 0.138721,
     "round": "Mata-mata - Fase de 32",
-    "match_date": "2026-07-02T00:00:00Z"
+    "match_date": "2026-07-02T00:00:00+00:00"
   },
   {
     "match_id": "WC2026_082",
@@ -981,7 +981,7 @@
     "draw_prob": 0.0,
     "away_win_prob": 0.468774,
     "round": "Mata-mata - Fase de 32",
-    "match_date": "2026-07-01T20:00:00Z"
+    "match_date": "2026-07-01T20:00:00+00:00"
   },
   {
     "match_id": "WC2026_083",
@@ -993,7 +993,7 @@
     "draw_prob": 0.0,
     "away_win_prob": 0.306493,
     "round": "Mata-mata - Fase de 32",
-    "match_date": "2026-07-02T23:00:00Z"
+    "match_date": "2026-07-02T23:00:00+00:00"
   },
   {
     "match_id": "WC2026_084",
@@ -1005,7 +1005,7 @@
     "draw_prob": 0.0,
     "away_win_prob": 0.07412,
     "round": "Mata-mata - Fase de 32",
-    "match_date": "2026-07-02T19:00:00Z"
+    "match_date": "2026-07-02T19:00:00+00:00"
   },
   {
     "match_id": "WC2026_085",
@@ -1017,7 +1017,7 @@
     "draw_prob": 0.0,
     "away_win_prob": 0.579862,
     "round": "Mata-mata - Fase de 32",
-    "match_date": "2026-07-03T03:00:00Z"
+    "match_date": "2026-07-03T03:00:00+00:00"
   },
   {
     "match_id": "WC2026_086",
@@ -1029,7 +1029,7 @@
     "draw_prob": 0.0,
     "away_win_prob": 0.024508,
     "round": "Mata-mata - Fase de 32",
-    "match_date": "2026-07-03T22:00:00Z"
+    "match_date": "2026-07-03T22:00:00+00:00"
   },
   {
     "match_id": "WC2026_087",
@@ -1041,7 +1041,7 @@
     "draw_prob": 0.0,
     "away_win_prob": 0.105067,
     "round": "Mata-mata - Fase de 32",
-    "match_date": "2026-07-04T01:30:00Z"
+    "match_date": "2026-07-04T01:30:00+00:00"
   },
   {
     "match_id": "WC2026_088",
@@ -1053,7 +1053,7 @@
     "draw_prob": 0.0,
     "away_win_prob": 0.525845,
     "round": "Mata-mata - Fase de 32",
-    "match_date": "2026-07-03T18:00:00Z"
+    "match_date": "2026-07-03T18:00:00+00:00"
   },
   {
     "match_id": "WC2026_089",
@@ -1065,7 +1065,7 @@
     "draw_prob": 0.0,
     "away_win_prob": 0.979065,
     "round": "Mata-mata - Oitavas",
-    "match_date": "2026-07-04T21:00:00Z"
+    "match_date": "2026-07-04T21:00:00+00:00"
   },
   {
     "match_id": "WC2026_090",
@@ -1077,7 +1077,7 @@
     "draw_prob": 0.0,
     "away_win_prob": 0.835912,
     "round": "Mata-mata - Oitavas",
-    "match_date": "2026-07-04T17:00:00Z"
+    "match_date": "2026-07-04T17:00:00+00:00"
   },
   {
     "match_id": "WC2026_091",
@@ -1089,7 +1089,7 @@
     "draw_prob": 0.0,
     "away_win_prob": 0.275257,
     "round": "Mata-mata - Oitavas",
-    "match_date": "2026-07-05T20:00:00Z"
+    "match_date": "2026-07-05T20:00:00+00:00"
   },
   {
     "match_id": "WC2026_092",
@@ -1101,7 +1101,7 @@
     "draw_prob": 0.0,
     "away_win_prob": 0.589625,
     "round": "Mata-mata - Oitavas",
-    "match_date": "2026-07-06T00:00:00Z"
+    "match_date": "2026-07-06T00:00:00+00:00"
   },
   {
     "match_id": "WC2026_093",
@@ -1113,7 +1113,7 @@
     "draw_prob": 0.0,
     "away_win_prob": 0.738832,
     "round": "Mata-mata - Oitavas",
-    "match_date": "2026-07-06T19:00:00Z"
+    "match_date": "2026-07-06T19:00:00+00:00"
   },
   {
     "match_id": "WC2026_094",
@@ -1125,7 +1125,7 @@
     "draw_prob": 0.0,
     "away_win_prob": 0.688152,
     "round": "Mata-mata - Oitavas",
-    "match_date": "2026-07-07T00:00:00Z"
+    "match_date": "2026-07-07T00:00:00+00:00"
   },
   {
     "match_id": "WC2026_095",
@@ -1137,7 +1137,7 @@
     "draw_prob": 0.0,
     "away_win_prob": 0.1167,
     "round": "Mata-mata - Oitavas",
-    "match_date": "2026-07-07T16:00:00Z"
+    "match_date": "2026-07-07T16:00:00+00:00"
   },
   {
     "match_id": "WC2026_096",
@@ -1149,6 +1149,54 @@
     "draw_prob": 0.0,
     "away_win_prob": 0.590425,
     "round": "Mata-mata - Oitavas",
-    "match_date": "2026-07-07T20:00:00Z"
+    "match_date": "2026-07-07T20:00:00+00:00"
+  },
+  {
+    "match_id": "WC2026_097",
+    "home_team": "France",
+    "away_team": "Morocco",
+    "predicted_home_goals": 1,
+    "predicted_away_goals": 0,
+    "home_win_prob": 0.62185,
+    "draw_prob": 0.0,
+    "away_win_prob": 0.37815,
+    "round": "Mata-mata - Quartas",
+    "match_date": "2026-07-09T20:00:00Z"
+  },
+  {
+    "match_id": "WC2026_098",
+    "home_team": "Spain",
+    "away_team": "Belgium",
+    "predicted_home_goals": 1,
+    "predicted_away_goals": 0,
+    "home_win_prob": 0.818714,
+    "draw_prob": 0.0,
+    "away_win_prob": 0.181286,
+    "round": "Mata-mata - Quartas",
+    "match_date": "2026-07-10T19:00:00Z"
+  },
+  {
+    "match_id": "WC2026_099",
+    "home_team": "Norway",
+    "away_team": "England",
+    "predicted_home_goals": 1,
+    "predicted_away_goals": 2,
+    "home_win_prob": 0.271754,
+    "draw_prob": 0.0,
+    "away_win_prob": 0.728246,
+    "round": "Mata-mata - Quartas",
+    "match_date": "2026-07-11T21:00:00Z"
+  },
+  {
+    "match_id": "WC2026_100",
+    "home_team": "Argentina",
+    "away_team": "Switzerland",
+    "predicted_home_goals": 2,
+    "predicted_away_goals": 0,
+    "home_win_prob": 0.851653,
+    "draw_prob": 0.0,
+    "away_win_prob": 0.148347,
+    "round": "Mata-mata - Quartas",
+    "match_date": "2026-07-12T01:00:00Z"
   }
 ]
