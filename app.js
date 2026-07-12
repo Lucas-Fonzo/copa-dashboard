@@ -2087,18 +2087,17 @@ function renderArgentinaWatchSection(
 }
 
 function renderFavorites(odds) {
-  const favorites = odds.slice(0, 5);
+  const favorites = odds.filter((row) => !row.eliminated).slice(0, 5);
   if (!favorites.length) {
     elements.favoritesSection.hidden = true;
     return;
   }
   elements.favoritesGrid.innerHTML = favorites.map((row, index) => `
-    <article class="favorite-card ${row.eliminated ? "is-eliminated" : ""}">
+    <article class="favorite-card">
       <span class="favorite-position">${index + 1}º</span>
       <strong class="favorite-team">${escapeHtml(row.team)}</strong>
       <div class="favorite-probability"><span>chance de título</span><strong>${championPercent(row.champion_prob)}</strong></div>
       <div class="favorite-bar"><span style="width:${Math.max(0, Math.min(100, Number(row.champion_prob) * 100))}%"></span></div>
-      ${row.eliminated ? '<span class="eliminated-badge">ELIMINADO</span>' : ""}
     </article>
   `).join("");
   const simulations = Math.max(...favorites.map((row) => Number(row.simulations_run) || 0));
