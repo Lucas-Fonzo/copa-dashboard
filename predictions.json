@@ -1209,7 +1209,7 @@
     "draw_prob": 0.0,
     "away_win_prob": 0.56186,
     "round": "Mata-mata - Semifinal",
-    "match_date": "2026-07-14T19:00:00Z"
+    "match_date": "2026-07-14T19:00:00+00:00"
   },
   {
     "match_id": "WC2026_102",
@@ -1221,6 +1221,30 @@
     "draw_prob": 0.0,
     "away_win_prob": 0.637853,
     "round": "Mata-mata - Semifinal",
-    "match_date": "2026-07-15T19:00:00Z"
+    "match_date": "2026-07-15T19:00:00+00:00"
+  },
+  {
+    "match_id": "WC2026_103",
+    "home_team": "France",
+    "away_team": "England",
+    "predicted_home_goals": 1,
+    "predicted_away_goals": 0,
+    "home_win_prob": 0.616895,
+    "draw_prob": 0.0,
+    "away_win_prob": 0.383105,
+    "round": "Mata-mata - 3Âº lugar",
+    "match_date": "2026-07-18T21:00:00Z"
+  },
+  {
+    "match_id": "WC2026_104",
+    "home_team": "Spain",
+    "away_team": "Argentina",
+    "predicted_home_goals": 1,
+    "predicted_away_goals": 0,
+    "home_win_prob": 0.570914,
+    "draw_prob": 0.0,
+    "away_win_prob": 0.429086,
+    "round": "Mata-mata - Final",
+    "match_date": "2026-07-19T19:00:00Z"
   }
 ]

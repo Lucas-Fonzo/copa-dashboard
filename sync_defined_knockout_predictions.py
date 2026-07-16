@@ -86,7 +86,7 @@ ROUND_LABELS = {
     "Round of 16": "Mata-mata - Oitavas",
     "Quarter-final": "Mata-mata - Quartas",
     "Semi-final": "Mata-mata - Semifinal",
-    "Third-place playoff": "Mata-mata - 3Âº lugar",
+    "Third-place playoff": "Mata-mata - 3\u00ba lugar",
     "Final": "Mata-mata - Final",
 }
 
