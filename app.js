@@ -2334,10 +2334,20 @@ function buildAccuracyRow(round, matches) {
   };
 }
 
+function accuracyRoundGroup(match) {
+  const round = String(match.round ?? "Sem rodada");
+  const normalized = normalizeLookup(round);
+  if (!normalized.includes("fase de grupos")) return "Mata-mata";
+  if (normalized.includes("rodada 1")) return "Fase de Grupos - Rodada 1";
+  if (normalized.includes("rodada 2")) return "Fase de Grupos - Rodada 2";
+  if (normalized.includes("rodada 3")) return "Fase de Grupos - Rodada 3";
+  return round;
+}
+
 function summarizeAccuracy(matches) {
   const byRound = new Map();
   for (const match of matches) {
-    const round = match.round ?? "Sem rodada";
+    const round = accuracyRoundGroup(match);
     byRound.set(round, [...(byRound.get(round) ?? []), match]);
   }
 
